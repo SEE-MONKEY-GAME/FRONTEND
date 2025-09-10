@@ -2,7 +2,8 @@ import fs from 'fs';
 import yaml from 'js-yaml';
 import fetch from 'node-fetch';
 
-const event = JSON.parse(process.env.GITHUB_EVENT_PATH);
+const eventPath = process.env.GITHUB_EVENT_PATH;
+const event = JSON.parse(fs.readFileSync(eventPath, 'utf8'));
 
 const reviewersConfig = yaml.load(fs.readFileSync('.github/config/reviewers.yml', 'utf8'));
 
