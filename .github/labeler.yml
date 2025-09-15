@@ -1,0 +1,27 @@
+# 브랜치명 기반 라벨링
+🌱 Backend:
+  - head-branch: ["backend/*", "be/*"]
+
+🎨 Frontend:
+  - head-branch: ["frontend/*", "fe/*"]
+
+🐞 BugFix:
+  - head-branch: ["fix/*", "bugfix/*"]
+
+📃 Docs:
+  - head-branch: ["docs/*"]
+
+✨ Feature:
+  - head-branch: ["feature/*", "feat/*"]
+
+🔨 Refactor:
+  - head-branch: ["refactor/*"]
+
+✅ Test:
+  - head-branch: ["test/*"]
+
+🌸 Design:
+  - head-branch: ["design/*", "style/*", "css/*"]
+
+⚙ Setting:
+  - head-branch: ["setting/*", "chore/*"]
