@@ -24,4 +24,4 @@
   - head-branch: ["design/*", "style/*", "css/*"]
 
 ⚙ Setting:
-  - head-branch: ["setting/*"]
+  - head-branch: ["setting/*", "chore/*"]
