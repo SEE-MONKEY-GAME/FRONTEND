@@ -1,0 +1,63 @@
+name: Issue Labeler
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add Backend label
+        uses: actions-ecosystem/action-add-labels@v1
+        if: startsWith(github.event.issue.title, 'backend:') || startsWith(github.event.issue.title, 'be:')
+        with:
+          labels: "🌱 Backend"
+
+      - name: Add Frontend label
+        uses: actions-ecosystem/action-add-labels@v1
+        if: startsWith(github.event.issue.title, 'frontend:') || startsWith(github.event.issue.title, 'fe:')
+        with:
+          labels: "🎨 Frontend"
+
+      - name: Add BugFix label
+        uses: actions-ecosystem/action-add-labels@v1
+        if: startsWith(github.event.issue.title, 'fix:') || startsWith(github.event.issue.title, 'bugfix:')
+        with:
+          labels: "🐞 BugFix"
+
+      - name: Add Docs label
+        uses: actions-ecosystem/action-add-labels@v1
+        if: startsWith(github.event.issue.title, 'docs:')
+        with:
+          labels: "📃 Docs"
+
+      - name: Add Feature label
+        uses: actions-ecosystem/action-add-labels@v1
+        if: startsWith(github.event.issue.title, 'feat:') || startsWith(github.event.issue.title, 'feature:')
+        with:
+          labels: "✨ Feature"
+
+      - name: Add Refactor label
+        uses: actions-ecosystem/action-add-labels@v1
+        if: startsWith(github.event.issue.title, 'refactor:')
+        with:
+          labels: "🔨 Refactor"
+
+      - name: Add Test label
+        uses: actions-ecosystem/action-add-labels@v1
+        if: startsWith(github.event.issue.title, 'test:')
+        with:
+          labels: "✅ Test"
+
+      - name: Add Design label
+        uses: actions-ecosystem/action-add-labels@v1
+        if: startsWith(github.event.issue.title, 'design:') || startsWith(github.event.issue.title, 'style:') || startsWith(github.event.issue.title, 'css:')
+        with:
+          labels: "🌸 Design"
+
+      - name: Add Setting label
+        uses: actions-ecosystem/action-add-labels@v1
+        if: startsWith(github.event.issue.title, 'setting:') || startsWith(github.event.issue.title, 'chore:')
+        with:
+          labels: "⚙ Setting"
