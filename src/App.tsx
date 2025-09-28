@@ -1,13 +1,20 @@
-/** @jsxImportSource @emotion/react */
 import { ThemeProvider } from '@emotion/react';
+import createGameCanvas from '@phaser/canvas';
 import { theme } from '@styles/tokens';
-import { body, title, title2 } from 'App.css';
+import { useEffect } from 'react';
 
 function App() {
+  useEffect(() => {
+    const canvas = createGameCanvas('game');
+
+    return () => {
+      canvas.destroy(true);
+    };
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
-      <div css={[title, title2]}>title</div>
-      <div css={body}>body</div>
+      <div id="game" />
     </ThemeProvider>
   );
 }
