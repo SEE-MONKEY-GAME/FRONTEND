@@ -14,7 +14,7 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <div id="game" style={{ height: '100vh' }} />
+      <div id="game" />
     </ThemeProvider>
   );
 }

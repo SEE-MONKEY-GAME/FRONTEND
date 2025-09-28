@@ -7,9 +7,10 @@ const createGameCanvas = (parentId: string) => {
     backgroundColor: '#EFEFEF',
     scene: [],
     scale: {
-      mode: Phaser.Scale.FIT,
+      mode: Phaser.Scale.NONE,
       autoCenter: Phaser.Scale.CENTER_BOTH,
       width: 480,
+      height: window.innerHeight,
     },
   };
 
