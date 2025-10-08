@@ -1,3 +1,4 @@
+import HomeScene from '@scenes/HomeScene';
 import Phaser from 'phaser';
 
 const createGameCanvas = (parentId: string) => {
@@ -5,12 +6,13 @@ const createGameCanvas = (parentId: string) => {
     type: Phaser.AUTO,
     parent: parentId,
     backgroundColor: '#EFEFEF',
-    scene: [],
+    scene: [HomeScene],
     scale: {
-      mode: Phaser.Scale.NONE,
+      mode: Phaser.Scale.RESIZE,
       autoCenter: Phaser.Scale.CENTER_BOTH,
-      width: 480,
-      height: window.innerHeight,
+    },
+    dom: {
+      createContainer: true,
     },
   };
 
