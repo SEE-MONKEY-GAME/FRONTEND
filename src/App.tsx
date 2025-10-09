@@ -1,20 +1,16 @@
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from '@emotion/react';
-import createGameCanvas from '@phaser/canvas';
+import Home from '@pages/Home';
 import { theme } from '@styles/tokens';
-import { useEffect } from 'react';
 
 function App() {
-  useEffect(() => {
-    const canvas = createGameCanvas('game');
-
-    return () => {
-      canvas.destroy(true);
-    };
-  }, []);
-
   return (
     <ThemeProvider theme={theme}>
-      <div id="game" style={{ width: '100vw', height: '100vh' }} />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+        </Routes>
+      </BrowserRouter>
     </ThemeProvider>
   );
 }
