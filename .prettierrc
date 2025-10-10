@@ -5,7 +5,7 @@
   "printWidth": 120,
   "tabWidth": 2,
   "plugins": ["@trivago/prettier-plugin-sort-imports"],
-  "importOrder": ["^react$", "^react-.+", "^@/(.*)$", "^[./].*\\.css$", "^[./]"],
+  "importOrder": ["^react$", "^react(-.+|/.*)?$", "^@(.*)$", "^[./].*\\.css$"],
   "importOrderSeparation": false,
   "importOrderSortSpecifiers": true
 }

@@ -5,9 +5,10 @@
     "paths": {
       "@api/*": ["api/*"],
       "@assets/*": ["assets/*"],
+      "@canvas/*": ["canvas/*"],
       "@components/*": ["components/*"],
       "@context/*": ["context/*"],
-      "@phaser/*": ["phaser/*"],
+      "@pages/*": ["pages/*"],
       "@scenes/*": ["scenes/*"],
       "@styles/*": ["styles/*"],
       "@types/*": ["types/*"],

@@ -13,11 +13,14 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@supabase/supabase-js": "^2.75.0",
+    "axios": "^1.12.2",
     "clsx": "^2.1.1",
     "node-fetch": "^3.3.2",
     "phaser": "^3.90.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-router-dom": "^7.9.4",
     "vite-tsconfig-paths": "^5.1.4"
   },
   "devDependencies": {
@@ -25,6 +28,7 @@
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.7",
+    "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^5.0.0",
     "eslint": "^9.35.0",
     "eslint-plugin-react-hooks": "^5.2.0",
