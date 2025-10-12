@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from '@emotion/react';
-import Home from '@pages/Home';
+import Home from '@pages/home';
+import Game from '@pages/game'; 
 import { theme } from '@styles/tokens';
 
 function App() {
@@ -9,6 +10,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/game" element={<Game />} /> 
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
