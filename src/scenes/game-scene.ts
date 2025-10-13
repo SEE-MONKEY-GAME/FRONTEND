@@ -20,10 +20,14 @@ class GameScene extends Phaser.Scene {
     super('Game');
   }
 
-  preload() {
-    this.load.image('bar', getImage('game', 'bar'));
-    this.load.image('character', getImage('game', 'character'));
-  }
+ preload() {
+  this.load.image('bar', getImage('game', 'bar'));
+  this.load.image('character', getImage('game', 'character'));
+  this.load.image('num3', getImage('game', '3')); 
+  this.load.image('num2', getImage('game', '2')); 
+  this.load.image('num1', getImage('game', '1'));
+}
+
 
   create() {
     const { width, height } = this.cameras.main;
@@ -38,6 +42,7 @@ class GameScene extends Phaser.Scene {
       .setScale(0.08)
       .setCollideWorldBounds(true);
     (this.character.body as Phaser.Physics.Arcade.Body).setBounce(1, 0);
+    (this.character.body as Phaser.Physics.Arcade.Body).setAllowGravity(false); // ✅ 3초 동안 정지
 
     // bar
     this.bar = this.physics.add
@@ -51,6 +56,33 @@ class GameScene extends Phaser.Scene {
 
     // 🔸 히트박스 살짝 키워서 튜널링 여유 (선택)
     barBody.setSize(this.bar.displayWidth, this.bar.displayHeight * 1.3, true);
+
+    const countdown = this.add.image(width / 2, height / 2, 'num3')
+    .setOrigin(0.5)
+    .setScale(0.6)
+    .setDepth(9999)
+    .setScrollFactor(0);
+
+    const playFlash = () => {
+   countdown.setScale(0.3);
+  this.tweens.add({
+    targets: countdown,
+    scale: 0.6,
+    duration: 300,
+    ease: 'Back.Out'
+  });
+  };
+
+  // 3 → 2 → 1 → 낙하 시작
+  playFlash(); // 3
+  this.time.delayedCall(1000, () => { countdown.setTexture('num2'); playFlash(); });
+  this.time.delayedCall(2000, () => { countdown.setTexture('num1'); playFlash(); });
+
+  this.time.delayedCall(3000, () => {
+    // ✅ 카운트다운 종료 → 중력 켜고 이미지 제거
+    (this.character.body as Phaser.Physics.Arcade.Body).setAllowGravity(true);
+    countdown.destroy();
+  });
 
     this.prevBarX = this.bar.x;
     this.prevCharY = this.character.y;
