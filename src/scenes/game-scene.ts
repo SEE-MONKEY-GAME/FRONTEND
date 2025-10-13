@@ -1,3 +1,4 @@
+// src/scenes/game-scene.ts
 import Phaser from 'phaser';
 import { getImage } from '@utils/get-images';
 
@@ -6,15 +7,26 @@ class GameScene extends Phaser.Scene {
   private character!: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
   private barCollider!: Phaser.Physics.Arcade.Collider;
 
+  // 마우스/바 추적
   private lastJumpAt = 0;
   private prevBarX = 0;
   private barVX = 0;
   private prevCharY = 0;
 
+  // 점프/쿨다운
   private readonly JUMP_SPEED = 600;
   private readonly HORIZ_BASE_SPEED = 550;
   private readonly HORIZ_BAR_INFLUENCE = 0.5;
   private readonly JUMP_COOLDOWN = 120;
+
+  // 라이프 관련
+  private lives = 3;
+  private lifeIcons: Phaser.GameObjects.Image[] = [];
+
+  // 리스폰 관련
+  private isRespawning = false;
+  private respawnTargetY = 0;
+  private readonly RESPAWN_OFFSET = 120; // 화면 아래 시작 오프셋(px)
 
   constructor() {
     super('Game');
@@ -31,6 +43,10 @@ class GameScene extends Phaser.Scene {
     this.load.image('jump', getImage('game', 'jump-monkey'));
     this.load.image('ljump', getImage('game', 'ljump-monkey'));
     this.load.image('rjump', getImage('game', 'rjump-monkey'));
+
+    // 라이프 이미지
+    this.load.image('flife', getImage('game', 'life_full'));
+    this.load.image('elife', getImage('game', 'life_empty'));
   }
 
   create() {
@@ -47,9 +63,9 @@ class GameScene extends Phaser.Scene {
       .setScale(0.08);
     this.character.body.setBounce(1, 0);
     this.character.body.setAllowGravity(false); // 3초 대기
-    this.character.setCollideWorldBounds(false); // ✅ 밑으로 통과 가능
+    this.character.setCollideWorldBounds(false); // 아래 통과 가능
 
-    // Bar 생성
+    // 바 생성
     this.bar = this.physics.add
       .image(width / 2, height * 0.8, 'bar')
       .setOrigin(0.5)
@@ -58,7 +74,10 @@ class GameScene extends Phaser.Scene {
     this.bar.body.setImmovable(true);
     this.bar.body.setSize(this.bar.displayWidth, this.bar.displayHeight * 1.5, true);
 
-    // 카운트다운 (3초 후 낙하 시작)
+    // 라이프 UI 생성
+    this.createLivesUI();
+
+    // 카운트다운
     const countdown = this.add
       .image(width / 2, height / 2, 'num3')
       .setOrigin(0.5)
@@ -102,65 +121,96 @@ class GameScene extends Phaser.Scene {
       () => this.canJumpFromAbove()
     );
 
-// 기존 create() 안의 상단에서 이미 width, height 선언되어 있으므로,
-// 아래에서는 이름을 바꿔 사용한다.
-const worldW = this.cameras.main.width;
-const worldH = this.cameras.main.height;
-const WALL_THICKNESS = 40;
+    // 좌/우 벽 설정 (아래는 통과)
+    const worldW = this.cameras.main.width;
+    const worldH = this.cameras.main.height;
+    const WALL_THICKNESS = 40;
 
-// 왼쪽 벽
-const leftWall = this.add.rectangle(
-  -WALL_THICKNESS / 2,
-  worldH / 2,
-  WALL_THICKNESS,
-  worldH * 3,
-  0x000000,
-  0
-);
-this.physics.add.existing(leftWall, true);
+    const leftWall = this.add.rectangle(
+      -WALL_THICKNESS / 2,
+      worldH / 2,
+      WALL_THICKNESS,
+      worldH * 3,
+      0x000000,
+      0
+    );
+    this.physics.add.existing(leftWall, true);
 
-// 오른쪽 벽
-const rightWall = this.add.rectangle(
-  worldW + WALL_THICKNESS / 2,
-  worldH / 2,
-  WALL_THICKNESS,
-  worldH * 3,
-  0x000000,
-  0
-);
-this.physics.add.existing(rightWall, true);
+    const rightWall = this.add.rectangle(
+      worldW + WALL_THICKNESS / 2,
+      worldH / 2,
+      WALL_THICKNESS,
+      worldH * 3,
+      0x000000,
+      0
+    );
+    this.physics.add.existing(rightWall, true);
 
-// 캐릭터-벽 충돌
-this.physics.add.collider(
-  this.character,
-  leftWall as unknown as Phaser.Types.Physics.Arcade.GameObjectWithBody
-);
-this.physics.add.collider(
-  this.character,
-  rightWall as unknown as Phaser.Types.Physics.Arcade.GameObjectWithBody
-);
-
-
+    this.physics.add.collider(
+      this.character,
+      leftWall as unknown as Phaser.Types.Physics.Arcade.GameObjectWithBody
+    );
+    this.physics.add.collider(
+      this.character,
+      rightWall as unknown as Phaser.Types.Physics.Arcade.GameObjectWithBody
+    );
   }
 
-  // 위에서 내려올 때만 점프 허용
+  // -------------------------------
+  // 🩷 라이프 관련
+  // -------------------------------
+  private createLivesUI() {
+    const { height } = this.cameras.main;
+    const pad = 16;
+    const spacing = 36;
+    const scale = 0.8;
+
+    this.lifeIcons = [];
+    for (let i = 0; i < 3; i++) {
+      const icon = this.add
+        .image(pad + i * spacing, height - pad, 'flife')
+        .setOrigin(0, 1)
+        .setScale(scale)
+        .setScrollFactor(0)
+        .setDepth(1000);
+      this.lifeIcons.push(icon);
+    }
+    this.refreshLivesUI();
+  }
+
+  private refreshLivesUI() {
+    for (let i = 0; i < this.lifeIcons.length; i++) {
+      this.lifeIcons[i].setTexture(i < this.lives ? 'flife' : 'elife');
+    }
+  }
+
+  // -------------------------------
+  // 🧩 충돌 처리 / 점프
+  // -------------------------------
   private canJumpFromAbove() {
     if (this.time.now - this.lastJumpAt < this.JUMP_COOLDOWN) return false;
-    const falling = this.character.body.velocity.y > 0;
+
+    const cBody = this.character.body as Phaser.Physics.Arcade.Body;
+    const falling = cBody.velocity.y > 0;
     const isAbove = this.character.y < this.bar.y;
+
+    // 리스폰 중에는 상승(vy ≤ 0)일 때만 무시, 하강(vy > 0)이면 허용
+    if (this.isRespawning && !falling) return false;
+
     return falling && isAbove;
   }
 
-  // 점프 처리
   private handleJump() {
+    if (!this.character.active) return;
+
     const cBody = this.character.body;
     cBody.setVelocityY(-this.JUMP_SPEED);
 
     const vx = this.barVX * 15;
     cBody.setVelocityX(vx);
 
-    // 50ms 뒤에 실제 속도 기준으로 이미지 전환
     this.time.delayedCall(50, () => {
+      if (!this.character.active) return;
       const vxx = cBody.velocity.x;
       const DIR_THRESHOLD = 1;
       if (vxx > DIR_THRESHOLD) this.setPose('rjump');
@@ -171,24 +221,72 @@ this.physics.add.collider(
     this.lastJumpAt = this.time.now;
   }
 
-  // 포즈 전환 유틸
   private setPose(key: 'character' | 'sit' | 'jump' | 'ljump' | 'rjump') {
     if (this.character.texture.key !== key) this.character.setTexture(key);
   }
 
-  // ✅ 화면 밑으로 완전히 떨어지면 사라지게
-  private disappearWhenOffscreen() {
+  // -------------------------------
+  // 🌀 화면 밖으로 떨어질 때
+  // -------------------------------
+  private handleFallOut() {
+    if (this.isRespawning) return;
+    this.isRespawning = true;
+
+    // 라이프 감소
+    this.lives = Math.max(0, this.lives - 1);
+    this.refreshLivesUI();
+
+    if (this.lives <= 0) {
+      // TODO: 게임오버 처리
+      this.character.disableBody(true, true);
+      return;
+    }
+
+    // 리스폰 시작
+    const { width, height } = this.cameras.main;
+    this.respawnTargetY = height / 3;
+
+    this.character.enableBody(true, width / 2, height + this.RESPAWN_OFFSET, true, true);
+    this.character.setTexture('character').setScale(0.08).setOrigin(0.5);
+    this.character.setCollideWorldBounds(false);
+
+    const body = this.character.body as Phaser.Physics.Arcade.Body;
+    body.setVelocity(0, 0);
+    body.setAllowGravity(true);
+
+    // 리스폰 점프 (자연스러운 포물선)
+    const g = this.physics.world.gravity.y;
+    const deltaH = (this.character.y - this.respawnTargetY);
+    const v0 = Math.sqrt(2 * g * deltaH);
+    body.setVelocityX(0);
+    body.setVelocityY(-v0);
+
+    this.setPose('jump');
+  }
+
+  private checkOffscreenAndProcess() {
+    if (!this.character.active) return;
     const { height } = this.cameras.main;
-    const offscreenMargin = 100;
-    if (this.character.y - this.character.displayHeight * 0.5 > height + offscreenMargin) {
-      this.character.disableBody(true, true); // 완전히 제거
+    const offscreenMargin = 80;
+    const bottomEdge = this.character.y - this.character.displayHeight * 0.5;
+    if (bottomEdge > height + offscreenMargin) {
+      this.handleFallOut();
     }
   }
 
+  // -------------------------------
+  // 🔁 매 프레임 업데이트
+  // -------------------------------
   update() {
-    const cBody = this.character.body;
+    if (!this.character.active) return;
+    const cBody = this.character.body as Phaser.Physics.Arcade.Body;
 
-    // 🔥 프레임 교차 감지 (바 점프)
+    // 리스폰 중 → 하강 시작되면 자연스럽게 충돌 가능
+    if (this.isRespawning && cBody.velocity.y > 0) {
+      this.isRespawning = false;
+    }
+
+    // 🔥 스윕 보정 (터널링 방지)
     if (cBody.velocity.y > 0) {
       const barTop = this.bar.y - this.bar.displayHeight * 0.5;
       const charTop = this.character.y - this.character.displayHeight * 0.5;
@@ -210,16 +308,15 @@ this.physics.add.collider(
       }
     }
 
-    // 포즈 상태 업데이트
-    const vy = cBody.velocity.y;
-    if (cBody.blocked.down || vy === 0) {
-      this.setPose('sit');
-    } else if (vy > 0) {
-      this.setPose('character');
+    // 포즈 상태
+    if (!this.isRespawning) {
+      const vy = cBody.velocity.y;
+      if (vy === 0) this.setPose('sit');
+      else if (vy > 0) this.setPose('character');
     }
 
-    // ✅ 화면 밑으로 떨어졌는지 확인 후 제거
-    this.disappearWhenOffscreen();
+    // 화면 아래 체크
+    this.checkOffscreenAndProcess();
 
     this.prevCharY = this.character.y;
   }
