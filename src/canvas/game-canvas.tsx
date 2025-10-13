@@ -11,7 +11,7 @@ const GameCanvas = () => {
       gameRef.current = new Phaser.Game({
         type: Phaser.AUTO,
         parent: containerRef.current,
-        backgroundColor: '#000000',
+        backgroundColor: '#e9da99',
         antialias: true,
         pixelArt: false,
         scene: [GameScene],
