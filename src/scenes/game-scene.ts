@@ -12,8 +12,6 @@ class GameScene extends Phaser.Scene {
   private prevCharY = 0;
 
   private readonly JUMP_SPEED = 600;
-  private readonly HORIZ_BASE_SPEED = 550;
-  private readonly HORIZ_BAR_INFLUENCE = 0.5;
   private readonly JUMP_COOLDOWN = 120;
 
   private lives = 3;
@@ -22,6 +20,12 @@ class GameScene extends Phaser.Scene {
   private isRespawning = false;
   private respawnTargetY = 0;
   private readonly RESPAWN_OFFSET = 120;
+
+  // 🧭 점수 계산 관련 (누적 스크롤 방식)
+  private readonly PX_PER_M = 10;   // 1m = 10px (원하면 조절)
+  private totalAscentPx = 0;       // 누적 상승 픽셀
+  private lastYForScore = 0;       // 이전 프레임 Y(점수 계산용)
+  private lastEmittedMeters = -1;  // 같은 값 중복 송신 방지
 
   constructor() {
     super('Game');
@@ -95,7 +99,13 @@ class GameScene extends Phaser.Scene {
     this.prevBarX = this.bar.x;
     this.prevCharY = this.character.y;
 
-    this.input.on('pointermove', (p) => {
+    // 🧭 점수 초기화
+    this.totalAscentPx = 0;
+    this.lastYForScore = this.character.y;
+    this.lastEmittedMeters = -1;
+    this.emitScore(0);
+
+    this.input.on('pointermove', (p: Phaser.Input.Pointer) => {
       this.barVX = p.x - this.prevBarX;
       this.bar.setPosition(p.x, p.y);
       this.prevBarX = this.bar.x;
@@ -243,6 +253,13 @@ class GameScene extends Phaser.Scene {
     }
   }
 
+  // 🔔 React로 점수 이벤트 발행
+  private emitScore(meters: number) {
+    if (meters === this.lastEmittedMeters) return;
+    this.lastEmittedMeters = meters;
+    window.dispatchEvent(new CustomEvent('game:score', { detail: { score: meters } }));
+  }
+
   // -------------------------------
   // 🔁 매 프레임
   // -------------------------------
@@ -253,17 +270,15 @@ class GameScene extends Phaser.Scene {
     // 💫 리스폰 중 → 하강 시작되면 깜빡임 해제 + 자연 복귀
     if (this.isRespawning && cBody.velocity.y > 0) {
       this.isRespawning = false;
-
-      // 깜빡임 중단
       this.tweens.killTweensOf(this.character);
-
-      // 투명도 복귀 트윈
       this.tweens.add({
         targets: this.character,
         alpha: 1,
         duration: 400,
         ease: 'Sine.Out',
       });
+      // 리스폰 종료 시점에 점수 기준도 현재 위치로 리셋(불필요한 델타 방지)
+      this.lastYForScore = this.character.y;
     }
 
     // 스윕 보정 (바 충돌)
@@ -290,7 +305,21 @@ class GameScene extends Phaser.Scene {
       else if (vy > 0) this.setPose('character');
     }
 
+    // 🧭 누적 스크롤 방식 점수: 위로 이동한 픽셀만 합산 (리스폰 중 제외)
+    if (!this.isRespawning) {
+      const dyUp = Math.max(0, this.lastYForScore - this.character.y); // 위로 이동한 양
+      if (dyUp > 0) {
+        this.totalAscentPx += dyUp;
+        const meters = Math.floor(this.totalAscentPx / this.PX_PER_M);
+        this.emitScore(meters);
+      }
+    }
+    // 다음 프레임 비교 기준 갱신 (리스폰 여부와 무관하게 갱신)
+    this.lastYForScore = this.character.y;
+
+    // 떨어짐 체크
     this.checkOffscreenAndProcess();
+
     this.prevCharY = this.character.y;
   }
 }
