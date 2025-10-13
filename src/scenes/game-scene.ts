@@ -14,7 +14,7 @@ class GameScene extends Phaser.Scene {
   private readonly JUMP_SPEED = 600;
   private readonly JUMP_COOLDOWN = 120;
 
-  // ==== 스폰/난이도 설정 ====
+  // 스폰,난이도 설정
   private readonly SPAWN_PER_FRAME_LIMIT = 3;
   private readonly BANANA_PROB_TABLE: Array<{
     untilM: number;
@@ -32,25 +32,25 @@ class GameScene extends Phaser.Scene {
   private respawnTargetY = 0;
   private readonly RESPAWN_OFFSET = 120;
 
-  // 🧭 점수 계산(누적 스크롤)
+  // 점수 계산 설정
   private readonly PX_PER_M = 10;
   private totalAscentPx = 0;
   private lastYForScore = 0;
   private lastEmittedMeters = -1;
 
-  // 🍌 바나나/코인/스크롤
+  // 바나나/코인 설정
   private scrollY = 0;
   private lastSpawnScrollY = 0;
   private readonly SPAWN_GAP_PX = 120;
   private bananaGroup!: Phaser.Physics.Arcade.Group;
   private coin = 0;
 
-  // 🔥 피버타임
+  // 피버타임 설정
   private feverActive = false;
   private feverUntil = 0;
-  private feverProgress = 0;              // 0 ~ FEVER_GOAL
-  private readonly FEVER_GOAL = 20;       // 과일 20개
-  private readonly FEVER_DURATION = 6000; // 6초
+  private feverProgress = 0;              
+  private readonly FEVER_GOAL = 20;       // 과일 개수
+  private readonly FEVER_DURATION = 6000; // 지속 시간
 
   constructor() {
     super('Game');
@@ -66,16 +66,11 @@ class GameScene extends Phaser.Scene {
     this.load.image('jump', getImage('game', 'jump-monkey'));
     this.load.image('ljump', getImage('game', 'ljump-monkey'));
     this.load.image('rjump', getImage('game', 'rjump-monkey'));
-
     this.load.image('flife', getImage('game', 'life_full'));
     this.load.image('elife', getImage('game', 'life_empty'));
-
-    // 과일들
-    this.load.image('nbana', getImage('game', 'banana_normal')); // 1원
-    this.load.image('bbana', getImage('game', 'banana_bunch'));  // 5원
-    this.load.image('gbana', getImage('game', 'banana_gold'));   // 10원
-
-    // 게이지(이미지는 React UI에서 쓰지만 같이 로드)
+    this.load.image('nbana', getImage('game', 'banana_normal')); 
+    this.load.image('bbana', getImage('game', 'banana_bunch'));  
+    this.load.image('gbana', getImage('game', 'banana_gold'));   
     this.load.image('fullguage',  getImage('game', 'full_guage_bar'));
     this.load.image('emptyguage', getImage('game', 'empty_guage_bar'));
   }
@@ -130,7 +125,7 @@ class GameScene extends Phaser.Scene {
     this.prevBarX = this.bar.x;
     this.prevCharY = this.character.y;
 
-    // 점수/스크롤 초기화
+    // 점수 초기화
     this.totalAscentPx = 0;
     this.lastYForScore = this.character.y;
     this.lastEmittedMeters = -1;
@@ -146,7 +141,7 @@ class GameScene extends Phaser.Scene {
       this.prevBarX = this.bar.x;
     });
 
-    // 캐릭터-바 충돌
+    // 캐릭터,바 충돌
     this.barCollider = this.physics.add.collider(
       this.character,
       this.bar,
@@ -154,7 +149,7 @@ class GameScene extends Phaser.Scene {
       () => this.canJumpFromAbove()
     );
 
-    // 좌/우 벽
+    // 좌,우 투명벽
     const worldW = width;
     const worldH = height;
     const WALL_THICKNESS = 40;
@@ -165,15 +160,13 @@ class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.character, leftWall as unknown as Phaser.Types.Physics.Arcade.GameObjectWithBody);
     this.physics.add.collider(this.character, rightWall as unknown as Phaser.Types.Physics.Arcade.GameObjectWithBody);
 
-    // 🍌 바나나 그룹 + 수집 오버랩
+    // 바나나 그룹 + 수집 오버랩
     this.bananaGroup = this.physics.add.group({ allowGravity: false, immovable: true });
 
     this.physics.add.overlap(
       this.character,
       this.bananaGroup,
-      // collideCallback
       (_ch, item) => this.collectBanana(item as Phaser.Types.Physics.Arcade.ImageWithDynamicBody),
-      // processCallback (타입을 any로 느슨하게)
       (_obj1: any, obj2: any): boolean => {
         const go = obj2 as Phaser.GameObjects.GameObject & { getData?: (key: string) => any; active?: boolean };
         if (!go || typeof go.getData !== 'function' || !go.active) return false;
@@ -189,9 +182,7 @@ class GameScene extends Phaser.Scene {
     this.emitFever(0, false, 0);
   }
 
-  // ===============================
-  // 🩷 라이프 UI
-  // ===============================
+  // 라이프 UI
   private createLivesUI() {
     const { height } = this.cameras.main;
     const pad = 16;
@@ -217,9 +208,7 @@ class GameScene extends Phaser.Scene {
     }
   }
 
-  // ===============================
-  // 🧩 점프 처리
-  // ===============================
+  // 점프 처리
   private canJumpFromAbove() {
     if (this.time.now - this.lastJumpAt < this.JUMP_COOLDOWN) return false;
     const cBody = this.character.body as Phaser.Physics.Arcade.Body;
@@ -253,14 +242,12 @@ class GameScene extends Phaser.Scene {
     if (this.character.texture.key !== key) this.character.setTexture(key);
   }
 
-  // ===============================
-  // 🌀 화면 아래로 떨어질 때
-  // ===============================
+  // 하강 관련 설정 값
   private handleFallOut() {
     if (this.isRespawning) return;
     this.isRespawning = true;
 
-    // 깜빡임
+    // 무적 효과
     this.character.setAlpha(0.5);
     this.tweens.add({ targets: this.character, alpha: { from: 0.7, to: 1 }, duration: 100, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
 
@@ -302,9 +289,7 @@ class GameScene extends Phaser.Scene {
     }
   }
 
-  // ===============================
-  // 🔔 React 이벤트
-  // ===============================
+  // React 이벤트
   private emitScore(meters: number) {
     if (meters === this.lastEmittedMeters) return;
     this.lastEmittedMeters = meters;
@@ -319,13 +304,11 @@ class GameScene extends Phaser.Scene {
     window.dispatchEvent(new CustomEvent('game:fever', { detail: { progress: progress01, active, timeLeftMs } }));
   }
 
-  // ===============================
-  // 🔥 피버 제어
-  // ===============================
+  // 피버 설정
   private startFever() {
     this.feverActive = true;
     this.feverUntil = this.time.now + this.FEVER_DURATION;
-    this.feverProgress = 0; // 가득 찬 순간 초기화
+    this.feverProgress = 0; 
     this.emitFever(0, true, this.FEVER_DURATION);
   }
 
@@ -334,9 +317,7 @@ class GameScene extends Phaser.Scene {
     this.emitFever(this.feverProgress / this.FEVER_GOAL, false, 0);
   }
 
-  // ===============================
-  // 🍌 바나나 스폰/업데이트/수집
-  // ===============================
+  // 바나나 스폰,업데이트 설정
   private getMeters(): number {
     return Math.floor(this.totalAscentPx / this.PX_PER_M);
   }
@@ -348,7 +329,6 @@ class GameScene extends Phaser.Scene {
   }
 
   private pickBananaSpec(m: number): { key: 'nbana'|'bbana'|'gbana'; value: number; scale: number } {
-    // 피버 중엔 전부 황금
     if (this.feverActive) return { key: 'gbana', value: 10, scale: 0.22 };
 
     const tier = this.BANANA_PROB_TABLE.find(t => m <= t.untilM)!;
@@ -422,10 +402,8 @@ private collectBanana(item: Phaser.Types.Physics.Arcade.ImageWithDynamicBody) {
   const tex   = item.texture.key;
   const scale = item.scale;
 
-  // 즉시 비활성화 (중복 수집 방지)
   item.disableBody(true, true);
 
-  // 먹었을 때 이펙트
   const ghost = this.add.image(x, y, tex).setScale(scale).setDepth(10);
   this.tweens.add({
     targets: ghost,
@@ -435,21 +413,17 @@ private collectBanana(item: Phaser.Types.Physics.Arcade.ImageWithDynamicBody) {
     onComplete: () => ghost.destroy(),
   });
 
-  // 💰 코인
+  // 코인
   this.coin += val;
   this.emitCoin(this.coin);
 
-  // 🔥 피버 게이지
+  // 피버 게이지
   if (this.feverActive) {
-    // 피버 중에는 게이지를 올리지 않음 (다음 피버에 영향 X)
-    // 남은 시간만 UI에 알려주고 진행도는 0으로 유지
     this.emitFever(0, true, Math.max(0, this.feverUntil - this.time.now));
   } else {
-    // 평상시에는 과일 1개당 +1 (목표 20개)
     this.feverProgress = Math.min(this.FEVER_GOAL, this.feverProgress + 1);
     this.emitFever(this.feverProgress / this.FEVER_GOAL, false, 0);
 
-    // 목표 달성 시 피버 시작
     if (this.feverProgress >= this.FEVER_GOAL) {
       this.startFever();
     }
@@ -457,14 +431,14 @@ private collectBanana(item: Phaser.Types.Physics.Arcade.ImageWithDynamicBody) {
 }
 
 
-  // ===============================
-  // 🔁 매 프레임
-  // ===============================
+
+  // 프레임 설정
+
   update() {
     if (!this.character.active) return;
     const cBody = this.character.body as Phaser.Physics.Arcade.Body;
 
-    // 리스폰 종료 처리
+    // 아이템 삭제
     if (this.isRespawning && cBody.velocity.y > 0) {
       this.isRespawning = false;
       this.tweens.killTweensOf(this.character);
@@ -496,7 +470,7 @@ private collectBanana(item: Phaser.Types.Physics.Arcade.ImageWithDynamicBody) {
       else if (vy > 0) this.setPose('character');
     }
 
-    // 점수/스크롤 & 스폰
+    // 점수, 스폰
     if (!this.isRespawning) {
       const dyUp = Math.max(0, this.lastYForScore - this.character.y);
       if (dyUp > 0) {
@@ -521,10 +495,8 @@ private collectBanana(item: Phaser.Types.Physics.Arcade.ImageWithDynamicBody) {
     }
     this.lastYForScore = this.character.y;
 
-    // 바나나 업데이트/제거
     this.updateBananas();
 
-    // ⏱️ 피버 종료 체크
     if (this.feverActive && this.time.now >= this.feverUntil) {
       this.stopFever();
     }

@@ -2,7 +2,6 @@ import { css, keyframes } from '@emotion/react';
 import { theme } from '@styles/tokens';
 import { getImage } from '@utils/get-images';
 
-// 💰 코인
 export const coinCss = css({
   position: 'absolute',
   top: 20,
@@ -27,7 +26,6 @@ export const coinTextCss = css({
   transform: 'translateY(-2px)',
 });
 
-// ⛰️ 점수
 export const currentScoreCss = css({
   position: 'absolute',
   top: 32,
@@ -42,13 +40,12 @@ export const currentScoreCss = css({
   textShadow: '2px 2px 4px rgba(0,0,0,0.9)',
 });
 
-// 🔥 Fever 게이지(두 이미지 겹침, full은 clipPath로 오른쪽을 잘라 드러냄)
 export const feverWrapCss = css({
   position: 'absolute',
   top: 48,
   left: '50%',
   transform: 'translateX(-50%)',
-  width: 320, // 원본 비율에 맞춰 원하는 크기
+  width: 320, 
   height: 28,
   pointerEvents: 'none',
   zIndex: 3,
@@ -76,7 +73,7 @@ export const feverFullCss = css({
   transition: 'clip-path 120ms linear',
 });
 
-// 🔥 FEVER 배지(임시)
+// (임시)
 const feverPulse = keyframes`
   0%   { transform: translate(-50%, 0) scale(1);   opacity: 1; }
   50%  { transform: translate(-50%, 0) scale(1.08); opacity: 0.9; }
@@ -85,7 +82,7 @@ const feverPulse = keyframes`
 
 export const feverBadgeCss = css({
   position: 'absolute',
-  top: 84,              // 게이지 아래에 표시
+  top: 84,             
   left: '50%',
   transform: 'translateX(-50%)',
   padding: '4px 12px',
