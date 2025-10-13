@@ -1,4 +1,3 @@
-// src/scenes/game-scene.ts
 import Phaser from 'phaser';
 import { getImage } from '@utils/get-images';
 
@@ -7,33 +6,28 @@ class GameScene extends Phaser.Scene {
   private character!: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
   private barCollider!: Phaser.Physics.Arcade.Collider;
 
-  // 마우스/바 추적
   private lastJumpAt = 0;
   private prevBarX = 0;
   private barVX = 0;
   private prevCharY = 0;
 
-  // 점프/쿨다운
   private readonly JUMP_SPEED = 600;
   private readonly HORIZ_BASE_SPEED = 550;
   private readonly HORIZ_BAR_INFLUENCE = 0.5;
   private readonly JUMP_COOLDOWN = 120;
 
-  // 라이프 관련
   private lives = 3;
   private lifeIcons: Phaser.GameObjects.Image[] = [];
 
-  // 리스폰 관련
   private isRespawning = false;
   private respawnTargetY = 0;
-  private readonly RESPAWN_OFFSET = 120; // 화면 아래 시작 오프셋(px)
+  private readonly RESPAWN_OFFSET = 120;
 
   constructor() {
     super('Game');
   }
 
   preload() {
-    // 이미지 로드
     this.load.image('bar', getImage('game', 'bar'));
     this.load.image('character', getImage('game', 'character'));
     this.load.image('num3', getImage('game', '3'));
@@ -44,7 +38,6 @@ class GameScene extends Phaser.Scene {
     this.load.image('ljump', getImage('game', 'ljump-monkey'));
     this.load.image('rjump', getImage('game', 'rjump-monkey'));
 
-    // 라이프 이미지
     this.load.image('flife', getImage('game', 'life_full'));
     this.load.image('elife', getImage('game', 'life_empty'));
   }
@@ -52,20 +45,17 @@ class GameScene extends Phaser.Scene {
   create() {
     const { width, height } = this.cameras.main;
 
-    // 물리 설정
     this.physics.world.setBounds(0, 0, width, height);
     this.physics.world.gravity.y = 1200;
 
-    // 캐릭터 생성
     this.character = this.physics.add
       .image(width / 2, height / 3, 'character')
       .setOrigin(0.5)
       .setScale(0.08);
     this.character.body.setBounce(1, 0);
-    this.character.body.setAllowGravity(false); // 3초 대기
-    this.character.setCollideWorldBounds(false); // 아래 통과 가능
+    this.character.body.setAllowGravity(false);
+    this.character.setCollideWorldBounds(false);
 
-    // 바 생성
     this.bar = this.physics.add
       .image(width / 2, height * 0.8, 'bar')
       .setOrigin(0.5)
@@ -74,7 +64,6 @@ class GameScene extends Phaser.Scene {
     this.bar.body.setImmovable(true);
     this.bar.body.setSize(this.bar.displayWidth, this.bar.displayHeight * 1.5, true);
 
-    // 라이프 UI 생성
     this.createLivesUI();
 
     // 카운트다운
@@ -95,25 +84,23 @@ class GameScene extends Phaser.Scene {
       });
     };
 
-    playFlash(); // 3
+    playFlash();
     this.time.delayedCall(1000, () => { countdown.setTexture('num2'); playFlash(); });
     this.time.delayedCall(2000, () => { countdown.setTexture('num1'); playFlash(); });
     this.time.delayedCall(3000, () => {
-      this.character.body.setAllowGravity(true); // 낙하 시작
+      this.character.body.setAllowGravity(true);
       countdown.destroy();
     });
 
     this.prevBarX = this.bar.x;
     this.prevCharY = this.character.y;
 
-    // 마우스 따라다니는 바
     this.input.on('pointermove', (p) => {
       this.barVX = p.x - this.prevBarX;
       this.bar.setPosition(p.x, p.y);
       this.prevBarX = this.bar.x;
     });
 
-    // 캐릭터-바 충돌
     this.barCollider = this.physics.add.collider(
       this.character,
       this.bar,
@@ -121,43 +108,21 @@ class GameScene extends Phaser.Scene {
       () => this.canJumpFromAbove()
     );
 
-    // 좌/우 벽 설정 (아래는 통과)
     const worldW = this.cameras.main.width;
     const worldH = this.cameras.main.height;
     const WALL_THICKNESS = 40;
 
-    const leftWall = this.add.rectangle(
-      -WALL_THICKNESS / 2,
-      worldH / 2,
-      WALL_THICKNESS,
-      worldH * 3,
-      0x000000,
-      0
-    );
+    const leftWall = this.add.rectangle(-WALL_THICKNESS / 2, worldH / 2, WALL_THICKNESS, worldH * 3, 0x000000, 0);
+    const rightWall = this.add.rectangle(worldW + WALL_THICKNESS / 2, worldH / 2, WALL_THICKNESS, worldH * 3, 0x000000, 0);
     this.physics.add.existing(leftWall, true);
-
-    const rightWall = this.add.rectangle(
-      worldW + WALL_THICKNESS / 2,
-      worldH / 2,
-      WALL_THICKNESS,
-      worldH * 3,
-      0x000000,
-      0
-    );
     this.physics.add.existing(rightWall, true);
 
-    this.physics.add.collider(
-      this.character,
-      leftWall as unknown as Phaser.Types.Physics.Arcade.GameObjectWithBody
-    );
-    this.physics.add.collider(
-      this.character,
-      rightWall as unknown as Phaser.Types.Physics.Arcade.GameObjectWithBody
-    );
+    this.physics.add.collider(this.character, leftWall as unknown as Phaser.Types.Physics.Arcade.GameObjectWithBody);
+    this.physics.add.collider(this.character, rightWall as unknown as Phaser.Types.Physics.Arcade.GameObjectWithBody);
   }
 
   // -------------------------------
-  // 🩷 라이프 관련
+  // 🩷 라이프 UI
   // -------------------------------
   private createLivesUI() {
     const { height } = this.cameras.main;
@@ -185,24 +150,20 @@ class GameScene extends Phaser.Scene {
   }
 
   // -------------------------------
-  // 🧩 충돌 처리 / 점프
+  // 🧩 점프 처리
   // -------------------------------
   private canJumpFromAbove() {
     if (this.time.now - this.lastJumpAt < this.JUMP_COOLDOWN) return false;
-
     const cBody = this.character.body as Phaser.Physics.Arcade.Body;
     const falling = cBody.velocity.y > 0;
     const isAbove = this.character.y < this.bar.y;
 
-    // 리스폰 중에는 상승(vy ≤ 0)일 때만 무시, 하강(vy > 0)이면 허용
     if (this.isRespawning && !falling) return false;
-
     return falling && isAbove;
   }
 
   private handleJump() {
     if (!this.character.active) return;
-
     const cBody = this.character.body;
     cBody.setVelocityY(-this.JUMP_SPEED);
 
@@ -232,17 +193,26 @@ class GameScene extends Phaser.Scene {
     if (this.isRespawning) return;
     this.isRespawning = true;
 
-    // 라이프 감소
+    // 💫 반투명 + 깜빡임 트윈 시작
+    this.character.setAlpha(0.5);
+    this.tweens.add({
+      targets: this.character,
+      alpha: { from: 0.7, to: 1 },
+      duration: 100,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.InOut',
+      onStart: () => (this.character.alpha = 0.5),
+    });
+
     this.lives = Math.max(0, this.lives - 1);
     this.refreshLivesUI();
 
     if (this.lives <= 0) {
-      // TODO: 게임오버 처리
       this.character.disableBody(true, true);
       return;
     }
 
-    // 리스폰 시작
     const { width, height } = this.cameras.main;
     this.respawnTargetY = height / 3;
 
@@ -254,7 +224,6 @@ class GameScene extends Phaser.Scene {
     body.setVelocity(0, 0);
     body.setAllowGravity(true);
 
-    // 리스폰 점프 (자연스러운 포물선)
     const g = this.physics.world.gravity.y;
     const deltaH = (this.character.y - this.respawnTargetY);
     const v0 = Math.sqrt(2 * g * deltaH);
@@ -275,18 +244,29 @@ class GameScene extends Phaser.Scene {
   }
 
   // -------------------------------
-  // 🔁 매 프레임 업데이트
+  // 🔁 매 프레임
   // -------------------------------
   update() {
     if (!this.character.active) return;
     const cBody = this.character.body as Phaser.Physics.Arcade.Body;
 
-    // 리스폰 중 → 하강 시작되면 자연스럽게 충돌 가능
+    // 💫 리스폰 중 → 하강 시작되면 깜빡임 해제 + 자연 복귀
     if (this.isRespawning && cBody.velocity.y > 0) {
       this.isRespawning = false;
+
+      // 깜빡임 중단
+      this.tweens.killTweensOf(this.character);
+
+      // 투명도 복귀 트윈
+      this.tweens.add({
+        targets: this.character,
+        alpha: 1,
+        duration: 400,
+        ease: 'Sine.Out',
+      });
     }
 
-    // 🔥 스윕 보정 (터널링 방지)
+    // 스윕 보정 (바 충돌)
     if (cBody.velocity.y > 0) {
       const barTop = this.bar.y - this.bar.displayHeight * 0.5;
       const charTop = this.character.y - this.character.displayHeight * 0.5;
@@ -297,27 +277,20 @@ class GameScene extends Phaser.Scene {
       const horizontalOverlap = c.right > b.left && c.left < b.right;
       const crossedDown = prevCharTop <= barTop && charTop >= barTop;
 
-      if (
-        horizontalOverlap &&
-        crossedDown &&
-        this.time.now - this.lastJumpAt >= this.JUMP_COOLDOWN
-      ) {
+      if (horizontalOverlap && crossedDown && this.time.now - this.lastJumpAt >= this.JUMP_COOLDOWN) {
         const targetY = barTop - this.character.displayHeight * 0.5;
         this.character.setY(targetY);
         this.handleJump();
       }
     }
 
-    // 포즈 상태
     if (!this.isRespawning) {
       const vy = cBody.velocity.y;
       if (vy === 0) this.setPose('sit');
       else if (vy > 0) this.setPose('character');
     }
 
-    // 화면 아래 체크
     this.checkOffscreenAndProcess();
-
     this.prevCharY = this.character.y;
   }
 }
