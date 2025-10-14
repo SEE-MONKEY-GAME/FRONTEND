@@ -1,4 +1,5 @@
 /** @jsxImportSource @emotion/react */
+import { useNavigate } from 'react-router-dom';
 import HomeCanvas from '@canvas/home-canvas';
 import {
   backgroundCss,
@@ -15,12 +16,18 @@ import {
 import { getImage } from '@utils/get-images';
 
 const Home = () => {
+  const navigate = useNavigate();
+
   const help = getImage('home', 'icon_help');
   const check = getImage('home', 'icon_check');
   const rank = getImage('home', 'icon_ranking');
   const shop = getImage('home', 'icon_shop');
   const etc = getImage('home', 'icon_etc');
   const gameStart = getImage('home', 'button_game_start_default');
+
+  const handleGameStart = () => {
+    navigate('/game'); 
+  };
 
   return (
     <div css={backgroundCss}>
@@ -47,7 +54,7 @@ const Home = () => {
         </div>
       </div>
 
-      <div css={gameStartButtonCss}>
+      <div css={gameStartButtonCss} onClick={handleGameStart}>
         <img src={gameStart} alt="게임 시작 버튼" css={gameStartButtonImageCss} />
       </div>
     </div>
