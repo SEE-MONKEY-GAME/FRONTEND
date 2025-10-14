@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { getImage } from '@utils/get-images';
 
+export const FEVER_DURATION_MS = 8000; 
+
 class GameScene extends Phaser.Scene {
   private bar!: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
   private character!: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
@@ -50,7 +52,7 @@ class GameScene extends Phaser.Scene {
   private feverUntil = 0;
   private feverProgress = 0;              
   private readonly FEVER_GOAL = 20;       // 과일 개수
-  private readonly FEVER_DURATION = 6000; // 지속 시간
+  private readonly FEVER_DURATION = FEVER_DURATION_MS; // 지속 시간
 
   constructor() {
     super('Game');

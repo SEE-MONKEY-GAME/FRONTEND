@@ -5,8 +5,7 @@ import {
   currentScoreCss, coinCss, coinTextCss,
   feverWrapCss, feverEmptyCss, feverFullCss, feverBadgeCss
 } from '@styles/pages/game.css';
-
-const FEVER_DURATION_MS = 6000; 
+import {FEVER_DURATION_MS} from '@scenes/game-scene'
 
 export default function GamePage() {
   const [score, setScore] = useState(0);
