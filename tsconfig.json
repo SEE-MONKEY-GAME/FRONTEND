@@ -12,6 +12,7 @@
       "@scenes/*": ["scenes/*"],
       "@styles/*": ["styles/*"],
       "@types/*": ["types/*"],
+      "@hooks/*": ["hooks/*"],
       "@utils/*": ["utils/*"]
     }
   },
