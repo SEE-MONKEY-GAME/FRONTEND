@@ -65,7 +65,10 @@ class GameScene extends Phaser.Scene {
   private readonly POSE_RETRIGGER_ADD = 100;
   private readonly POSE_MAX_MS = 300;
 
-    private readonly CHARACTER_SCALE = 0.13; 
+  private readonly CHARACTER_SCALE = 0.13;
+
+  // ==== 골드 전용 회전 트윈 ====
+  private spinTween?: Phaser.Tweens.Tween;
 
   constructor() {
     super('Game');
@@ -81,7 +84,7 @@ class GameScene extends Phaser.Scene {
     this.load.image('jump', getImage('game', 'jump-monkey'));
     this.load.image('ljump', getImage('game', 'ljump-monkey'));
     this.load.image('rjump', getImage('game', 'rjump-monkey'));
-    // 아이템 획득 시 포즈용 (파일명/경로는 실제 보유 리소스에 맞춰 수정)
+    // 아이템 획득 시 포즈용 (파일명/경로는 실제 리소스에 맞춰 수정)
     this.load.image('jump_item', getImage('game', 'jump-monkey-item'));
     this.load.image('ljump_item', getImage('game', 'ljump-monkey-item'));
     this.load.image('rjump_item', getImage('game', 'rjump-monkey-item'));
@@ -271,7 +274,7 @@ class GameScene extends Phaser.Scene {
     const vx = this.barVX * 15;
     cBody.setVelocityX(vx);
 
-    // 점프 직후 방향별 포즈(단, 아이템 포즈 중일 때는 건드리지 않음)
+    // 점프 직후 방향별 포즈(아이템 포즈 중이면 건드리지 않음)
     this.time.delayedCall(50, () => {
       if (!this.character.active || this.poseActive) return;
       const vxx = cBody.velocity.x;
@@ -303,12 +306,40 @@ class GameScene extends Phaser.Scene {
     this.setPose(key);
   }
 
-  private triggerItemPose(dir: 'up' | 'left' | 'right') {
+  // ==== 골드 회전 트윈 ====
+  private startSpin() {
+    this.stopSpin(); // 중복 방지
+    this.character.setAngle(0);
+    this.spinTween = this.tweens.add({
+      targets: this.character,
+      angle: 360,
+      duration: 300, // 1바퀴 (필요하면 220~360ms에서 조절)
+      ease: 'Linear',
+      repeat: -1,
+    });
+  }
+
+  private stopSpin() {
+    if (this.spinTween) {
+      this.spinTween.stop();
+      this.spinTween.remove();
+      this.spinTween = undefined;
+    }
+    this.character.setAngle(0);
+  }
+
+  private triggerItemPose(
+    dir: 'up' | 'left' | 'right',
+    opts?: { spin?: boolean }
+  ) {
     this.lastDir = dir;
 
     const itemKey =
       dir === 'left' ? 'ljump_item' : dir === 'right' ? 'rjump_item' : 'jump_item';
     this.setPose(itemKey);
+
+    // 골드 전용 회전
+    if (opts?.spin) this.startSpin();
 
     const now = this.time.now;
     const base = this.poseActive ? this.POSE_RETRIGGER_ADD : this.POSE_BASE_MS;
@@ -321,6 +352,8 @@ class GameScene extends Phaser.Scene {
   private handleFallOut() {
     if (this.isRespawning) return;
     this.isRespawning = true;
+
+    this.stopSpin(); // 회전 정리
 
     // 무적 깜빡임
     this.character.setAlpha(0.5);
@@ -522,7 +555,10 @@ class GameScene extends Phaser.Scene {
     const cBody = this.character.body as Phaser.Physics.Arcade.Body;
     let dir: 'up' | 'left' | 'right' = 'up';
     if (Math.abs(cBody.velocity.x) > 10) dir = cBody.velocity.x < 0 ? 'left' : 'right';
-    this.triggerItemPose(dir);
+
+    // 골드인지 판정 → 스핀 연출
+    const isGold = tex === 'gbana' || val >= 10;
+    this.triggerItemPose(dir, { spin: isGold });
   }
 
   // ===== 프레임 루프 =====
@@ -574,6 +610,7 @@ class GameScene extends Phaser.Scene {
 
       if (minHoldOk && (deadlinePassed || apexPassed)) {
         this.poseActive = false;
+        this.stopSpin();            // 회전 정리
         this.applyNormalJumpPose();
       }
     } else {
@@ -581,7 +618,7 @@ class GameScene extends Phaser.Scene {
       if (!this.isRespawning) {
         if (vy === 0) this.setPose('sit');
         else if (vy > 0) this.setPose('character'); // 하강 중 기본 텍스처
-        // 상승 중 기본 포즈는 handleJump()의 지연 로직이 설정
+        // 상승 중 기본 포즈는 handleJump() 지연 로직에서 설정
       }
     }
 
