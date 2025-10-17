@@ -17,7 +17,6 @@ export default function GamePage() {
   const [score, setScore] = useState(0);
   const [coin, setCoin] = useState(0);
 
-  // Game Over 모달 상태
   const [isGameOver, setIsGameOver] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
   const [finalCoin, setFinalCoin] = useState(0);
@@ -31,7 +30,6 @@ export default function GamePage() {
     drainMs: FEVER_DURATION_MS,
   });
 
-  // 점수/코인/피버 이벤트
   useEffect(() => {
     const onScore = (e: CustomEvent<{ score: number }>) => setScore(e.detail.score);
     const onCoin = (e: CustomEvent<{ coin: number }>) => setCoin(e.detail.coin);
@@ -51,7 +49,6 @@ export default function GamePage() {
     };
   }, [setTarget, startDrain]);
 
-  // (선택) 아이템 낙찰 이벤트
   useEffect(() => {
     const onItem = (e: CustomEvent<{ count: number }>) => {
       nudgeByItems(e.detail.count, 20);
@@ -60,7 +57,6 @@ export default function GamePage() {
     return () => window.removeEventListener('game:item', onItem as EventListener);
   }, [nudgeByItems]);
 
-  // 게임오버 이벤트 수신 → 모달 열기
   useEffect(() => {
     const onOver = (e: CustomEvent<{ score: number; coin: number }>) => {
       setFinalScore(e.detail.score);
@@ -71,7 +67,6 @@ export default function GamePage() {
     return () => window.removeEventListener('game:over', onOver as EventListener);
   }, []);
 
-  // REPLAY → Phaser Scene 재시작 신호
   const replay = () => {
     window.dispatchEvent(new Event('game:replay'));
     setIsGameOver(false);
@@ -96,7 +91,6 @@ export default function GamePage() {
         </div>
       </div>
 
-      {/* 게임오버 모달 */}
       <GameOverModal
         open={isGameOver}
         score={finalScore}
