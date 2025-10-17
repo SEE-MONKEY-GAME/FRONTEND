@@ -16,7 +16,7 @@ class GameScene extends Phaser.Scene {
   private readonly JUMP_SPEED = 600;
   private readonly JUMP_COOLDOWN = 120;
 
-  // ==== 스폰/난이도 ====
+  // 스폰/난이도 
   private readonly SPAWN_PER_FRAME_LIMIT = 3;
   private readonly BANANA_PROB_TABLE: Array<{
     untilM: number;
@@ -34,27 +34,27 @@ class GameScene extends Phaser.Scene {
   private respawnTargetY = 0;
   private readonly RESPAWN_OFFSET = 120;
 
-  // ==== 점수 ====
+  // 점수
   private readonly PX_PER_M = 10;
   private totalAscentPx = 0;
   private lastYForScore = 0;
   private lastEmittedMeters = -1;
 
-  // ==== 바나나/코인 ====
+  // 바나나,코인 
   private scrollY = 0;
   private lastSpawnScrollY = 0;
   private readonly SPAWN_GAP_PX = 120;
   private bananaGroup!: Phaser.Physics.Arcade.Group;
   private coin = 0;
 
-  // ==== 피버 ====
+  // 피버 
   private feverActive = false;
   private feverUntil = 0;
   private feverProgress = 0;
-  private readonly FEVER_GOAL = 20; // 과일 개수
+  private readonly FEVER_GOAL = 20; 
   private readonly FEVER_DURATION = FEVER_DURATION_MS;
 
-  // ==== 아이템 포즈 연출 ====
+  // 아이템 포즈 연출
   private lastDir: 'up' | 'left' | 'right' = 'up';
   private prevVy = 0;
 
@@ -67,8 +67,37 @@ class GameScene extends Phaser.Scene {
 
   private readonly CHARACTER_SCALE = 0.13;
 
-  // ==== 골드 전용 회전 트윈 ====
   private spinTween?: Phaser.Tweens.Tween;
+
+  // 장애물
+  private gorillaGroup!: Phaser.Physics.Arcade.Group;
+  private readonly GORILLA_SCALE = 0.33;
+  private readonly GORILLA_MAX_ON_SCREEN = 3;
+  private readonly GORILLA_MIN_SPEED = 80;
+  private readonly GORILLA_MAX_SPEED = 140;
+  private readonly GORILLA_FALL_SPEED = 60;   
+  private readonly GORILLA_KNOCKBACK_X = 480;
+  private readonly GORILLA_KNOCKBACK_Y = 480;
+  private readonly GORILLA_HIT_COOLDOWN = 400; 
+  private readonly GORILLA_SPAWN_PROB_PER_SLOT = 0.15; 
+
+  private gameOver = false;
+private onReplay = () => {
+  if (!this.scene.isActive()) return;
+
+  // 상태 초기화
+  this.gameOver = false;
+  this.lives = 3;      
+  this.coin = 0;           
+  this.totalAscentPx = 0;  
+  this.feverActive = false;
+  this.feverProgress = 0;
+
+  // 재시작
+  this.physics.resume();
+  this.input.enabled = true;
+  this.scene.restart();
+};
 
   constructor() {
     super('Game');
@@ -84,11 +113,9 @@ class GameScene extends Phaser.Scene {
     this.load.image('jump', getImage('game', 'jump-monkey'));
     this.load.image('ljump', getImage('game', 'ljump-monkey'));
     this.load.image('rjump', getImage('game', 'rjump-monkey'));
-    // 아이템 획득 시 포즈용 (파일명/경로는 실제 리소스에 맞춰 수정)
     this.load.image('jump_item', getImage('game', 'jump-monkey-item'));
     this.load.image('ljump_item', getImage('game', 'ljump-monkey-item'));
     this.load.image('rjump_item', getImage('game', 'rjump-monkey-item'));
-
     this.load.image('flife', getImage('game', 'life_full'));
     this.load.image('elife', getImage('game', 'life_empty'));
     this.load.image('nbana', getImage('game', 'banana_normal'));
@@ -96,6 +123,10 @@ class GameScene extends Phaser.Scene {
     this.load.image('gbana', getImage('game', 'banana_gold'));
     this.load.image('fullguage', getImage('game', 'full_guage_bar'));
     this.load.image('emptyguage', getImage('game', 'empty_guage_bar'));
+    this.load.image('gori_block_L', getImage('game', 'gorilla_block_left'));
+    this.load.image('gori_block_R', getImage('game', 'gorilla_block_right'));
+    this.load.image('gori_thief_L', getImage('game', 'gorilla_thief_left'));
+    this.load.image('gori_thief_R', getImage('game', 'gorilla_thief_right'));
   }
 
   create() {
@@ -103,6 +134,11 @@ class GameScene extends Phaser.Scene {
 
     this.physics.world.setBounds(0, 0, width, height);
     this.physics.world.gravity.y = 1200;
+
+    window.addEventListener('game:replay', this.onReplay);
+    this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+      window.removeEventListener('game:replay', this.onReplay);
+    });
 
     // 캐릭터
     this.character = this.physics.add
@@ -142,14 +178,8 @@ class GameScene extends Phaser.Scene {
       this.tweens.add({ targets: countdown, scale: 0.6, duration: 300, ease: 'Back.Out' });
     };
     playFlash();
-    this.time.delayedCall(1000, () => {
-      countdown.setTexture('num2');
-      playFlash();
-    });
-    this.time.delayedCall(2000, () => {
-      countdown.setTexture('num1');
-      playFlash();
-    });
+    this.time.delayedCall(1000, () => { countdown.setTexture('num2'); playFlash(); });
+    this.time.delayedCall(2000, () => { countdown.setTexture('num1'); playFlash(); });
     this.time.delayedCall(3000, () => {
       (this.character.body as Phaser.Physics.Arcade.Body).setAllowGravity(true);
       countdown.destroy();
@@ -174,7 +204,7 @@ class GameScene extends Phaser.Scene {
       this.prevBarX = this.bar.x;
     });
 
-    // 캐릭터-바 충돌
+    // 캐릭터,바 충돌
     this.barCollider = this.physics.add.collider(
       this.character,
       this.bar,
@@ -182,55 +212,54 @@ class GameScene extends Phaser.Scene {
       () => this.canJumpFromAbove()
     );
 
-    // 좌/우 투명벽
+    // 좌,우 투명벽
     const worldW = width;
     const worldH = height;
     const WALL_THICKNESS = 40;
-    const leftWall = this.add.rectangle(
-      -WALL_THICKNESS / 2,
-      worldH / 2,
-      WALL_THICKNESS,
-      worldH * 3,
-      0x000000,
-      0
-    );
-    const rightWall = this.add.rectangle(
-      worldW + WALL_THICKNESS / 2,
-      worldH / 2,
-      WALL_THICKNESS,
-      worldH * 3,
-      0x000000,
-      0
-    );
+    const leftWall = this.add.rectangle(-WALL_THICKNESS / 2, worldH / 2, WALL_THICKNESS, worldH * 3, 0x000000, 0);
+    const rightWall = this.add.rectangle(worldW + WALL_THICKNESS / 2, worldH / 2, WALL_THICKNESS, worldH * 3, 0x000000, 0);
     this.physics.add.existing(leftWall, true);
     this.physics.add.existing(rightWall, true);
     this.physics.add.collider(this.character, leftWall as any);
     this.physics.add.collider(this.character, rightWall as any);
 
-    // 바나나 그룹 + 수집 오버랩
+    // 바나나
     this.bananaGroup = this.physics.add.group({ allowGravity: false, immovable: true });
-
     this.physics.add.overlap(
       this.character,
       this.bananaGroup,
       (_ch, item) => this.collectBanana(item as Phaser.Types.Physics.Arcade.ImageWithDynamicBody),
       (_obj1: any, obj2: any): boolean => {
-        const go = obj2 as Phaser.GameObjects.GameObject & {
-          getData?: (key: string) => any;
-          active?: boolean;
-        };
+        const go = obj2 as Phaser.GameObjects.GameObject & { getData?: (k: string) => any; active?: boolean };
         if (!go || typeof go.getData !== 'function' || !go.active) return false;
         return !go.getData('collected');
       },
       this
     );
 
-    // 초기 코인/피버 이벤트
+    // 고릴라
+    this.gorillaGroup = this.physics.add.group({ allowGravity: false, immovable: true });
+  this.physics.add.overlap(
+  this.character,
+  this.gorillaGroup,
+  (_ch, g) => this.hitGorilla(g as Phaser.Types.Physics.Arcade.ImageWithDynamicBody),
+  (_ch: any, g: any) => {
+    if (this.isRespawning) return false;
+    const go = g as Phaser.GameObjects.GameObject & { getData?: (k: string) => any; active?: boolean };
+    if (!go || typeof go.getData !== 'function' || !go.active) return false;
+    const hitUntil = Number(go.getData('hitUntil') ?? 0);
+    return this.time.now >= hitUntil; 
+  },
+  this
+);
+
+
+    // 초기 이벤트
     this.emitCoin(this.coin);
     this.emitFever(0, false, 0);
   }
 
-  // ===== 라이프 UI =====
+  // 라이프 UI 
   private createLivesUI() {
     const { height } = this.cameras.main;
     const pad = 16;
@@ -256,7 +285,7 @@ class GameScene extends Phaser.Scene {
     }
   }
 
-  // ===== 점프 처리 =====
+  // 점프 처리
   private canJumpFromAbove() {
     if (this.time.now - this.lastJumpAt < this.JUMP_COOLDOWN) return false;
     const cBody = this.character.body as Phaser.Physics.Arcade.Body;
@@ -270,11 +299,9 @@ class GameScene extends Phaser.Scene {
     if (!this.character.active) return;
     const cBody = this.character.body as Phaser.Physics.Arcade.Body;
     cBody.setVelocityY(-this.JUMP_SPEED);
-
     const vx = this.barVX * 15;
     cBody.setVelocityX(vx);
 
-    // 점프 직후 방향별 포즈(아이템 포즈 중이면 건드리지 않음)
     this.time.delayedCall(50, () => {
       if (!this.character.active || this.poseActive) return;
       const vxx = cBody.velocity.x;
@@ -288,15 +315,7 @@ class GameScene extends Phaser.Scene {
   }
 
   private setPose(
-    key:
-      | 'character'
-      | 'sit'
-      | 'jump'
-      | 'ljump'
-      | 'rjump'
-      | 'jump_item'
-      | 'ljump_item'
-      | 'rjump_item'
+    key: 'character' | 'sit' | 'jump' | 'ljump' | 'rjump' | 'jump_item' | 'ljump_item' | 'rjump_item'
   ) {
     if (this.character.texture.key !== key) this.character.setTexture(key);
   }
@@ -306,14 +325,13 @@ class GameScene extends Phaser.Scene {
     this.setPose(key);
   }
 
-  // ==== 골드 회전 트윈 ====
   private startSpin() {
-    this.stopSpin(); // 중복 방지
+    this.stopSpin();
     this.character.setAngle(0);
     this.spinTween = this.tweens.add({
       targets: this.character,
       angle: 360,
-      duration: 300, // 1바퀴 (필요하면 220~360ms에서 조절)
+      duration: 300,
       ease: 'Linear',
       repeat: -1,
     });
@@ -328,17 +346,10 @@ class GameScene extends Phaser.Scene {
     this.character.setAngle(0);
   }
 
-  private triggerItemPose(
-    dir: 'up' | 'left' | 'right',
-    opts?: { spin?: boolean }
-  ) {
+  private triggerItemPose(dir: 'up' | 'left' | 'right', opts?: { spin?: boolean }) {
     this.lastDir = dir;
-
-    const itemKey =
-      dir === 'left' ? 'ljump_item' : dir === 'right' ? 'rjump_item' : 'jump_item';
+    const itemKey = dir === 'left' ? 'ljump_item' : dir === 'right' ? 'rjump_item' : 'jump_item';
     this.setPose(itemKey);
-
-    // 골드 전용 회전
     if (opts?.spin) this.startSpin();
 
     const now = this.time.now;
@@ -348,18 +359,16 @@ class GameScene extends Phaser.Scene {
     this.poseActive = true;
   }
 
-  // ===== 낙하/리스폰 =====
+  // 낙하,리스폰 
   private handleFallOut() {
     if (this.isRespawning) return;
     this.isRespawning = true;
 
-    this.stopSpin(); // 회전 정리
-
-    // 무적 깜빡임
+    this.stopSpin();
     this.character.setAlpha(0.5);
     this.tweens.add({
       targets: this.character,
-      alpha: { from: 0.7, to: 1 },
+      alpha: { from: 0.6, to: 1 },
       duration: 100,
       yoyo: true,
       repeat: -1,
@@ -369,10 +378,22 @@ class GameScene extends Phaser.Scene {
     this.lives = Math.max(0, this.lives - 1);
     this.refreshLivesUI();
 
-    if (this.lives <= 0) {
-      this.character.disableBody(true, true);
-      return;
-    }
+   if (this.lives <= 0) {
+  // 게임 오버
+  this.gameOver = true;
+  this.physics.pause();
+  this.input.enabled = false;
+
+  // 게임 오버 창
+  const finalScore = this.getMeters();
+  const finalCoin = this.coin;
+  window.dispatchEvent(new CustomEvent('game:over', {
+    detail: { score: finalScore, coin: finalCoin }
+  }));
+
+  this.character.disableBody(true, true);
+  return;
+}
 
     const { width, height } = this.cameras.main;
     this.respawnTargetY = height / 3;
@@ -404,7 +425,7 @@ class GameScene extends Phaser.Scene {
     }
   }
 
-  // ===== React 이벤트 발행 =====
+  // React 이벤트 
   private emitScore(meters: number) {
     if (meters === this.lastEmittedMeters) return;
     this.lastEmittedMeters = meters;
@@ -416,12 +437,10 @@ class GameScene extends Phaser.Scene {
   }
 
   private emitFever(progress01: number, active: boolean, timeLeftMs: number = 0) {
-    window.dispatchEvent(
-      new CustomEvent('game:fever', { detail: { progress: progress01, active, timeLeftMs } })
-    );
+    window.dispatchEvent(new CustomEvent('game:fever', { detail: { progress: progress01, active, timeLeftMs } }));
   }
 
-  // ===== 피버 =====
+  // 피버 
   private startFever() {
     this.feverActive = true;
     this.feverUntil = this.time.now + this.FEVER_DURATION;
@@ -434,7 +453,7 @@ class GameScene extends Phaser.Scene {
     this.emitFever(this.feverProgress / this.FEVER_GOAL, false, 0);
   }
 
-  // ===== 스폰/업데이트 =====
+  // 스폰/업데이트 공통
   private getMeters(): number {
     return Math.floor(this.totalAscentPx / this.PX_PER_M);
   }
@@ -461,6 +480,7 @@ class GameScene extends Phaser.Scene {
     return { key: 'nbana', value: 1, scale: 0.18 };
   }
 
+  // 바나나
   private spawnBanana() {
     const { width } = this.cameras.main;
     const meters = this.getMeters();
@@ -481,11 +501,7 @@ class GameScene extends Phaser.Scene {
     item.setY(startScreenY);
 
     const radius = Math.max(10, item.displayWidth * 0.35);
-    item.body.setCircle(
-      radius,
-      item.displayWidth * 0.5 - radius,
-      item.displayHeight * 0.5 - radius
-    );
+    item.body.setCircle(radius, item.displayWidth * 0.5 - radius, item.displayHeight * 0.5 - radius);
   }
 
   private updateBananas() {
@@ -525,45 +541,115 @@ class GameScene extends Phaser.Scene {
 
     item.disableBody(true, true);
 
-    // 작게 터지는 연출
     const ghost = this.add.image(x, y, tex).setScale(scale).setDepth(10);
-    this.tweens.add({
-      targets: ghost,
-      scale: scale * 1.25,
-      alpha: 0,
-      duration: 150,
-      onComplete: () => ghost.destroy(),
-    });
+    this.tweens.add({ targets: ghost, scale: scale * 1.25, alpha: 0, duration: 150, onComplete: () => ghost.destroy() });
 
-    // 코인
     this.coin += val;
     this.emitCoin(this.coin);
 
-    // 피버
     if (this.feverActive) {
       this.emitFever(0, true, Math.max(0, this.feverUntil - this.time.now));
     } else {
       this.feverProgress = Math.min(this.FEVER_GOAL, this.feverProgress + 1);
       this.emitFever(this.feverProgress / this.FEVER_GOAL, false, 0);
-
-      if (this.feverProgress >= this.FEVER_GOAL) {
-        this.startFever();
-      }
+      if (this.feverProgress >= this.FEVER_GOAL) this.startFever();
     }
 
-    // === 아이템 포즈 트리거 ===
     const cBody = this.character.body as Phaser.Physics.Arcade.Body;
     let dir: 'up' | 'left' | 'right' = 'up';
     if (Math.abs(cBody.velocity.x) > 10) dir = cBody.velocity.x < 0 ? 'left' : 'right';
-
-    // 골드인지 판정 → 스핀 연출
     const isGold = tex === 'gbana' || val >= 10;
     this.triggerItemPose(dir, { spin: isGold });
   }
 
-  // ===== 프레임 루프 =====
-  update() {
-    if (!this.character.active) return;
+  // 고릴라
+  private spawnGorilla() {
+    const { width } = this.cameras.main;
+    const type: 'block' | 'thief' = Math.random() < 0.5 ? 'block' : 'thief';
+    const dir: -1 | 1 = Math.random() < 0.5 ? -1 : 1;
+
+    const x = Phaser.Math.Between(60, width - 60);
+    const startScreenY = -Phaser.Math.Between(100, 180);
+
+    const key = this.getGorillaKey(type, dir);
+    const g = this.gorillaGroup.create(x, 0, key) as Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
+    g.setScale(this.GORILLA_SCALE).setOrigin(0.5);
+    g.body.setAllowGravity(false).setImmovable(true);
+
+    g.setData('type', type);
+    g.setData('dir', dir);
+    g.setData('speed', Phaser.Math.Between(this.GORILLA_MIN_SPEED, this.GORILLA_MAX_SPEED));
+    g.setData('hitUntil', 0);
+    g.setData('startScreenY', startScreenY);
+    g.setData('spawnScroll', this.scrollY);
+
+    g.setY(startScreenY);
+  }
+
+  private getGorillaKey(type: 'block' | 'thief', dir: -1 | 1) {
+    if (type === 'block') return dir === -1 ? 'gori_block_L' : 'gori_block_R';
+    return dir === -1 ? 'gori_thief_L' : 'gori_thief_R';
+  }
+
+  private updateGorillas(delta: number) {
+    const { width, height } = this.cameras.main;
+    const dt = delta / 1000;
+    const toKill: Phaser.GameObjects.GameObject[] = [];
+
+    this.gorillaGroup.children.iterate((child: Phaser.GameObjects.GameObject) => {
+      const g = child as Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
+      if (!g.active) return true;
+
+      const startScreenY = Number(g.getData('startScreenY') ?? 0);
+      const spawnScroll = Number(g.getData('spawnScroll') ?? 0);
+      const y = startScreenY + (this.scrollY - spawnScroll) + this.GORILLA_FALL_SPEED * dt;
+      g.setY(y);
+
+      let dir = g.getData('dir') as -1 | 1;
+      const type = g.getData('type') as 'block' | 'thief';
+      const speed = g.getData('speed') as number;
+
+      g.x += dir * speed * dt;
+
+      const margin = 30;
+      if (g.x < margin) {
+        dir = 1;
+        g.setTexture(this.getGorillaKey(type, dir));
+      } else if (g.x > width - margin) {
+        dir = -1;
+        g.setTexture(this.getGorillaKey(type, dir));
+      }
+      g.setData('dir', dir);
+
+      if (y > height + 100) toKill.push(g);
+      return true;
+    });
+
+    for (const g of toKill) (g as Phaser.Types.Physics.Arcade.ImageWithDynamicBody).destroy();
+  }
+
+private hitGorilla(g: Phaser.Types.Physics.Arcade.ImageWithDynamicBody) {
+  if (this.isRespawning) return;
+
+  const hitUntil = Number(g.getData('hitUntil') ?? 0);
+  if (this.time.now < hitUntil) return;
+  g.setData('hitUntil', this.time.now + this.GORILLA_HIT_COOLDOWN);
+
+  const cBody = this.character.body as Phaser.Physics.Arcade.Body;
+  const pushLeft = this.character.x > g.x;
+  cBody.setVelocityX(pushLeft ? this.GORILLA_KNOCKBACK_X : -this.GORILLA_KNOCKBACK_X);
+  cBody.setVelocityY(-this.GORILLA_KNOCKBACK_Y);
+
+  if ((g.getData('type') as string) === 'thief') {
+    this.coin = Math.max(0, this.coin - 5);
+    this.emitCoin(this.coin);
+  }
+}
+
+
+  // 프레임 루프
+  update(_time: number, delta: number) {
+    if (!this.character.active || this.gameOver) return;
     const cBody = this.character.body as Phaser.Physics.Arcade.Body;
 
     // 리스폰 해제
@@ -592,37 +678,33 @@ class GameScene extends Phaser.Scene {
       }
     }
 
-    // 방향 추적 (평소 lastDir 업데이트)
+    // 방향 추적
     if (Math.abs(cBody.velocity.x) > 10) {
       this.lastDir = cBody.velocity.x < 0 ? 'left' : 'right';
     } else {
       this.lastDir = 'up';
     }
 
-    // === 아이템 포즈 유지/해제 로직 ===
+    // 아이템 포즈 유지,해제
     const now = this.time.now;
     const vy = cBody.velocity.y;
-    const apexPassed = this.prevVy < 0 && vy >= 0; // 상승→하강 전환
-
+    const apexPassed = this.prevVy < 0 && vy >= 0;
     if (this.poseActive) {
       const minHoldOk = now >= this.poseUntil - (this.POSE_BASE_MS - this.POSE_MIN_MS);
       const deadlinePassed = now >= this.poseUntil;
-
       if (minHoldOk && (deadlinePassed || apexPassed)) {
         this.poseActive = false;
-        this.stopSpin();            // 회전 정리
+        this.stopSpin();
         this.applyNormalJumpPose();
       }
     } else {
-      // 아이템 포즈 중이 아닐 때만 기본 포즈 갱신
       if (!this.isRespawning) {
         if (vy === 0) this.setPose('sit');
-        else if (vy > 0) this.setPose('character'); // 하강 중 기본 텍스처
-        // 상승 중 기본 포즈는 handleJump() 지연 로직에서 설정
+        else if (vy > 0) this.setPose('character');
       }
     }
 
-    // 점수/스폰
+    // 점수,스폰
     if (!this.isRespawning) {
       const dyUp = Math.max(0, this.lastYForScore - this.character.y);
       if (dyUp > 0) {
@@ -636,14 +718,17 @@ class GameScene extends Phaser.Scene {
         const curMeters = this.getMeters();
         const spawnChance = this.getSpawnChance(curMeters);
 
-        while (
-          this.scrollY - this.lastSpawnScrollY >= this.SPAWN_GAP_PX &&
-          spawned < this.SPAWN_PER_FRAME_LIMIT
-        ) {
+        while (this.scrollY - this.lastSpawnScrollY >= this.SPAWN_GAP_PX && spawned < this.SPAWN_PER_FRAME_LIMIT) {
           this.lastSpawnScrollY += this.SPAWN_GAP_PX;
+
           if (Math.random() < spawnChance) {
             this.spawnBanana();
             spawned++;
+          }
+
+          // 고릴라 최대 수 제한
+          if (this.gorillaGroup.getLength() < this.GORILLA_MAX_ON_SCREEN && Math.random() < this.GORILLA_SPAWN_PROB_PER_SLOT) {
+            this.spawnGorilla();
           }
         }
       }
@@ -651,16 +736,12 @@ class GameScene extends Phaser.Scene {
     this.lastYForScore = this.character.y;
 
     this.updateBananas();
+    this.updateGorillas(delta);
 
-    // 피버 종료
-    if (this.feverActive && this.time.now >= this.feverUntil) {
-      this.stopFever();
-    }
+    if (this.feverActive && this.time.now >= this.feverUntil) this.stopFever();
 
-    // 화면 이탈 처리
     this.checkOffscreenAndProcess();
 
-    // 마지막 상태 저장
     this.prevVy = vy;
     this.prevCharY = this.character.y;
   }
