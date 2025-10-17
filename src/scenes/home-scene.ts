@@ -15,8 +15,8 @@ class HomeScene extends Phaser.Scene {
     const { width, height } = this.cameras.main;
 
     // 임시 요소
-    const temp = this.add.image(0, 0, 'platform');
-    temp.setScale(1.25);
+    const temp = this.add.image(500, 0, 'platform');
+    temp.setScale(3, 1.25);
     temp.setOrigin(0.5, 1);
     temp.setPosition(width / 2, 150);
 
