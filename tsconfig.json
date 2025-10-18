@@ -1,7 +1,7 @@
 {
   "files": [],
   "compilerOptions": {
-    "baseUrl": "./src",
+    "baseUrl": "src",
     "paths": {
       "@api/*": ["api/*"],
       "@assets/*": ["assets/*"],
