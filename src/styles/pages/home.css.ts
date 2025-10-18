@@ -65,10 +65,10 @@ export const gameStartButtonCss = css({
   textAlign: 'center',
   position: 'fixed',
   left: '50%',
-  bottom: '80px',
+  bottom: '10%',
   transform: 'translateX(-50%)',
 });
 
 export const gameStartButtonImageCss = css({
-  width: '216px',
+  width: '200px',
 });
