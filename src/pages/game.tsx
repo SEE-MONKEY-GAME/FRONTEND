@@ -9,8 +9,8 @@ import {
   feverEmptyCss,
 } from '@styles/pages/game.css';
 import { FEVER_DURATION_MS } from '@scenes/game-scene';
-import FeverGauge from '@components/feverGauge';
-import GameOverModal from '@components/GameOverModal';
+import FeverGauge from '@components/fever-gauge';
+import GameOverModal from '@components/gameover-modal';
 import { useFeverProgressAnimator } from '../hooks/useFeverProgressAnimator';
 
 export default function GamePage() {
