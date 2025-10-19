@@ -22,8 +22,8 @@ class GameScene extends Phaser.Scene {
     untilM: number;
     probs: { nbana: number; bbana: number; gbana: number };
   }> = [
-    { untilM: 50, probs: { nbana: 1.0, bbana: 0.0, gbana: 0.0 } },
-    { untilM: 150, probs: { nbana: 0.8, bbana: 0.2, gbana: 0.0 } },
+    { untilM: 1000, probs: { nbana: 0.9, bbana: 0.08, gbana: 0.02 } },
+    { untilM: 2000, probs: { nbana: 0.75, bbana: 0.2, gbana: 0.05 } },
     { untilM: Infinity, probs: { nbana: 0.6, bbana: 0.3, gbana: 0.1 } },
   ];
 
@@ -77,9 +77,168 @@ class GameScene extends Phaser.Scene {
   private readonly GORILLA_MAX_SPEED = 140;
   private readonly GORILLA_FALL_SPEED = 60;   
   private readonly GORILLA_KNOCKBACK_X = 480;
-  private readonly GORILLA_KNOCKBACK_Y = 480;
+  private readonly GORILLA_KNOCKBACK_Y = -480;
   private readonly GORILLA_HIT_COOLDOWN = 400; 
   private readonly GORILLA_SPAWN_PROB_PER_SLOT = 0.15; 
+
+  
+  // ====== 배경(세그먼트 스택 방식) ======
+  private segs: Array<{
+    img: Phaser.GameObjects.Image;
+    startTop: number;     // 생성 시 top 기준(Y)
+    spawnScroll: number;  // 생성 시 scrollY
+    height: number;       // displayHeight
+  }> = [];
+
+  private currentLoopKey = 'bg_jungle_loop';
+  private pendingStartKey: string | null = null;
+  private currentZone = 0;
+
+  private readonly ZONES = [
+    { startM: 0,    startKey: 'bg_jungle_start', loopKey: 'bg_jungle_loop' },
+    { startM: 1000, startKey: 'bg_sky_start',    loopKey: 'bg_sky_loop'    },
+    { startM: 2000, startKey: 'bg_space_start',  loopKey: 'bg_space_loop'  },
+  ];
+
+    // ===== 배경 초기화 =====
+private initBackground() {
+  const { height } = this.cameras.main;
+
+  // (A) 텍스처 필터를 NEAREST로 (이음새/블러 최소화)
+  ['bg_jungle_start','bg_jungle_loop','bg_sky_start','bg_sky_loop','bg_space_start','bg_space_loop']
+    .forEach(k => this.textures.get(k).setFilter(Phaser.Textures.FilterMode.NEAREST));
+
+  // (B) 내부 상태 리셋(리플레이 포함)
+  this.segs.forEach(s => s.img.destroy());
+  this.segs = [];
+  this.scrollY = 0;                // ← 시작 스크롤 확실히 0
+  this.currentZone = 0;
+  this.currentLoopKey = this.ZONES[0].loopKey;
+  this.pendingStartKey = null;
+
+  // (C) 첫 장(start) 추가 후 위로 채움
+  const startKey = this.ZONES[0].startKey;
+  this.createSegment(startKey, 0, true);
+  this.fillAbove();
+}
+
+
+
+  // ===== 구간 인덱스 계산 =====
+  private getZoneIndexByMeters(m: number) {
+    if (m >= 2000) return 2;
+    if (m >= 1000) return 1;
+    return 0;
+  }
+
+private createSegment(key: string, currentTopY: number, fitTop = false): number {
+  const { width } = this.cameras.main;
+  const tex = this.textures.get(key).getSourceImage() as HTMLImageElement;
+
+  // 기본 스케일
+  const rawScale = width / tex.width;
+
+  // 화면에 보이는 높이를 정수로 맞추기 위한 스케일 보정
+  const displayH = Math.round(tex.height * rawScale);
+  const scale = displayH / tex.height;
+
+  const img = this.add.image(width / 2, 0, key)
+    .setOrigin(0.5, 0)
+    .setScrollFactor(0)
+    .setDepth(-1000);
+  img.setScale(scale);
+
+  // 데이터 저장
+  img.setDataEnabled();
+  img.setData('startTop', currentTopY);
+  img.setData('spawnScroll', this.scrollY);
+
+  // 위치를 화면 좌표 기준으로 ‘정수’로 스냅
+  if (fitTop) img.setY(Math.round(currentTopY));
+
+  const seg = {
+    img,
+    startTop: currentTopY,
+    spawnScroll: this.scrollY,
+    height: displayH,                // 이미 정수!
+  };
+  this.segs.push(seg);
+
+  return seg.height;
+}
+
+private fillAbove() {
+  const { height } = this.cameras.main;
+  if (this.segs.length === 0) return;
+
+  // 현재 화면에서 가장 위쪽 세그먼트의 ‘현재 Y’를 정수로 계산
+  const topMost = this.segs.reduce((a, b) => {
+    const ay = a.startTop + (this.scrollY - a.spawnScroll);
+    const by = b.startTop + (this.scrollY - b.spawnScroll);
+    return ay < by ? a : b;
+  });
+  let currentTopY = Math.round(topMost.startTop + (this.scrollY - topMost.spawnScroll));
+
+  while (currentTopY > -height) {
+    // 다음에 붙일 키 결정
+    const nextKey = this.pendingStartKey ?? this.currentLoopKey;
+
+    // loop↔loop는 2px, start→loop는 1px 겹침
+    const OVERLAP_PX = (this.pendingStartKey ? 1 : 2);
+
+    const nextH = this.peekDisplayHeight(nextKey); // 정수 높이 반환되도록 구현해두면 좋음
+    const desiredCurrentY = Math.round(currentTopY - nextH + OVERLAP_PX);
+
+    this.createSegment(nextKey, desiredCurrentY, true);
+
+    if (this.pendingStartKey) {
+      const newZone = this.getZoneIndexByMeters(this.getMeters());
+      this.currentZone = newZone;
+      this.currentLoopKey = this.ZONES[newZone].loopKey;
+      this.pendingStartKey = null;
+    }
+
+    currentTopY = desiredCurrentY; // 정수 누적
+  }
+}
+
+
+private cullBelow() {
+  const { height } = this.cameras.main;
+  const margin = 4;
+
+  this.segs = this.segs.filter(seg => {
+    const top = seg.startTop + (this.scrollY - seg.spawnScroll);
+    const bottom = top + seg.height;
+
+    const stillOnOrAboveScreen = top < height + margin;
+    if (!stillOnOrAboveScreen) seg.img.destroy();
+    return stillOnOrAboveScreen;
+  });
+}
+
+
+private updateSegmentsY() {
+  for (const seg of this.segs) {
+    const y = seg.startTop + (this.scrollY - seg.spawnScroll);
+    seg.img.setY(Math.round(y));
+  }
+}
+
+    private handleZoneTransition() {
+    const m = this.getMeters();
+    const zoneIdx = this.getZoneIndexByMeters(m);
+    if (zoneIdx !== this.currentZone && this.pendingStartKey == null) {
+      this.pendingStartKey = this.ZONES[zoneIdx].startKey;
+    }
+  }
+
+    private peekDisplayHeight(key: string): number {
+    const { width } = this.cameras.main;
+    const tex = this.textures.get(key).getSourceImage() as HTMLImageElement;
+    const scale = width / tex.width;
+    return tex.height * scale;
+  }
 
   private gameOver = false;
 private onReplay = () => {
@@ -127,6 +286,16 @@ private onReplay = () => {
     this.load.image('gori_block_R', getImage('game', 'gorilla_block_right'));
     this.load.image('gori_thief_L', getImage('game', 'gorilla_thief_left'));
     this.load.image('gori_thief_R', getImage('game', 'gorilla_thief_right'));
+
+      // 1구간(정글)
+  this.load.image('bg_jungle_start', getImage('game', 'bg_jungle_start'));
+  this.load.image('bg_jungle_loop',  getImage('game', 'bg_jungle_loop'));
+  // 2구간(하늘)
+  this.load.image('bg_sky_start',    getImage('game', 'bg_sky_start'));
+  this.load.image('bg_sky_loop',     getImage('game', 'bg_sky_loop'));
+  // 3구간(우주)
+  this.load.image('bg_space_start',  getImage('game', 'bg_space_start'));
+  this.load.image('bg_space_loop',   getImage('game', 'bg_space_loop'));
   }
 
   create() {
@@ -134,6 +303,8 @@ private onReplay = () => {
 
     this.physics.world.setBounds(0, 0, width, height);
     this.physics.world.gravity.y = 1200;
+
+      this.initBackground();
 
     window.addEventListener('game:replay', this.onReplay);
     this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -737,6 +908,12 @@ private hitGorilla(g: Phaser.Types.Physics.Arcade.ImageWithDynamicBody) {
 
     this.updateBananas();
     this.updateGorillas(delta);
+
+  // ★ 배경 업데이트 (scrollY 반영 & 구간 전환 처리)
+    this.updateSegmentsY();     // scrollY 반영 → 아래로 흘러감
+    this.cullBelow();           // 화면 아래로 사라진 세그먼트 제거
+    this.handleZoneTransition();// 1000m/2000m에서 다음에 붙일 한 장만 start 예약
+    this.fillAbove();           // 위쪽 비면 위로 계속 채움
 
     if (this.feverActive && this.time.now >= this.feverUntil) this.stopFever();
 
