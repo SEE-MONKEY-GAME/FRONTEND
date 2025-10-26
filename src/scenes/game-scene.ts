@@ -16,7 +16,7 @@ class GameScene extends Phaser.Scene {
   private readonly JUMP_SPEED = 600;
   private readonly JUMP_COOLDOWN = 120;
 
-  // 스폰/난이도 
+  // 스폰 난이도 
   private readonly SPAWN_PER_FRAME_LIMIT = 3;
   private readonly BANANA_PROB_TABLE: Array<{
     untilM: number;
@@ -82,12 +82,12 @@ class GameScene extends Phaser.Scene {
   private readonly GORILLA_SPAWN_PROB_PER_SLOT = 0.15; 
 
   
-  // ====== 배경(세그먼트 스택 방식) ======
+  // 배경
   private segs: Array<{
     img: Phaser.GameObjects.Image;
-    startTop: number;     // 생성 시 top 기준(Y)
-    spawnScroll: number;  // 생성 시 scrollY
-    height: number;       // displayHeight
+    startTop: number;    
+    spawnScroll: number; 
+    height: number;      
   }> = [];
 
   private currentLoopKey = 'bg_jungle_loop';
@@ -96,45 +96,38 @@ class GameScene extends Phaser.Scene {
 
   private readonly ZONES = [
     { startM: 0,    startKey: 'bg_jungle_start', loopKey: 'bg_jungle_loop' },
-    { startM: 1000, startKey: 'bg_sky_start',    loopKey: 'bg_sky_loop'    },
+    { startM: 900, startKey: 'bg_sky_start',    loopKey: 'bg_sky_loop'    },
     { startM: 2000, startKey: 'bg_space_start',  loopKey: 'bg_space_loop'  },
   ];
 
-    // ===== 배경 초기화 =====
+    // 배경 초기화
 private initBackground() {
   const { height } = this.cameras.main;
 
-  // (A) 텍스처 필터를 NEAREST로 (이음새/블러 최소화)
-// initBackground()
 ['bg_jungle_start','bg_jungle_loop','bg_sky_start','bg_sky_loop','bg_space_start','bg_space_loop','bg_fever']
   .forEach(k => this.textures.get(k).setFilter(Phaser.Textures.FilterMode.NEAREST));
 
-// 리스et 시 오버레이들도 제거
 this.feverSegs.forEach(f => f.img.destroy());
 this.feverSegs = [];
 
-
-  // (B) 내부 상태 리셋(리플레이 포함)
   this.segs.forEach(s => s.img.destroy());
   this.segs = [];
-  this.scrollY = 0;                // ← 시작 스크롤 확실히 0
+  this.scrollY = 0;                
   this.currentZone = 0;
   this.currentLoopKey = this.ZONES[0].loopKey;
   this.pendingStartKey = null;
 
-  // (C) 첫 장(start) 추가 후 위로 채움
   const startKey = this.ZONES[0].startKey;
   this.createSegment(startKey, 0, true);
   this.fillAbove();
 }
 
-// 화면에 보이는 높이를 '정수'로 맞춘 스케일로 세그먼트 생성
 private createFeverSegment(currentTopY: number, fitTop = false): number {
   const { width } = this.cameras.main;
   const tex = this.textures.get('bg_fever').getSourceImage() as HTMLImageElement;
 
   const rawScale = width / tex.width;
-  const displayH = Math.round(tex.height * rawScale); // 정수 높이
+  const displayH = Math.round(tex.height * rawScale); 
   const scale = displayH / tex.height;
 
   const img = this.add.image(width / 2, 0, 'bg_fever')
@@ -154,7 +147,7 @@ private createFeverSegment(currentTopY: number, fitTop = false): number {
     img,
     startTop: currentTopY,
     spawnScroll: this.scrollY,
-    height: displayH, // 정수
+    height: displayH, 
   });
 
   return displayH;
@@ -163,7 +156,7 @@ private createFeverSegment(currentTopY: number, fitTop = false): number {
 private updateFeverSegmentsY() {
   for (const seg of this.feverSegs) {
     const y = seg.startTop + (this.scrollY - seg.spawnScroll);
-    seg.img.setY(Math.round(y)); // 정수 스냅
+    seg.img.setY(Math.round(y)); 
   }
 }
 
@@ -179,12 +172,10 @@ private cullFeverBelow() {
   });
 }
 
-// 화면 윗쪽이 비면 Fever 세그먼트 채우기
 private fillFeverAbove() {
   const { height } = this.cameras.main;
   if (this.feverSegs.length === 0) return;
 
-  // 현재 화면에서 가장 위쪽 Y
   const topMost = this.feverSegs.reduce((a, b) => {
     const ay = a.startTop + (this.scrollY - a.spawnScroll);
     const by = b.startTop + (this.scrollY - b.spawnScroll);
@@ -193,43 +184,37 @@ private fillFeverAbove() {
   let currentTopY = Math.round(topMost.startTop + (this.scrollY - topMost.spawnScroll));
 
   while (currentTopY > -height) {
-    const nextH = this.peekDisplayHeight('bg_fever'); // 정수 높이로 반환
+    const nextH = this.peekDisplayHeight('bg_fever');
     const desiredY = Math.round(currentTopY - nextH + this.FEVER_OVERLAP_PX);
     this.createFeverSegment(desiredY, true);
     currentTopY = desiredY;
   }
 }
 
-// ▼ 아래쪽(현재 화면의 바닥까지) 비면 계속 추가로 붙여서 즉시 덮기
 private fillFeverBelow() {
   const { height } = this.cameras.main;
   if (this.feverSegs.length === 0) return;
 
-  // 현재 화면에서 가장 아래에 있는 세그먼트 찾기
   const bottomMost = this.feverSegs.reduce((a, b) => {
     const ayTop = a.startTop + (this.scrollY - a.spawnScroll);
     const byTop = b.startTop + (this.scrollY - b.spawnScroll);
     return (ayTop + a.height) > (byTop + b.height) ? a : b;
   });
 
-  // 그 세그먼트의 '현재 화면상 바닥 y'
   let bottomMostBottomY = Math.round(bottomMost.startTop + (this.scrollY - bottomMost.spawnScroll) + bottomMost.height);
 
-  // 현재 화면 높이(height)까지 덮일 때까지 아래로 계속 붙이기
   while (bottomMostBottomY < height) {
-    const nextH = this.peekDisplayHeight('bg_fever'); // 정수 높이
-    const newTop = Math.round(bottomMostBottomY - this.FEVER_OVERLAP_PX); // 살짝 겹쳐서 줄눈 제거
+    const nextH = this.peekDisplayHeight('bg_fever'); 
+    const newTop = Math.round(bottomMostBottomY - this.FEVER_OVERLAP_PX); 
     this.createFeverSegment(newTop, true);
     bottomMostBottomY = newTop + nextH;
   }
 }
 
 
-// Fever 시작 시 오버레이 초기 진입 배치
 private initFeverOverlay() {
   if (this.segs.length === 0) return;
 
-  // 기본 배경의 '가장 위쪽 세그먼트'의 현재 Y에 정렬해서 첫 장 투입
   const baseTopMost = this.segs.reduce((a, b) => {
     const ay = a.startTop + (this.scrollY - a.spawnScroll);
     const by = b.startTop + (this.scrollY - b.spawnScroll);
@@ -237,28 +222,20 @@ private initFeverOverlay() {
   });
   const baseTopY = Math.round(baseTopMost.startTop + (this.scrollY - baseTopMost.spawnScroll));
 
-  // 1장 얹고
   this.createFeverSegment(baseTopY, true);
 
-  // ★ 화면을 즉시 완전히 덮도록 위/아래를 모두 채움
   this.fillFeverAbove();
   this.fillFeverBelow();
 }
 
-
-// Fever 종료 시 오버레이 제거
 private destroyFeverOverlay() {
   this.feverSegs.forEach(s => s.img.destroy());
   this.feverSegs = [];
 }
 
-
-
-
-  // ===== 구간 인덱스 계산 =====
   private getZoneIndexByMeters(m: number) {
     if (m >= 2000) return 2;
-    if (m >= 1000) return 1;
+    if (m >= 900) return 1;
     return 0;
   }
 
@@ -266,10 +243,8 @@ private createSegment(key: string, currentTopY: number, fitTop = false): number 
   const { width } = this.cameras.main;
   const tex = this.textures.get(key).getSourceImage() as HTMLImageElement;
 
-  // 기본 스케일
   const rawScale = width / tex.width;
 
-  // 화면에 보이는 높이를 정수로 맞추기 위한 스케일 보정
   const displayH = Math.round(tex.height * rawScale);
   const scale = displayH / tex.height;
 
@@ -279,19 +254,17 @@ private createSegment(key: string, currentTopY: number, fitTop = false): number 
     .setDepth(-1000);
   img.setScale(scale);
 
-  // 데이터 저장
   img.setDataEnabled();
   img.setData('startTop', currentTopY);
   img.setData('spawnScroll', this.scrollY);
 
-  // 위치를 화면 좌표 기준으로 ‘정수’로 스냅
   if (fitTop) img.setY(Math.round(currentTopY));
 
   const seg = {
     img,
     startTop: currentTopY,
     spawnScroll: this.scrollY,
-    height: displayH,                // 이미 정수!
+    height: displayH,            
   };
   this.segs.push(seg);
 
@@ -302,7 +275,6 @@ private fillAbove() {
   const { height } = this.cameras.main;
   if (this.segs.length === 0) return;
 
-  // 현재 화면에서 가장 위쪽 세그먼트의 ‘현재 Y’를 정수로 계산
   const topMost = this.segs.reduce((a, b) => {
     const ay = a.startTop + (this.scrollY - a.spawnScroll);
     const by = b.startTop + (this.scrollY - b.spawnScroll);
@@ -311,13 +283,11 @@ private fillAbove() {
   let currentTopY = Math.round(topMost.startTop + (this.scrollY - topMost.spawnScroll));
 
   while (currentTopY > -height) {
-    // 다음에 붙일 키 결정
     const nextKey = this.pendingStartKey ?? this.currentLoopKey;
 
-    // loop↔loop는 2px, start→loop는 1px 겹침
     const OVERLAP_PX = (this.pendingStartKey ? 1 : 2);
 
-    const nextH = this.peekDisplayHeight(nextKey); // 정수 높이 반환되도록 구현해두면 좋음
+    const nextH = this.peekDisplayHeight(nextKey); 
     const desiredCurrentY = Math.round(currentTopY - nextH + OVERLAP_PX);
 
     this.createSegment(nextKey, desiredCurrentY, true);
@@ -329,7 +299,7 @@ private fillAbove() {
       this.pendingStartKey = null;
     }
 
-    currentTopY = desiredCurrentY; // 정수 누적
+    currentTopY = desiredCurrentY; 
   }
 }
 
@@ -384,7 +354,6 @@ private onReplay = () => {
   this.feverProgress = 0;
     this.destroyFeverOverlay();
 
-
   // 재시작
   this.physics.resume();
   this.input.enabled = true;
@@ -395,16 +364,15 @@ private onReplay = () => {
     super('Game');
   }
 
-// ====== Fever overlay (세그먼트 스택) ======
 private feverSegs: Array<{
   img: Phaser.GameObjects.Image;
   startTop: number;
   spawnScroll: number;
   height: number;
 }> = [];
-private FEVER_OVERLAY_DEPTH = -900; // 기본 배경(-1000) 위
-private FEVER_ALPHA = 0.9;          // 90% 불투명 (원문 표현대로)
-private FEVER_OVERLAP_PX = 2;       // loop↔loop 미세 라인 방지
+private FEVER_OVERLAY_DEPTH = -900; 
+private FEVER_ALPHA = 0.9;         
+private FEVER_OVERLAP_PX = 2;     
 
 
   preload() {
@@ -427,21 +395,24 @@ private FEVER_OVERLAP_PX = 2;       // loop↔loop 미세 라인 방지
     this.load.image('gbana', getImage('game', 'banana_gold'));
     this.load.image('fullguage', getImage('game', 'full_guage_bar'));
     this.load.image('emptyguage', getImage('game', 'empty_guage_bar'));
-    this.load.image('gori_block_L', getImage('game', 'gorilla_block_left'));
-    this.load.image('gori_block_R', getImage('game', 'gorilla_block_right'));
-    this.load.image('gori_thief_L', getImage('game', 'gorilla_thief_left'));
-    this.load.image('gori_thief_R', getImage('game', 'gorilla_thief_right'));
 
-      // 1구간(정글)
+    
+    this.load.spritesheet('gori_block_sheet', getImage('game', 'gorilla_block_sheet'), {
+      frameWidth: 300,
+      frameHeight: 300,
+    });
+    this.load.spritesheet('gori_thief_sheet', getImage('game', 'gorilla_thief_sheet'), {
+      frameWidth: 300,
+      frameHeight: 300,
+    });
+
+
   this.load.image('bg_jungle_start', getImage('game', 'bg_jungle_start'));
   this.load.image('bg_jungle_loop',  getImage('game', 'bg_jungle_loop'));
-  // 2구간(하늘)
   this.load.image('bg_sky_start',    getImage('game', 'bg_sky_start'));
   this.load.image('bg_sky_loop',     getImage('game', 'bg_sky_loop'));
-  // 3구간(우주)
   this.load.image('bg_space_start',  getImage('game', 'bg_space_start'));
   this.load.image('bg_space_loop',   getImage('game', 'bg_space_loop'));
-
   this.load.image('bg_fever', getImage('game', 'bg_fever'));
 
   }
@@ -457,6 +428,19 @@ private FEVER_OVERLAP_PX = 2;       // loop↔loop 미세 라인 방지
     window.addEventListener('game:replay', this.onReplay);
     this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
       window.removeEventListener('game:replay', this.onReplay);
+    });
+
+     this.anims.create({
+      key: 'gori_block_walk',
+      frames: this.anims.generateFrameNumbers('gori_block_sheet', { frames: [0, 1, 2, 3, 4,5,6,7,8] }),
+      frameRate: 10,
+      repeat: -1,
+    });
+    this.anims.create({
+      key: 'gori_thief_walk',
+      frames: this.anims.generateFrameNumbers('gori_thief_sheet', { frames: [0, 1, 2, 3, 4,5,6,7,8] }),
+      frameRate: 10,
+      repeat: -1,
     });
 
     // 캐릭터
@@ -557,17 +541,17 @@ private FEVER_OVERLAP_PX = 2;       // loop↔loop 미세 라인 방지
     );
 
     // 고릴라
-    this.gorillaGroup = this.physics.add.group({ allowGravity: false, immovable: true });
-  this.physics.add.overlap(
+this.gorillaGroup = this.physics.add.group({ allowGravity: false, immovable: true });
+this.physics.add.overlap(
   this.character,
   this.gorillaGroup,
-  (_ch, g) => this.hitGorilla(g as Phaser.Types.Physics.Arcade.ImageWithDynamicBody),
+  (_ch, g) => this.hitGorilla(g as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody), 
   (_ch: any, g: any) => {
     if (this.isRespawning) return false;
     const go = g as Phaser.GameObjects.GameObject & { getData?: (k: string) => any; active?: boolean };
     if (!go || typeof go.getData !== 'function' || !go.active) return false;
     const hitUntil = Number(go.getData('hitUntil') ?? 0);
-    return this.time.now >= hitUntil; 
+    return this.time.now >= hitUntil;
   },
   this
 );
@@ -760,28 +744,22 @@ private FEVER_OVERLAP_PX = 2;       // loop↔loop 미세 라인 방지
   }
 
   // 피버 
-// startFever()
 private startFever() {
   this.feverActive = true;
   this.feverUntil = this.time.now + this.FEVER_DURATION;
   this.feverProgress = 0;
   this.emitFever(0, true, this.FEVER_DURATION);
 
-  // ★ 오버레이 진입
   this.initFeverOverlay();
 }
 
-// stopFever()
 private stopFever() {
   this.feverActive = false;
   this.emitFever(this.feverProgress / this.FEVER_GOAL, false, 0);
 
-  // ★ 오버레이 제거
   this.destroyFeverOverlay();
 }
 
-
-  // 스폰/업데이트 공통
   private getMeters(): number {
     return Math.floor(this.totalAscentPx / this.PX_PER_M);
   }
@@ -893,16 +871,23 @@ private stopFever() {
   // 고릴라
   private spawnGorilla() {
     const { width } = this.cameras.main;
+
     const type: 'block' | 'thief' = Math.random() < 0.5 ? 'block' : 'thief';
     const dir: -1 | 1 = Math.random() < 0.5 ? -1 : 1;
 
     const x = Phaser.Math.Between(60, width - 60);
     const startScreenY = -Phaser.Math.Between(100, 180);
 
-    const key = this.getGorillaKey(type, dir);
-    const g = this.gorillaGroup.create(x, 0, key) as Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
-    g.setScale(this.GORILLA_SCALE).setOrigin(0.5);
+    const sheetKey = type === 'block' ? 'gori_block_sheet' : 'gori_thief_sheet';
+    const g = this.physics.add.sprite(x, 0, sheetKey) as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+
+    g.setOrigin(0.5, 0.5).setScale(this.GORILLA_SCALE);
     g.body.setAllowGravity(false).setImmovable(true);
+
+    // 충돌박스
+    const bw = Math.round(g.displayWidth * 0.6);
+    const bh = Math.round(g.displayHeight * 0.8);
+    g.body.setSize(bw, bh, true);
 
     g.setData('type', type);
     g.setData('dir', dir);
@@ -912,20 +897,22 @@ private stopFever() {
     g.setData('spawnScroll', this.scrollY);
 
     g.setY(startScreenY);
+
+    const animKey = type === 'block' ? 'gori_block_walk' : 'gori_thief_walk';
+    g.anims.play(animKey, true);
+    g.setFlipX(dir === 1);
+
+    this.gorillaGroup.add(g);
   }
 
-  private getGorillaKey(type: 'block' | 'thief', dir: -1 | 1) {
-    if (type === 'block') return dir === -1 ? 'gori_block_L' : 'gori_block_R';
-    return dir === -1 ? 'gori_thief_L' : 'gori_thief_R';
-  }
 
-  private updateGorillas(delta: number) {
+ private updateGorillas(delta: number) {
     const { width, height } = this.cameras.main;
     const dt = delta / 1000;
     const toKill: Phaser.GameObjects.GameObject[] = [];
 
     this.gorillaGroup.children.iterate((child: Phaser.GameObjects.GameObject) => {
-      const g = child as Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
+      const g = child as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
       if (!g.active) return true;
 
       const startScreenY = Number(g.getData('startScreenY') ?? 0);
@@ -934,7 +921,6 @@ private stopFever() {
       g.setY(y);
 
       let dir = g.getData('dir') as -1 | 1;
-      const type = g.getData('type') as 'block' | 'thief';
       const speed = g.getData('speed') as number;
 
       g.x += dir * speed * dt;
@@ -942,21 +928,23 @@ private stopFever() {
       const margin = 30;
       if (g.x < margin) {
         dir = 1;
-        g.setTexture(this.getGorillaKey(type, dir));
+        g.setData('dir', dir);
+        g.setFlipX(true); 
       } else if (g.x > width - margin) {
         dir = -1;
-        g.setTexture(this.getGorillaKey(type, dir));
+        g.setData('dir', dir);
+        g.setFlipX(false); 
       }
-      g.setData('dir', dir);
 
       if (y > height + 100) toKill.push(g);
       return true;
     });
 
-    for (const g of toKill) (g as Phaser.Types.Physics.Arcade.ImageWithDynamicBody).destroy();
+    for (const g of toKill) (g as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody).destroy();
   }
 
-private hitGorilla(g: Phaser.Types.Physics.Arcade.ImageWithDynamicBody) {
+
+private hitGorilla(g: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {
   if (this.isRespawning) return;
 
   const hitUntil = Number(g.getData('hitUntil') ?? 0);
@@ -973,6 +961,7 @@ private hitGorilla(g: Phaser.Types.Physics.Arcade.ImageWithDynamicBody) {
     this.emitCoin(this.coin);
   }
 }
+
 
 
   // 프레임 루프
@@ -1006,7 +995,6 @@ private hitGorilla(g: Phaser.Types.Physics.Arcade.ImageWithDynamicBody) {
       }
     }
 
-    // 방향 추적
     if (Math.abs(cBody.velocity.x) > 10) {
       this.lastDir = cBody.velocity.x < 0 ? 'left' : 'right';
     } else {
@@ -1066,11 +1054,10 @@ private hitGorilla(g: Phaser.Types.Physics.Arcade.ImageWithDynamicBody) {
     this.updateBananas();
     this.updateGorillas(delta);
 
-  // ★ 배경 업데이트 (scrollY 반영 & 구간 전환 처리)
-    this.updateSegmentsY();     // scrollY 반영 → 아래로 흘러감
-    this.cullBelow();           // 화면 아래로 사라진 세그먼트 제거
-    this.handleZoneTransition();// 1000m/2000m에서 다음에 붙일 한 장만 start 예약
-    this.fillAbove();           // 위쪽 비면 위로 계속 채움
+    this.updateSegmentsY();     
+    this.cullBelow();         
+    this.handleZoneTransition();
+    this.fillAbove();        
 
 if (this.feverActive) {
   this.updateFeverSegmentsY();
