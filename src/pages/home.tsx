@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HomeCanvas from '@canvas/home-canvas';
 import Guide from '@components/guide';
+import Option from '@components/option';
 import {
   backgroundCss,
   bestScoreCss,
@@ -20,6 +21,7 @@ import { getImage } from '@utils/get-images';
 const Home = () => {
   const navigate = useNavigate();
   const [guide, setGuide] = useState<boolean>(false);
+  const [option, setOption] = useState<boolean>(false);
 
   const help = getImage('home', 'icon_help');
   const check = getImage('home', 'icon_check');
@@ -28,8 +30,12 @@ const Home = () => {
   const etc = getImage('home', 'icon_option');
   const gameStart = getImage('home', 'button_game_start');
 
+  const handleOption = () => {
+    setOption((option) => !option);
+  };
+
   const handleGameGuide = () => {
-    setGuide((guide) => (guide === true ? false : true));
+    setGuide((guide) => !guide);
   };
 
   const handleGameStart = () => {
@@ -38,6 +44,7 @@ const Home = () => {
 
   return (
     <>
+      {option && <Option handleOption={handleOption} />}
       {guide && <Guide handleGameGuide={handleGameGuide} />}
       <div css={backgroundCss}>
         <HomeCanvas />
@@ -55,7 +62,7 @@ const Home = () => {
             <img src={shop} alt="상점" css={iconButtonCss} />
           </div>
           <div css={iconButtonListCss}>
-            <img src={etc} alt="옵션" css={iconButtonCss} />
+            <img src={etc} alt="옵션" css={iconButtonCss} onClick={handleOption} />
             <img src={help} alt="게임방법" css={iconButtonCss} onClick={handleGameGuide} />
           </div>
         </div>
