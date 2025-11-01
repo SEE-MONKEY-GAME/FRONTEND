@@ -1,4 +1,4 @@
-import { css } from '@emotion/react';
+import { css, keyframes } from '@emotion/react';
 import { theme } from '@styles/tokens';
 import { getImage } from '@utils/get-images';
 
@@ -13,6 +13,7 @@ export const backgroundCss = css({
 export const coinCss = css({
   width: '122px',
   height: '50px',
+  // width: '10px',
   backgroundImage: `url(${getImage('home', 'coin')})`,
   backgroundRepeat: 'no-repeat',
   backgroundSize: 'cover',
@@ -43,6 +44,12 @@ export const bestScoreCss = css({
 });
 
 export const bestScoreTextCss = css({
+  display: 'flex',
+  gap: '4px',
+  alignItems: 'center',
+});
+
+export const bestScoreValueCss = css({
   fontSize: '20px',
 });
 
@@ -71,4 +78,21 @@ export const gameStartButtonCss = css({
 
 export const gameStartButtonImageCss = css({
   width: '200px',
+});
+
+const expandCircle = keyframes`
+  from { transform: translateY(-50%) scale(0); }
+  to   { transform: translateY(-50%) scale(20); }
+`;
+
+export const circleCss = css({
+  position: 'fixed',
+  top: '50%',
+  backgroundColor: 'black',
+  width: '100vw',
+  aspectRatio: '1',
+  borderRadius: '50%',
+  animation: `${expandCircle} 1s ease-in-out forwards`,
+  zIndex: 100,
+  pointerEvents: 'none',
 });

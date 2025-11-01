@@ -8,6 +8,8 @@ import {
   backgroundCss,
   bestScoreCss,
   bestScoreTextCss,
+  bestScoreValueCss,
+  circleCss,
   coinCss,
   coinTextCss,
   gameStartButtonCss,
@@ -22,7 +24,10 @@ const Home = () => {
   const navigate = useNavigate();
   const [guide, setGuide] = useState<boolean>(false);
   const [option, setOption] = useState<boolean>(false);
+  const [transition, setTransition] = useState<boolean>(false);
 
+  const left = getImage('home', 'leaf_left');
+  const right = getImage('home', 'leaf_right');
   const help = getImage('home', 'icon_help');
   const check = getImage('home', 'icon_check');
   const rank = getImage('home', 'icon_ranking');
@@ -39,11 +44,15 @@ const Home = () => {
   };
 
   const handleGameStart = () => {
-    navigate('/game');
+    setTransition(true);
+    setTimeout(() => {
+      navigate('/game');
+    }, 1000);
   };
 
   return (
     <>
+      {transition && <div css={circleCss} />}
       {option && <Option handleOption={handleOption} />}
       {guide && <Guide handleGameGuide={handleGameGuide} />}
       <div css={backgroundCss}>
@@ -52,8 +61,12 @@ const Home = () => {
           <span css={coinTextCss}>1985</span>
         </div>
         <div css={bestScoreCss}>
-          <span>최고기록</span>
-          <span css={bestScoreTextCss}>5853 m</span>
+          <div css={bestScoreTextCss}>
+            <img src={left} alt="왼쪽_장식_이미지" height={14} />
+            <span>최고기록</span>
+            <img src={right} alt="오른쪽_장식_이미지" height={14} />
+          </div>
+          <span css={bestScoreValueCss}>5853 m</span>
         </div>
         <div css={iconButtonGroupCss}>
           <div css={iconButtonListCss}>

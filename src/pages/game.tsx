@@ -1,17 +1,11 @@
 /** @jsxImportSource @emotion/react */
+import { useFeverProgressAnimator } from '../hooks/useFeverProgressAnimator';
 import { useEffect, useState } from 'react';
 import GameCanvas from '@canvas/game-canvas';
-import {
-  currentScoreCss,
-  coinCss,
-  coinTextCss,
-  feverWrapCss,
-  feverEmptyCss,
-} from '@styles/pages/game.css';
-import { FEVER_DURATION_MS } from '@scenes/game-scene';
 import FeverGauge from '@components/fever-gauge';
 import GameOverModal from '@components/gameover-modal';
-import { useFeverProgressAnimator } from '../hooks/useFeverProgressAnimator';
+import { FEVER_DURATION_MS } from '@scenes/game-scene';
+import { circleCss, coinCss, coinTextCss, currentScoreCss, feverEmptyCss, feverWrapCss } from '@styles/pages/game.css';
 
 export default function GamePage() {
   const [score, setScore] = useState(0);
@@ -75,29 +69,32 @@ export default function GamePage() {
   };
 
   return (
-    <div style={{ width: '100%', height: '100vh', position: 'relative', background: '#000' }}>
-      <GameCanvas />
+    <>
+      <div css={circleCss} />
+      <div style={{ width: '100%', height: '100vh', position: 'relative', background: '#000' }}>
+        <GameCanvas />
 
-      <span css={currentScoreCss}>{score} m</span>
+        <span css={currentScoreCss}>{score} m</span>
 
-      <div css={coinCss}>
-        <span css={coinTextCss}>{coin}</span>
-      </div>
-
-      <div css={feverWrapCss} aria-label="Fever Gauge">
-        <div css={feverEmptyCss} />
-        <div style={{ position: 'absolute', inset: 0 }}>
-          <FeverGauge width={320} height={30} progress={feverProgress} />
+        <div css={coinCss}>
+          <span css={coinTextCss}>{coin}</span>
         </div>
-      </div>
 
-      <GameOverModal
-        open={isGameOver}
-        score={finalScore}
-        coin={finalCoin}
-        onClose={() => setIsGameOver(false)}
-        onReplay={replay}
-      />
-    </div>
+        <div css={feverWrapCss} aria-label="Fever Gauge">
+          <div css={feverEmptyCss} />
+          <div style={{ position: 'absolute', inset: 0 }}>
+            <FeverGauge width={320} height={30} progress={feverProgress} />
+          </div>
+        </div>
+
+        <GameOverModal
+          open={isGameOver}
+          score={finalScore}
+          coin={finalCoin}
+          onClose={() => setIsGameOver(false)}
+          onReplay={replay}
+        />
+      </div>
+    </>
   );
 }

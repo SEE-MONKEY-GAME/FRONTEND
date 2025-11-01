@@ -45,7 +45,7 @@ export const feverWrapCss = css({
   top: 48,
   left: '50%',
   transform: 'translateX(-50%)',
-  width: 320, 
+  width: 320,
   height: 28,
   pointerEvents: 'none',
   zIndex: 3,
@@ -82,7 +82,7 @@ const feverPulse = keyframes`
 
 export const feverBadgeCss = css({
   position: 'absolute',
-  top: 84,             
+  top: 84,
   left: '50%',
   transform: 'translateX(-50%)',
   padding: '4px 12px',
@@ -98,7 +98,6 @@ export const feverBadgeCss = css({
   pointerEvents: 'none',
   animation: `${feverPulse} 900ms ease-in-out infinite`,
 });
-
 
 export const overlayCss = css({
   position: 'fixed',
@@ -191,4 +190,21 @@ export const iconBtnCss = css({
     height: '100%',
     display: 'block',
   },
+});
+
+const shrinkCircle = keyframes`
+  from { transform: translateY(-50%) scale(20); }
+  to   { transform: translateY(-50%) scale(0); }
+`;
+
+export const circleCss = css({
+  position: 'fixed',
+  top: '50%',
+  backgroundColor: 'black',
+  width: '100vw',
+  aspectRatio: '1',
+  borderRadius: '50%',
+  animation: `${shrinkCircle} 1s ease-in-out forwards`,
+  zIndex: 100,
+  pointerEvents: 'none',
 });
