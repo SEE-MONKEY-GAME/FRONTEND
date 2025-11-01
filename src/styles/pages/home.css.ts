@@ -13,6 +13,7 @@ export const backgroundCss = css({
 export const coinCss = css({
   width: '122px',
   height: '50px',
+  // width: '10px',
   backgroundImage: `url(${getImage('home', 'coin')})`,
   backgroundRepeat: 'no-repeat',
   backgroundSize: 'cover',
@@ -43,6 +44,12 @@ export const bestScoreCss = css({
 });
 
 export const bestScoreTextCss = css({
+  display: 'flex',
+  gap: '4px',
+  alignItems: 'center',
+});
+
+export const bestScoreValueCss = css({
   fontSize: '20px',
 });
 
