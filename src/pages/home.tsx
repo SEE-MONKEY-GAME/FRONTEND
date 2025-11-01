@@ -8,6 +8,7 @@ import {
   backgroundCss,
   bestScoreCss,
   bestScoreTextCss,
+  circleCss,
   coinCss,
   coinTextCss,
   gameStartButtonCss,
@@ -22,6 +23,7 @@ const Home = () => {
   const navigate = useNavigate();
   const [guide, setGuide] = useState<boolean>(false);
   const [option, setOption] = useState<boolean>(false);
+  const [transition, setTransition] = useState<boolean>(false);
 
   const help = getImage('home', 'icon_help');
   const check = getImage('home', 'icon_check');
@@ -39,11 +41,15 @@ const Home = () => {
   };
 
   const handleGameStart = () => {
-    navigate('/game');
+    setTransition(true);
+    setTimeout(() => {
+      navigate('/game');
+    }, 1000);
   };
 
   return (
     <>
+      {transition && <div css={circleCss} />}
       {option && <Option handleOption={handleOption} />}
       {guide && <Guide handleGameGuide={handleGameGuide} />}
       <div css={backgroundCss}>
