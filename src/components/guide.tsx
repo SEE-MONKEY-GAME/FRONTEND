@@ -22,7 +22,7 @@ const Guide = ({ handleGameGuide }: GuideProps) => {
   const [page, setPage] = useState<number>(0);
 
   const tab = getImage('home', 'guide_tab');
-  const close = getImage('home', 'guide_close_button');
+  const close = getImage('home', 'close_button');
   const prev = getImage('home', 'guide_left');
   const next = getImage('home', 'guide_right');
 

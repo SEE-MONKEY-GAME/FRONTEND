@@ -8,7 +8,7 @@ class HomeScene extends Phaser.Scene {
 
   preload() {
     // 임시 로드 이미지, 모든 이미지 파일은 LoadingScene에서 preload 되어야 함
-    this.load.image('bana', getImage('home', 'bana'));
+    this.load.image('bana', getImage('home', 'bana_sit'));
     this.load.image('platform', getImage('home', 'platform_tree'));
   }
   create() {
