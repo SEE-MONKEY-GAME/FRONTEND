@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HomeCanvas from '@canvas/home-canvas';
+import Attend from '@components/attend';
 import Guide from '@components/guide';
 import Option from '@components/option';
 import {
@@ -22,6 +23,7 @@ import { getImage } from '@utils/get-images';
 
 const Home = () => {
   const navigate = useNavigate();
+  const [attend, setAttend] = useState<boolean>(false);
   const [guide, setGuide] = useState<boolean>(false);
   const [option, setOption] = useState<boolean>(false);
   const [transition, setTransition] = useState<boolean>(false);
@@ -34,6 +36,10 @@ const Home = () => {
   const shop = getImage('home', 'icon_shop');
   const etc = getImage('home', 'icon_option');
   const gameStart = getImage('home', 'button_game_start');
+
+  const handleAttend = () => {
+    setAttend((attend) => !attend);
+  };
 
   const handleOption = () => {
     setOption((option) => !option);
@@ -53,6 +59,7 @@ const Home = () => {
   return (
     <>
       {transition && <div css={circleCss} />}
+      {attend && <Attend handleAttend={handleAttend} />}
       {option && <Option handleOption={handleOption} />}
       {guide && <Guide handleGameGuide={handleGameGuide} />}
       <div css={backgroundCss}>
@@ -70,7 +77,7 @@ const Home = () => {
         </div>
         <div css={iconButtonGroupCss}>
           <div css={iconButtonListCss}>
-            <img src={check} alt="출석" css={iconButtonCss} />
+            <img src={check} alt="출석" css={iconButtonCss} onClick={handleAttend} />
             <img src={rank} alt="랭킹" css={iconButtonCss} />
             <img src={shop} alt="상점" css={iconButtonCss} />
           </div>
