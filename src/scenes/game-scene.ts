@@ -15,6 +15,13 @@ class GameScene extends Phaser.Scene {
 
 private jumpedThisFrame = false;
 
+private thiefHitPlaying = false;
+private thiefHitFrame = 0;
+private thiefHitAccMs = 0;
+private readonly THIEF_HIT_FPS = 12;        
+private readonly THIEF_HIT_TOTAL_FRAMES = 8; 
+
+
 
   private readonly JUMP_SPEED = 600;
   private readonly JUMP_COOLDOWN = 120;
@@ -420,6 +427,10 @@ private FEVER_OVERLAP_PX = 2;
   this.load.image('bg_space_loop',   getImage('game', 'bg_space_loop'));
   this.load.image('bg_fever', getImage('game', 'bg_fever'));
   this.load.image('hit_block', getImage('game', 'hit-blockgoril'));
+  this.load.spritesheet('hit_thief', getImage('game', 'hit-thiefgoril'), {
+  frameWidth: 630,
+  frameHeight: 630,
+});
 
 
   }
@@ -449,6 +460,13 @@ private FEVER_OVERLAP_PX = 2;
       frameRate: 10,
       repeat: -1,
     });
+    this.anims.create({
+  key: 'hit_thief_anim',
+  frames: this.anims.generateFrameNumbers('hit_thief', { start: 0, end: 7 }), 
+  frameRate: 12, 
+  repeat: 0, 
+});
+
 
     // 캐릭터
     this.character = this.physics.add
@@ -612,23 +630,29 @@ this.physics.add.overlap(
     const vx = this.barVX * 15;
     cBody.setVelocityX(vx);
 
-    this.time.delayedCall(50, () => {
-      if (!this.character.active || this.poseActive) return;
-      const vxx = cBody.velocity.x;
-      const DIR_THRESHOLD = 1;
-      if (vxx > DIR_THRESHOLD) this.setPose('rjump');
-      else if (vxx < -DIR_THRESHOLD) this.setPose('ljump');
-      else this.setPose('jump');
-    });
+  this.time.delayedCall(50, () => {
+  if (!this.character.active || this.poseActive || this.thiefHitPlaying || this.isHitFlash) return;
+  const vxx = cBody.velocity.x;
+  const DIR_THRESHOLD = 1;
+  if (vxx > DIR_THRESHOLD) this.setPose('rjump');
+  else if (vxx < -DIR_THRESHOLD) this.setPose('ljump');
+  else this.setPose('jump');
+});
 
     this.lastJumpAt = this.time.now;
   }
 
-  private setPose(
-    key: 'character' | 'sit' | 'jump' | 'ljump' | 'rjump' | 'jump_item' | 'ljump_item' | 'rjump_item'
-  ) {
-    if (this.character.texture.key !== key) this.character.setTexture(key);
+private setPose(
+  key: 'character' | 'sit' | 'jump' | 'ljump' | 'rjump' | 'jump_item' | 'ljump_item' | 'rjump_item',
+  force = false
+) {
+  if (!force && (this.thiefHitPlaying || this.isHitFlash)) return;
+
+  if (this.character.texture.key !== key) {
+    this.character.setTexture(key);
   }
+}
+
 
   private applyNormalJumpPose() {
     const key = this.lastDir === 'left' ? 'ljump' : this.lastDir === 'right' ? 'rjump' : 'jump';
@@ -963,18 +987,29 @@ private hitGorilla(g: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {
   cBody.setVelocityX(pushLeft ? this.GORILLA_KNOCKBACK_X : -this.GORILLA_KNOCKBACK_X);
   cBody.setVelocityY(-this.GORILLA_KNOCKBACK_Y);
 
-  // ✅ 블록 고릴라: 캐릭터 텍스처를 잠깐 hit_block으로 변경
+
   if ((g.getData('type') as string) === 'block') {
-    this.stopSpin();                    // 혹시 돌고 있으면 정지
-    this.isHitFlash = true;             // 히트 연출 on
-    this.hitFlashUntil = this.time.now + 250; // 0.25초 보여주기 (원하면 조절)
+    this.stopSpin();                    
+    this.isHitFlash = true;             
+    this.hitFlashUntil = this.time.now + 250; 
     this.character.setTexture('hit_block');
   }
 
-  if ((g.getData('type') as string) === 'thief') {
-    this.coin = Math.max(0, this.coin - 5);
-    this.emitCoin(this.coin);
+if ((g.getData('type') as string) === 'thief') {
+  this.coin = Math.max(0, this.coin - 5);
+  this.emitCoin(this.coin);
+
+  this.stopSpin();
+
+  if (!this.thiefHitPlaying) {             
+    this.thiefHitPlaying = true;
+    this.thiefHitFrame = 0;
+    this.thiefHitAccMs = 0;
+
+    this.character.setTexture('hit_thief');
+    this.character.setFrame(0);
   }
+}
 }
 
   // 프레임 루프
@@ -1021,7 +1056,28 @@ update(_time: number, delta: number) {
   }
 
 
-  if (this.isHitFlash) {
+  if (this.thiefHitPlaying) {
+    this.thiefHitAccMs += delta;
+    const frameDur = 1000 / this.THIEF_HIT_FPS;
+
+    while (this.thiefHitAccMs >= frameDur && this.thiefHitPlaying) {
+      this.thiefHitAccMs -= frameDur;
+      this.thiefHitFrame++;
+
+      if (this.thiefHitFrame >= this.THIEF_HIT_TOTAL_FRAMES) {
+  this.thiefHitPlaying = false;          
+  const vy = cBody.velocity.y;
+  if (vy === 0) this.setPose('sit');    
+  else if (vy > 0) this.setPose('character');
+  else this.applyNormalJumpPose();
+} else {
+  this.character.setFrame(this.thiefHitFrame);
+}
+    }
+
+   
+  } else if (this.isHitFlash) {
+ 
     if (this.time.now >= this.hitFlashUntil) {
       this.isHitFlash = false;
       const vy = cBody.velocity.y;
@@ -1030,6 +1086,7 @@ update(_time: number, delta: number) {
       else this.applyNormalJumpPose();
     }
   } else {
+ 
     const now = this.time.now;
     const vy = cBody.velocity.y;
     const apexPassed = this.prevVy < 0 && vy >= 0;
