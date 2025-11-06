@@ -13,6 +13,9 @@ class GameScene extends Phaser.Scene {
   private barVX = 0;
   private prevCharY = 0;
 
+private jumpedThisFrame = false;
+
+
   private readonly JUMP_SPEED = 600;
   private readonly JUMP_COOLDOWN = 120;
 
@@ -974,19 +977,14 @@ private hitGorilla(g: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {
   }
 }
 
-private jumpedThisFrame = false;
-
-
-
   // 프레임 루프
 update(_time: number, delta: number) {
   if (!this.character.active || this.gameOver) return;
   const cBody = this.character.body as Phaser.Physics.Arcade.Body;
 
-  // === 프레임당 1회 점프 제한 플래그 초기화 ===
   this.jumpedThisFrame = false;
 
-  // === 리스폰 해제 ===
+  // 리스폰 해제 
   if (this.isRespawning && cBody.velocity.y > 0) {
     this.isRespawning = false;
     this.tweens.killTweensOf(this.character);
@@ -994,7 +992,7 @@ update(_time: number, delta: number) {
     this.lastYForScore = this.character.y;
   }
 
-  // === 스윕 보정 (Body 기반) ===
+  // 스윕 보정 (Body 기반) 
   if (cBody.velocity.y > 0 && !this.jumpedThisFrame) {
     const barBody = this.bar.body as Phaser.Physics.Arcade.Body;
     const charBody = this.character.body as Phaser.Physics.Arcade.Body;
@@ -1007,35 +1005,31 @@ update(_time: number, delta: number) {
     const crossedDown = prevCharBottom <= barTop && charBottom >= barTop;
 
     if (horizontalOverlap && crossedDown && this.time.now - this.lastJumpAt >= this.JUMP_COOLDOWN) {
-      // 캐릭터가 살짝 끼이지 않게 0.5픽셀 여유
       const targetY = barTop - charBody.halfHeight + 0.5;
       this.character.setY(targetY);
-      charBody.updateFromGameObject?.(); // body 동기화
+      charBody.updateFromGameObject?.(); 
 
       this.handleJump();
       this.jumpedThisFrame = true;
     }
   }
 
-  // === 방향 추적 ===
   if (Math.abs(cBody.velocity.x) > 10) {
     this.lastDir = cBody.velocity.x < 0 ? 'left' : 'right';
   } else {
     this.lastDir = 'up';
   }
 
-  // === hit_block 연출 중일 때 ===
+
   if (this.isHitFlash) {
     if (this.time.now >= this.hitFlashUntil) {
       this.isHitFlash = false;
-      // hit_block 연출 종료 → 원래 포즈 복귀
       const vy = cBody.velocity.y;
       if (vy === 0) this.setPose('sit');
       else if (vy > 0) this.setPose('character');
       else this.applyNormalJumpPose();
     }
   } else {
-    // === 기존 포즈 처리 ===
     const now = this.time.now;
     const vy = cBody.velocity.y;
     const apexPassed = this.prevVy < 0 && vy >= 0;
@@ -1056,7 +1050,7 @@ update(_time: number, delta: number) {
     }
   }
 
-  // === 점수, 스폰 ===
+  // 점수, 스폰 
   if (!this.isRespawning) {
     const dyUp = Math.max(0, this.lastYForScore - this.character.y);
     if (dyUp > 0) {
@@ -1094,13 +1088,11 @@ update(_time: number, delta: number) {
   this.updateBananas();
   this.updateGorillas(delta);
 
-  // === 배경 업데이트 ===
   this.updateSegmentsY();
   this.cullBelow();
   this.handleZoneTransition();
   this.fillAbove();
 
-  // === Fever 오버레이 업데이트 ===
   if (this.feverActive) {
     this.updateFeverSegmentsY();
     this.cullFeverBelow();
@@ -1108,10 +1100,8 @@ update(_time: number, delta: number) {
     this.fillFeverBelow();
   }
 
-  // === Fever 종료 ===
   if (this.feverActive && this.time.now >= this.feverUntil) this.stopFever();
 
-  // === 화면 이탈 시 낙하 처리 ===
   this.checkOffscreenAndProcess();
 
   this.prevVy = cBody.velocity.y;
