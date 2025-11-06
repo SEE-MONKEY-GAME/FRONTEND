@@ -80,6 +80,8 @@ class GameScene extends Phaser.Scene {
   private readonly GORILLA_KNOCKBACK_Y = -480;
   private readonly GORILLA_HIT_COOLDOWN = 400; 
   private readonly GORILLA_SPAWN_PROB_PER_SLOT = 0.15; 
+private isHitFlash = false;
+private hitFlashUntil = 0;
 
   
   // 배경
@@ -414,6 +416,8 @@ private FEVER_OVERLAP_PX = 2;
   this.load.image('bg_space_start',  getImage('game', 'bg_space_start'));
   this.load.image('bg_space_loop',   getImage('game', 'bg_space_loop'));
   this.load.image('bg_fever', getImage('game', 'bg_fever'));
+  this.load.image('hit_block', getImage('game', 'hit-blockgoril'));
+
 
   }
 
@@ -956,55 +960,86 @@ private hitGorilla(g: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {
   cBody.setVelocityX(pushLeft ? this.GORILLA_KNOCKBACK_X : -this.GORILLA_KNOCKBACK_X);
   cBody.setVelocityY(-this.GORILLA_KNOCKBACK_Y);
 
+  // ✅ 블록 고릴라: 캐릭터 텍스처를 잠깐 hit_block으로 변경
+  if ((g.getData('type') as string) === 'block') {
+    this.stopSpin();                    // 혹시 돌고 있으면 정지
+    this.isHitFlash = true;             // 히트 연출 on
+    this.hitFlashUntil = this.time.now + 250; // 0.25초 보여주기 (원하면 조절)
+    this.character.setTexture('hit_block');
+  }
+
   if ((g.getData('type') as string) === 'thief') {
     this.coin = Math.max(0, this.coin - 5);
     this.emitCoin(this.coin);
   }
 }
 
+private jumpedThisFrame = false;
+
 
 
   // 프레임 루프
-  update(_time: number, delta: number) {
-    if (!this.character.active || this.gameOver) return;
-    const cBody = this.character.body as Phaser.Physics.Arcade.Body;
+update(_time: number, delta: number) {
+  if (!this.character.active || this.gameOver) return;
+  const cBody = this.character.body as Phaser.Physics.Arcade.Body;
 
-    // 리스폰 해제
-    if (this.isRespawning && cBody.velocity.y > 0) {
-      this.isRespawning = false;
-      this.tweens.killTweensOf(this.character);
-      this.tweens.add({ targets: this.character, alpha: 1, duration: 400, ease: 'Sine.Out' });
-      this.lastYForScore = this.character.y;
+  // === 프레임당 1회 점프 제한 플래그 초기화 ===
+  this.jumpedThisFrame = false;
+
+  // === 리스폰 해제 ===
+  if (this.isRespawning && cBody.velocity.y > 0) {
+    this.isRespawning = false;
+    this.tweens.killTweensOf(this.character);
+    this.tweens.add({ targets: this.character, alpha: 1, duration: 400, ease: 'Sine.Out' });
+    this.lastYForScore = this.character.y;
+  }
+
+  // === 스윕 보정 (Body 기반) ===
+  if (cBody.velocity.y > 0 && !this.jumpedThisFrame) {
+    const barBody = this.bar.body as Phaser.Physics.Arcade.Body;
+    const charBody = this.character.body as Phaser.Physics.Arcade.Body;
+
+    const barTop = barBody.top;
+    const prevCharBottom = this.prevCharY + charBody.halfHeight;
+    const charBottom = this.character.y + charBody.halfHeight;
+
+    const horizontalOverlap = charBody.right > barBody.left && charBody.left < barBody.right;
+    const crossedDown = prevCharBottom <= barTop && charBottom >= barTop;
+
+    if (horizontalOverlap && crossedDown && this.time.now - this.lastJumpAt >= this.JUMP_COOLDOWN) {
+      // 캐릭터가 살짝 끼이지 않게 0.5픽셀 여유
+      const targetY = barTop - charBody.halfHeight + 0.5;
+      this.character.setY(targetY);
+      charBody.updateFromGameObject?.(); // body 동기화
+
+      this.handleJump();
+      this.jumpedThisFrame = true;
     }
+  }
 
-    // 바 충돌 스윕 보정
-    if (cBody.velocity.y > 0) {
-      const barTop = this.bar.y - this.bar.displayHeight * 0.5;
-      const charTop = this.character.y - this.character.displayHeight * 0.5;
-      const prevCharTop = this.prevCharY - this.character.displayHeight * 0.5;
+  // === 방향 추적 ===
+  if (Math.abs(cBody.velocity.x) > 10) {
+    this.lastDir = cBody.velocity.x < 0 ? 'left' : 'right';
+  } else {
+    this.lastDir = 'up';
+  }
 
-      const b = this.bar.getBounds();
-      const c = this.character.getBounds();
-      const horizontalOverlap = c.right > b.left && c.left < b.right;
-      const crossedDown = prevCharTop <= barTop && charTop >= barTop;
-
-      if (horizontalOverlap && crossedDown && this.time.now - this.lastJumpAt >= this.JUMP_COOLDOWN) {
-        const targetY = barTop - this.character.displayHeight * 0.5;
-        this.character.setY(targetY);
-        this.handleJump();
-      }
+  // === hit_block 연출 중일 때 ===
+  if (this.isHitFlash) {
+    if (this.time.now >= this.hitFlashUntil) {
+      this.isHitFlash = false;
+      // hit_block 연출 종료 → 원래 포즈 복귀
+      const vy = cBody.velocity.y;
+      if (vy === 0) this.setPose('sit');
+      else if (vy > 0) this.setPose('character');
+      else this.applyNormalJumpPose();
     }
-
-    if (Math.abs(cBody.velocity.x) > 10) {
-      this.lastDir = cBody.velocity.x < 0 ? 'left' : 'right';
-    } else {
-      this.lastDir = 'up';
-    }
-
-    // 아이템 포즈 유지,해제
+  } else {
+    // === 기존 포즈 처리 ===
     const now = this.time.now;
     const vy = cBody.velocity.y;
     const apexPassed = this.prevVy < 0 && vy >= 0;
+
     if (this.poseActive) {
       const minHoldOk = now >= this.poseUntil - (this.POSE_BASE_MS - this.POSE_MIN_MS);
       const deadlinePassed = now >= this.poseUntil;
@@ -1019,61 +1054,70 @@ private hitGorilla(g: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {
         else if (vy > 0) this.setPose('character');
       }
     }
+  }
 
-    // 점수,스폰
-    if (!this.isRespawning) {
-      const dyUp = Math.max(0, this.lastYForScore - this.character.y);
-      if (dyUp > 0) {
-        this.totalAscentPx += dyUp;
-        const meters = Math.floor(this.totalAscentPx / this.PX_PER_M);
-        this.emitScore(meters);
+  // === 점수, 스폰 ===
+  if (!this.isRespawning) {
+    const dyUp = Math.max(0, this.lastYForScore - this.character.y);
+    if (dyUp > 0) {
+      this.totalAscentPx += dyUp;
+      const meters = Math.floor(this.totalAscentPx / this.PX_PER_M);
+      this.emitScore(meters);
 
-        this.scrollY += dyUp;
+      this.scrollY += dyUp;
 
-        let spawned = 0;
-        const curMeters = this.getMeters();
-        const spawnChance = this.getSpawnChance(curMeters);
+      let spawned = 0;
+      const curMeters = this.getMeters();
+      const spawnChance = this.getSpawnChance(curMeters);
 
-        while (this.scrollY - this.lastSpawnScrollY >= this.SPAWN_GAP_PX && spawned < this.SPAWN_PER_FRAME_LIMIT) {
-          this.lastSpawnScrollY += this.SPAWN_GAP_PX;
+      while (this.scrollY - this.lastSpawnScrollY >= this.SPAWN_GAP_PX && spawned < this.SPAWN_PER_FRAME_LIMIT) {
+        this.lastSpawnScrollY += this.SPAWN_GAP_PX;
 
-          if (Math.random() < spawnChance) {
-            this.spawnBanana();
-            spawned++;
-          }
+        if (Math.random() < spawnChance) {
+          this.spawnBanana();
+          spawned++;
+        }
 
-          // 고릴라 최대 수 제한
-          if (this.gorillaGroup.getLength() < this.GORILLA_MAX_ON_SCREEN && Math.random() < this.GORILLA_SPAWN_PROB_PER_SLOT) {
-            this.spawnGorilla();
-          }
+        // 고릴라 최대 수 제한
+        if (
+          this.gorillaGroup.getLength() < this.GORILLA_MAX_ON_SCREEN &&
+          Math.random() < this.GORILLA_SPAWN_PROB_PER_SLOT
+        ) {
+          this.spawnGorilla();
         }
       }
     }
-    this.lastYForScore = this.character.y;
+  }
 
-    this.updateBananas();
-    this.updateGorillas(delta);
+  this.lastYForScore = this.character.y;
 
-    this.updateSegmentsY();     
-    this.cullBelow();         
-    this.handleZoneTransition();
-    this.fillAbove();        
+  this.updateBananas();
+  this.updateGorillas(delta);
 
-if (this.feverActive) {
-  this.updateFeverSegmentsY();
-  this.cullFeverBelow();
-  this.fillFeverAbove();
+  // === 배경 업데이트 ===
+  this.updateSegmentsY();
+  this.cullBelow();
+  this.handleZoneTransition();
+  this.fillAbove();
+
+  // === Fever 오버레이 업데이트 ===
+  if (this.feverActive) {
+    this.updateFeverSegmentsY();
+    this.cullFeverBelow();
+    this.fillFeverAbove();
     this.fillFeverBelow();
+  }
 
+  // === Fever 종료 ===
+  if (this.feverActive && this.time.now >= this.feverUntil) this.stopFever();
+
+  // === 화면 이탈 시 낙하 처리 ===
+  this.checkOffscreenAndProcess();
+
+  this.prevVy = cBody.velocity.y;
+  this.prevCharY = this.character.y;
 }
 
-    if (this.feverActive && this.time.now >= this.feverUntil) this.stopFever();
-
-    this.checkOffscreenAndProcess();
-
-    this.prevVy = vy;
-    this.prevCharY = this.character.y;
-  }
 }
 
 export default GameScene;
