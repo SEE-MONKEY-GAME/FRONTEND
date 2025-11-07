@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { getImage } from '@utils/get-images';
+import { getBGMs } from '@utils/get-sounds';
 
 class HomeScene extends Phaser.Scene {
   constructor() {
@@ -10,9 +11,17 @@ class HomeScene extends Phaser.Scene {
     // 임시 로드 이미지, 모든 이미지 파일은 LoadingScene에서 preload 되어야 함
     this.load.image('bana', getImage('home', 'bana_sit'));
     this.load.image('platform', getImage('home', 'platform_tree'));
+    this.load.audio('home', getBGMs('home'));
   }
+
+  private bgm?: Phaser.Sound.BaseSound;
+
   create() {
     const { width, height } = this.cameras.main;
+
+    // BGM
+    this.bgm = this.sound.add('home', { loop: true, volume: 0.4 });
+    this.bgm.play();
 
     // 임시 요소
     const temp = this.add.image(500, 0, 'platform');
