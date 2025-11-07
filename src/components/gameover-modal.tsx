@@ -1,19 +1,18 @@
 /** @jsxImportSource @emotion/react */
+import { useNavigate } from 'react-router-dom';
 import {
-  overlayCss,
-  panelCss,
-  titleCss,
-  hrCss,
-  statWrapCss,
-  scoreLabelCss,
-  scoreValueCss,
+  btnRowCss,
   coinCss2,
   coinImgCss,
-  btnRowCss,
+  hrCss,
   iconBtnCss,
-} from '@styles/pages/game.css'; 
-
-import { useNavigate } from 'react-router-dom';
+  overlayCss,
+  panelCss,
+  scoreLabelCss,
+  scoreValueCss,
+  statWrapCss,
+  titleCss,
+} from '@styles/pages/game.css';
 import { getImage } from '@utils/get-images';
 
 type Props = {
@@ -54,6 +53,7 @@ export default function GameOverModal({ open, score, coin, onClose, onReplay }: 
             type="button"
             onClick={() => {
               onClose();
+              window.dispatchEvent(new Event('game:end'));
               navigate('/');
             }}
           >
@@ -71,11 +71,7 @@ export default function GameOverModal({ open, score, coin, onClose, onReplay }: 
             <img src={getImage('game', 'retry')} alt="replay" />
           </button>
 
-          <button
-            css={iconBtnCss}
-            type="button"
-            onClick={() => console.log('share clicked')}
-          >
+          <button css={iconBtnCss} type="button" onClick={() => console.log('share clicked')}>
             <img src={getImage('game', 'share')} alt="share" />
           </button>
         </div>

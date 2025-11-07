@@ -1,7 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { useFeverProgressAnimator } from '../hooks/useFeverProgressAnimator';
 import { useEffect, useState } from 'react';
-import GameCanvas from '@canvas/game-canvas';
 import FeverGauge from '@components/fever-gauge';
 import GameOverModal from '@components/gameover-modal';
 import { FEVER_DURATION_MS } from '@scenes/game-scene';
@@ -71,9 +70,7 @@ export default function GamePage() {
   return (
     <>
       <div css={circleCss} />
-      <div style={{ width: '100%', height: '100vh', position: 'relative', background: '#000' }}>
-        <GameCanvas />
-
+      <div style={{ width: '100%', height: '100vh', position: 'relative', background: 'transparent' }}>
         <span css={currentScoreCss}>{score} m</span>
 
         <div css={coinCss}>

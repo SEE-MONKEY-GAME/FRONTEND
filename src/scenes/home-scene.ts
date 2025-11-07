@@ -3,7 +3,7 @@ import { getImage } from '@utils/get-images';
 
 class HomeScene extends Phaser.Scene {
   constructor() {
-    super('Home');
+    super('HomeScene');
   }
 
   preload() {
@@ -31,6 +31,11 @@ class HomeScene extends Phaser.Scene {
     platform.setScale(0.3);
     platform.setOrigin(0.5, 1);
     platform.setPosition(width / 2, height - 187);
+
+    // Scene 전환
+    window.addEventListener('game:start', () => {
+      this.scene.start('GameScene');
+    });
   }
 }
 

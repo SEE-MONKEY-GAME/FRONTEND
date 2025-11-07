@@ -1,7 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import HomeCanvas from '@canvas/home-canvas';
 import Attend from '@components/attend';
 import Guide from '@components/guide';
 import Option from '@components/option';
@@ -51,6 +50,8 @@ const Home = () => {
 
   const handleGameStart = () => {
     setTransition(true);
+    window.dispatchEvent(new Event('game:start'));
+
     setTimeout(() => {
       navigate('/game');
     }, 1000);
@@ -63,7 +64,6 @@ const Home = () => {
       {option && <Option handleOption={handleOption} />}
       {guide && <Guide handleGameGuide={handleGameGuide} />}
       <div css={backgroundCss}>
-        <HomeCanvas />
         <div css={coinCss}>
           <span css={coinTextCss}>1985</span>
         </div>
