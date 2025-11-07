@@ -13,20 +13,18 @@ class GameScene extends Phaser.Scene {
   private barVX = 0;
   private prevCharY = 0;
 
-private jumpedThisFrame = false;
+  private jumpedThisFrame = false;
 
-private thiefHitPlaying = false;
-private thiefHitFrame = 0;
-private thiefHitAccMs = 0;
-private readonly THIEF_HIT_FPS = 12;        
-private readonly THIEF_HIT_TOTAL_FRAMES = 8; 
-
-
+  private thiefHitPlaying = false;
+  private thiefHitFrame = 0;
+  private thiefHitAccMs = 0;
+  private readonly THIEF_HIT_FPS = 12;
+  private readonly THIEF_HIT_TOTAL_FRAMES = 8;
 
   private readonly JUMP_SPEED = 600;
   private readonly JUMP_COOLDOWN = 120;
 
-  // 스폰 난이도 
+  // 스폰 난이도
   private readonly SPAWN_PER_FRAME_LIMIT = 3;
   private readonly BANANA_PROB_TABLE: Array<{
     untilM: number;
@@ -50,18 +48,18 @@ private readonly THIEF_HIT_TOTAL_FRAMES = 8;
   private lastYForScore = 0;
   private lastEmittedMeters = -1;
 
-  // 바나나,코인 
+  // 바나나,코인
   private scrollY = 0;
   private lastSpawnScrollY = 0;
   private readonly SPAWN_GAP_PX = 120;
   private bananaGroup!: Phaser.Physics.Arcade.Group;
   private coin = 0;
 
-  // 피버 
+  // 피버
   private feverActive = false;
   private feverUntil = 0;
   private feverProgress = 0;
-  private readonly FEVER_GOAL = 20; 
+  private readonly FEVER_GOAL = 20;
   private readonly FEVER_DURATION = FEVER_DURATION_MS;
 
   // 아이템 포즈 연출
@@ -85,21 +83,20 @@ private readonly THIEF_HIT_TOTAL_FRAMES = 8;
   private readonly GORILLA_MAX_ON_SCREEN = 3;
   private readonly GORILLA_MIN_SPEED = 80;
   private readonly GORILLA_MAX_SPEED = 140;
-  private readonly GORILLA_FALL_SPEED = 60;   
+  private readonly GORILLA_FALL_SPEED = 60;
   private readonly GORILLA_KNOCKBACK_X = 480;
   private readonly GORILLA_KNOCKBACK_Y = -480;
-  private readonly GORILLA_HIT_COOLDOWN = 400; 
-  private readonly GORILLA_SPAWN_PROB_PER_SLOT = 0.15; 
-private isHitFlash = false;
-private hitFlashUntil = 0;
+  private readonly GORILLA_HIT_COOLDOWN = 400;
+  private readonly GORILLA_SPAWN_PROB_PER_SLOT = 0.15;
+  private isHitFlash = false;
+  private hitFlashUntil = 0;
 
-  
   // 배경
   private segs: Array<{
     img: Phaser.GameObjects.Image;
-    startTop: number;    
-    spawnScroll: number; 
-    height: number;      
+    startTop: number;
+    spawnScroll: number;
+    height: number;
   }> = [];
 
   private currentLoopKey = 'bg_jungle_loop';
@@ -107,143 +104,152 @@ private hitFlashUntil = 0;
   private currentZone = 0;
 
   private readonly ZONES = [
-    { startM: 0,    startKey: 'bg_jungle_start', loopKey: 'bg_jungle_loop' },
-    { startM: 900, startKey: 'bg_sky_start',    loopKey: 'bg_sky_loop'    },
-    { startM: 2000, startKey: 'bg_space_start',  loopKey: 'bg_space_loop'  },
+    { startM: 0, startKey: 'bg_jungle_start', loopKey: 'bg_jungle_loop' },
+    { startM: 900, startKey: 'bg_sky_start', loopKey: 'bg_sky_loop' },
+    { startM: 2000, startKey: 'bg_space_start', loopKey: 'bg_space_loop' },
   ];
 
-    // 배경 초기화
-private initBackground() {
-  const { height } = this.cameras.main;
+  // 배경 초기화
+  private initBackground() {
+    const { height } = this.cameras.main;
 
-['bg_jungle_start','bg_jungle_loop','bg_sky_start','bg_sky_loop','bg_space_start','bg_space_loop','bg_fever']
-  .forEach(k => this.textures.get(k).setFilter(Phaser.Textures.FilterMode.NEAREST));
+    [
+      'bg_jungle_start',
+      'bg_jungle_loop',
+      'bg_sky_start',
+      'bg_sky_loop',
+      'bg_space_start',
+      'bg_space_loop',
+      'bg_fever',
+    ].forEach((k) => this.textures.get(k).setFilter(Phaser.Textures.FilterMode.NEAREST));
 
-this.feverSegs.forEach(f => f.img.destroy());
-this.feverSegs = [];
+    this.feverSegs.forEach((f) => f.img.destroy());
+    this.feverSegs = [];
 
-  this.segs.forEach(s => s.img.destroy());
-  this.segs = [];
-  this.scrollY = 0;                
-  this.currentZone = 0;
-  this.currentLoopKey = this.ZONES[0].loopKey;
-  this.pendingStartKey = null;
+    this.segs.forEach((s) => s.img.destroy());
+    this.segs = [];
+    this.scrollY = 0;
+    this.currentZone = 0;
+    this.currentLoopKey = this.ZONES[0].loopKey;
+    this.pendingStartKey = null;
 
-  const startKey = this.ZONES[0].startKey;
-  this.createSegment(startKey, 0, true);
-  this.fillAbove();
-}
-
-private createFeverSegment(currentTopY: number, fitTop = false): number {
-  const { width } = this.cameras.main;
-  const tex = this.textures.get('bg_fever').getSourceImage() as HTMLImageElement;
-
-  const rawScale = width / tex.width;
-  const displayH = Math.round(tex.height * rawScale); 
-  const scale = displayH / tex.height;
-
-  const img = this.add.image(width / 2, 0, 'bg_fever')
-    .setOrigin(0.5, 0)
-    .setScrollFactor(0)
-    .setDepth(this.FEVER_OVERLAY_DEPTH)
-    .setAlpha(this.FEVER_ALPHA);
-  img.setScale(scale);
-
-  img.setDataEnabled();
-  img.setData('startTop', currentTopY);
-  img.setData('spawnScroll', this.scrollY);
-
-  if (fitTop) img.setY(Math.round(currentTopY));
-
-  this.feverSegs.push({
-    img,
-    startTop: currentTopY,
-    spawnScroll: this.scrollY,
-    height: displayH, 
-  });
-
-  return displayH;
-}
-
-private updateFeverSegmentsY() {
-  for (const seg of this.feverSegs) {
-    const y = seg.startTop + (this.scrollY - seg.spawnScroll);
-    seg.img.setY(Math.round(y)); 
+    const startKey = this.ZONES[0].startKey;
+    this.createSegment(startKey, 0, true);
+    this.fillAbove();
   }
-}
 
-private cullFeverBelow() {
-  const { height } = this.cameras.main;
-  const margin = 4;
+  private createFeverSegment(currentTopY: number, fitTop = false): number {
+    const { width } = this.cameras.main;
+    const tex = this.textures.get('bg_fever').getSourceImage() as HTMLImageElement;
 
-  this.feverSegs = this.feverSegs.filter(seg => {
-    const top = seg.startTop + (this.scrollY - seg.spawnScroll);
-    const still = top < height + margin;
-    if (!still) seg.img.destroy();
-    return still;
-  });
-}
+    const rawScale = width / tex.width;
+    const displayH = Math.round(tex.height * rawScale);
+    const scale = displayH / tex.height;
 
-private fillFeverAbove() {
-  const { height } = this.cameras.main;
-  if (this.feverSegs.length === 0) return;
+    const img = this.add
+      .image(width / 2, 0, 'bg_fever')
+      .setOrigin(0.5, 0)
+      .setScrollFactor(0)
+      .setDepth(this.FEVER_OVERLAY_DEPTH)
+      .setAlpha(this.FEVER_ALPHA);
+    img.setScale(scale);
 
-  const topMost = this.feverSegs.reduce((a, b) => {
-    const ay = a.startTop + (this.scrollY - a.spawnScroll);
-    const by = b.startTop + (this.scrollY - b.spawnScroll);
-    return ay < by ? a : b;
-  });
-  let currentTopY = Math.round(topMost.startTop + (this.scrollY - topMost.spawnScroll));
+    img.setDataEnabled();
+    img.setData('startTop', currentTopY);
+    img.setData('spawnScroll', this.scrollY);
 
-  while (currentTopY > -height) {
-    const nextH = this.peekDisplayHeight('bg_fever');
-    const desiredY = Math.round(currentTopY - nextH + this.FEVER_OVERLAP_PX);
-    this.createFeverSegment(desiredY, true);
-    currentTopY = desiredY;
+    if (fitTop) img.setY(Math.round(currentTopY));
+
+    this.feverSegs.push({
+      img,
+      startTop: currentTopY,
+      spawnScroll: this.scrollY,
+      height: displayH,
+    });
+
+    return displayH;
   }
-}
 
-private fillFeverBelow() {
-  const { height } = this.cameras.main;
-  if (this.feverSegs.length === 0) return;
-
-  const bottomMost = this.feverSegs.reduce((a, b) => {
-    const ayTop = a.startTop + (this.scrollY - a.spawnScroll);
-    const byTop = b.startTop + (this.scrollY - b.spawnScroll);
-    return (ayTop + a.height) > (byTop + b.height) ? a : b;
-  });
-
-  let bottomMostBottomY = Math.round(bottomMost.startTop + (this.scrollY - bottomMost.spawnScroll) + bottomMost.height);
-
-  while (bottomMostBottomY < height) {
-    const nextH = this.peekDisplayHeight('bg_fever'); 
-    const newTop = Math.round(bottomMostBottomY - this.FEVER_OVERLAP_PX); 
-    this.createFeverSegment(newTop, true);
-    bottomMostBottomY = newTop + nextH;
+  private updateFeverSegmentsY() {
+    for (const seg of this.feverSegs) {
+      const y = seg.startTop + (this.scrollY - seg.spawnScroll);
+      seg.img.setY(Math.round(y));
+    }
   }
-}
 
+  private cullFeverBelow() {
+    const { height } = this.cameras.main;
+    const margin = 4;
 
-private initFeverOverlay() {
-  if (this.segs.length === 0) return;
+    this.feverSegs = this.feverSegs.filter((seg) => {
+      const top = seg.startTop + (this.scrollY - seg.spawnScroll);
+      const still = top < height + margin;
+      if (!still) seg.img.destroy();
+      return still;
+    });
+  }
 
-  const baseTopMost = this.segs.reduce((a, b) => {
-    const ay = a.startTop + (this.scrollY - a.spawnScroll);
-    const by = b.startTop + (this.scrollY - b.spawnScroll);
-    return ay < by ? a : b;
-  });
-  const baseTopY = Math.round(baseTopMost.startTop + (this.scrollY - baseTopMost.spawnScroll));
+  private fillFeverAbove() {
+    const { height } = this.cameras.main;
+    if (this.feverSegs.length === 0) return;
 
-  this.createFeverSegment(baseTopY, true);
+    const topMost = this.feverSegs.reduce((a, b) => {
+      const ay = a.startTop + (this.scrollY - a.spawnScroll);
+      const by = b.startTop + (this.scrollY - b.spawnScroll);
+      return ay < by ? a : b;
+    });
+    let currentTopY = Math.round(topMost.startTop + (this.scrollY - topMost.spawnScroll));
 
-  this.fillFeverAbove();
-  this.fillFeverBelow();
-}
+    while (currentTopY > -height) {
+      const nextH = this.peekDisplayHeight('bg_fever');
+      const desiredY = Math.round(currentTopY - nextH + this.FEVER_OVERLAP_PX);
+      this.createFeverSegment(desiredY, true);
+      currentTopY = desiredY;
+    }
+  }
 
-private destroyFeverOverlay() {
-  this.feverSegs.forEach(s => s.img.destroy());
-  this.feverSegs = [];
-}
+  private fillFeverBelow() {
+    const { height } = this.cameras.main;
+    if (this.feverSegs.length === 0) return;
+
+    const bottomMost = this.feverSegs.reduce((a, b) => {
+      const ayTop = a.startTop + (this.scrollY - a.spawnScroll);
+      const byTop = b.startTop + (this.scrollY - b.spawnScroll);
+      return ayTop + a.height > byTop + b.height ? a : b;
+    });
+
+    let bottomMostBottomY = Math.round(
+      bottomMost.startTop + (this.scrollY - bottomMost.spawnScroll) + bottomMost.height,
+    );
+
+    while (bottomMostBottomY < height) {
+      const nextH = this.peekDisplayHeight('bg_fever');
+      const newTop = Math.round(bottomMostBottomY - this.FEVER_OVERLAP_PX);
+      this.createFeverSegment(newTop, true);
+      bottomMostBottomY = newTop + nextH;
+    }
+  }
+
+  private initFeverOverlay() {
+    if (this.segs.length === 0) return;
+
+    const baseTopMost = this.segs.reduce((a, b) => {
+      const ay = a.startTop + (this.scrollY - a.spawnScroll);
+      const by = b.startTop + (this.scrollY - b.spawnScroll);
+      return ay < by ? a : b;
+    });
+    const baseTopY = Math.round(baseTopMost.startTop + (this.scrollY - baseTopMost.spawnScroll));
+
+    this.createFeverSegment(baseTopY, true);
+
+    this.fillFeverAbove();
+    this.fillFeverBelow();
+  }
+
+  private destroyFeverOverlay() {
+    this.feverSegs.forEach((s) => s.img.destroy());
+    this.feverSegs = [];
+  }
 
   private getZoneIndexByMeters(m: number) {
     if (m >= 2000) return 2;
@@ -251,94 +257,93 @@ private destroyFeverOverlay() {
     return 0;
   }
 
-private createSegment(key: string, currentTopY: number, fitTop = false): number {
-  const { width } = this.cameras.main;
-  const tex = this.textures.get(key).getSourceImage() as HTMLImageElement;
+  private createSegment(key: string, currentTopY: number, fitTop = false): number {
+    const { width } = this.cameras.main;
+    const tex = this.textures.get(key).getSourceImage() as HTMLImageElement;
 
-  const rawScale = width / tex.width;
+    const rawScale = width / tex.width;
 
-  const displayH = Math.round(tex.height * rawScale);
-  const scale = displayH / tex.height;
+    const displayH = Math.round(tex.height * rawScale);
+    const scale = displayH / tex.height;
 
-  const img = this.add.image(width / 2, 0, key)
-    .setOrigin(0.5, 0)
-    .setScrollFactor(0)
-    .setDepth(-1000);
-  img.setScale(scale);
+    const img = this.add
+      .image(width / 2, 0, key)
+      .setOrigin(0.5, 0)
+      .setScrollFactor(0)
+      .setDepth(-1000);
+    img.setScale(scale);
 
-  img.setDataEnabled();
-  img.setData('startTop', currentTopY);
-  img.setData('spawnScroll', this.scrollY);
+    img.setDataEnabled();
+    img.setData('startTop', currentTopY);
+    img.setData('spawnScroll', this.scrollY);
 
-  if (fitTop) img.setY(Math.round(currentTopY));
+    if (fitTop) img.setY(Math.round(currentTopY));
 
-  const seg = {
-    img,
-    startTop: currentTopY,
-    spawnScroll: this.scrollY,
-    height: displayH,            
-  };
-  this.segs.push(seg);
+    const seg = {
+      img,
+      startTop: currentTopY,
+      spawnScroll: this.scrollY,
+      height: displayH,
+    };
+    this.segs.push(seg);
 
-  return seg.height;
-}
+    return seg.height;
+  }
 
-private fillAbove() {
-  const { height } = this.cameras.main;
-  if (this.segs.length === 0) return;
+  private fillAbove() {
+    const { height } = this.cameras.main;
+    if (this.segs.length === 0) return;
 
-  const topMost = this.segs.reduce((a, b) => {
-    const ay = a.startTop + (this.scrollY - a.spawnScroll);
-    const by = b.startTop + (this.scrollY - b.spawnScroll);
-    return ay < by ? a : b;
-  });
-  let currentTopY = Math.round(topMost.startTop + (this.scrollY - topMost.spawnScroll));
+    const topMost = this.segs.reduce((a, b) => {
+      const ay = a.startTop + (this.scrollY - a.spawnScroll);
+      const by = b.startTop + (this.scrollY - b.spawnScroll);
+      return ay < by ? a : b;
+    });
+    let currentTopY = Math.round(topMost.startTop + (this.scrollY - topMost.spawnScroll));
 
-  while (currentTopY > -height) {
-    const nextKey = this.pendingStartKey ?? this.currentLoopKey;
+    while (currentTopY > -height) {
+      const nextKey = this.pendingStartKey ?? this.currentLoopKey;
 
-    const OVERLAP_PX = (this.pendingStartKey ? 1 : 2);
+      const OVERLAP_PX = this.pendingStartKey ? 1 : 2;
 
-    const nextH = this.peekDisplayHeight(nextKey); 
-    const desiredCurrentY = Math.round(currentTopY - nextH + OVERLAP_PX);
+      const nextH = this.peekDisplayHeight(nextKey);
+      const desiredCurrentY = Math.round(currentTopY - nextH + OVERLAP_PX);
 
-    this.createSegment(nextKey, desiredCurrentY, true);
+      this.createSegment(nextKey, desiredCurrentY, true);
 
-    if (this.pendingStartKey) {
-      const newZone = this.getZoneIndexByMeters(this.getMeters());
-      this.currentZone = newZone;
-      this.currentLoopKey = this.ZONES[newZone].loopKey;
-      this.pendingStartKey = null;
+      if (this.pendingStartKey) {
+        const newZone = this.getZoneIndexByMeters(this.getMeters());
+        this.currentZone = newZone;
+        this.currentLoopKey = this.ZONES[newZone].loopKey;
+        this.pendingStartKey = null;
+      }
+
+      currentTopY = desiredCurrentY;
     }
-
-    currentTopY = desiredCurrentY; 
   }
-}
 
+  private cullBelow() {
+    const { height } = this.cameras.main;
+    const margin = 4;
 
-private cullBelow() {
-  const { height } = this.cameras.main;
-  const margin = 4;
+    this.segs = this.segs.filter((seg) => {
+      const top = seg.startTop + (this.scrollY - seg.spawnScroll);
+      const bottom = top + seg.height;
 
-  this.segs = this.segs.filter(seg => {
-    const top = seg.startTop + (this.scrollY - seg.spawnScroll);
-    const bottom = top + seg.height;
-
-    const stillOnOrAboveScreen = top < height + margin;
-    if (!stillOnOrAboveScreen) seg.img.destroy();
-    return stillOnOrAboveScreen;
-  });
-}
-
-
-private updateSegmentsY() {
-  for (const seg of this.segs) {
-    const y = seg.startTop + (this.scrollY - seg.spawnScroll);
-    seg.img.setY(Math.round(y));
+      const stillOnOrAboveScreen = top < height + margin;
+      if (!stillOnOrAboveScreen) seg.img.destroy();
+      return stillOnOrAboveScreen;
+    });
   }
-}
 
-    private handleZoneTransition() {
+  private updateSegmentsY() {
+    for (const seg of this.segs) {
+      const y = seg.startTop + (this.scrollY - seg.spawnScroll);
+      seg.img.setY(Math.round(y));
+    }
+  }
+
+  private handleZoneTransition() {
     const m = this.getMeters();
     const zoneIdx = this.getZoneIndexByMeters(m);
     if (zoneIdx !== this.currentZone && this.pendingStartKey == null) {
@@ -346,7 +351,7 @@ private updateSegmentsY() {
     }
   }
 
-    private peekDisplayHeight(key: string): number {
+  private peekDisplayHeight(key: string): number {
     const { width } = this.cameras.main;
     const tex = this.textures.get(key).getSourceImage() as HTMLImageElement;
     const scale = width / tex.width;
@@ -354,38 +359,60 @@ private updateSegmentsY() {
   }
 
   private gameOver = false;
-private onReplay = () => {
-  if (!this.scene.isActive()) return;
+  private onEnd = () => {
+    if (!this.scene.isActive()) return;
 
-  // 상태 초기화
-  this.gameOver = false;
-  this.lives = 3;      
-  this.coin = 0;           
-  this.totalAscentPx = 0;  
-  this.feverActive = false;
-  this.feverProgress = 0;
+    // 상태 초기화
+    this.gameOver = false;
+    this.lives = 3;
+    this.coin = 0;
+    this.totalAscentPx = 0;
+    this.feverActive = false;
+    this.feverProgress = 0;
     this.destroyFeverOverlay();
 
-  // 재시작
-  this.physics.resume();
-  this.input.enabled = true;
-  this.scene.restart();
-};
+    // 모든 타이머/트윈/리스너 정리
+    this.tweens.killAll();
+    this.time.removeAllEvents();
+
+    // 홈 씬으로 전환
+    if (this.scene.isActive('HomeScene')) {
+      this.scene.stop('GameScene');
+    } else {
+      this.scene.start('HomeScene');
+    }
+  };
+  private onReplay = () => {
+    if (!this.scene.isActive()) return;
+
+    // 상태 초기화
+    this.gameOver = false;
+    this.lives = 3;
+    this.coin = 0;
+    this.totalAscentPx = 0;
+    this.feverActive = false;
+    this.feverProgress = 0;
+    this.destroyFeverOverlay();
+
+    // 재시작
+    this.physics.resume();
+    this.input.enabled = true;
+    this.scene.restart();
+  };
 
   constructor() {
-    super('Game');
+    super('GameScene');
   }
 
-private feverSegs: Array<{
-  img: Phaser.GameObjects.Image;
-  startTop: number;
-  spawnScroll: number;
-  height: number;
-}> = [];
-private FEVER_OVERLAY_DEPTH = -900; 
-private FEVER_ALPHA = 0.9;         
-private FEVER_OVERLAP_PX = 2;     
-
+  private feverSegs: Array<{
+    img: Phaser.GameObjects.Image;
+    startTop: number;
+    spawnScroll: number;
+    height: number;
+  }> = [];
+  private FEVER_OVERLAY_DEPTH = -900;
+  private FEVER_ALPHA = 0.9;
+  private FEVER_OVERLAP_PX = 2;
 
   preload() {
     this.load.image('bar', getImage('game', 'bar'));
@@ -408,7 +435,6 @@ private FEVER_OVERLAP_PX = 2;
     this.load.image('fullguage', getImage('game', 'full_guage_bar'));
     this.load.image('emptyguage', getImage('game', 'empty_guage_bar'));
 
-    
     this.load.spritesheet('gori_block_sheet', getImage('game', 'gorilla_block_sheet'), {
       frameWidth: 300,
       frameHeight: 300,
@@ -418,21 +444,18 @@ private FEVER_OVERLAP_PX = 2;
       frameHeight: 300,
     });
 
-
-  this.load.image('bg_jungle_start', getImage('game', 'bg_jungle_start'));
-  this.load.image('bg_jungle_loop',  getImage('game', 'bg_jungle_loop'));
-  this.load.image('bg_sky_start',    getImage('game', 'bg_sky_start'));
-  this.load.image('bg_sky_loop',     getImage('game', 'bg_sky_loop'));
-  this.load.image('bg_space_start',  getImage('game', 'bg_space_start'));
-  this.load.image('bg_space_loop',   getImage('game', 'bg_space_loop'));
-  this.load.image('bg_fever', getImage('game', 'bg_fever'));
-  this.load.image('hit_block', getImage('game', 'hit-blockgoril'));
-  this.load.spritesheet('hit_thief', getImage('game', 'hit-thiefgoril'), {
-  frameWidth: 630,
-  frameHeight: 630,
-});
-
-
+    this.load.image('bg_jungle_start', getImage('game', 'bg_jungle_start'));
+    this.load.image('bg_jungle_loop', getImage('game', 'bg_jungle_loop'));
+    this.load.image('bg_sky_start', getImage('game', 'bg_sky_start'));
+    this.load.image('bg_sky_loop', getImage('game', 'bg_sky_loop'));
+    this.load.image('bg_space_start', getImage('game', 'bg_space_start'));
+    this.load.image('bg_space_loop', getImage('game', 'bg_space_loop'));
+    this.load.image('bg_fever', getImage('game', 'bg_fever'));
+    this.load.image('hit_block', getImage('game', 'hit-blockgoril'));
+    this.load.spritesheet('hit_thief', getImage('game', 'hit-thiefgoril'), {
+      frameWidth: 630,
+      frameHeight: 630,
+    });
   }
 
   create() {
@@ -441,32 +464,36 @@ private FEVER_OVERLAP_PX = 2;
     this.physics.world.setBounds(0, 0, width, height);
     this.physics.world.gravity.y = 1200;
 
-      this.initBackground();
+    this.initBackground();
+
+    window.addEventListener('game:end', this.onEnd);
+    this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+      window.removeEventListener('game:end', this.onEnd);
+    });
 
     window.addEventListener('game:replay', this.onReplay);
     this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
       window.removeEventListener('game:replay', this.onReplay);
     });
 
-     this.anims.create({
+    this.anims.create({
       key: 'gori_block_walk',
-      frames: this.anims.generateFrameNumbers('gori_block_sheet', { frames: [0, 1, 2, 3, 4,5,6,7,8] }),
+      frames: this.anims.generateFrameNumbers('gori_block_sheet', { frames: [0, 1, 2, 3, 4, 5, 6, 7, 8] }),
       frameRate: 10,
       repeat: -1,
     });
     this.anims.create({
       key: 'gori_thief_walk',
-      frames: this.anims.generateFrameNumbers('gori_thief_sheet', { frames: [0, 1, 2, 3, 4,5,6,7,8] }),
+      frames: this.anims.generateFrameNumbers('gori_thief_sheet', { frames: [0, 1, 2, 3, 4, 5, 6, 7, 8] }),
       frameRate: 10,
       repeat: -1,
     });
     this.anims.create({
-  key: 'hit_thief_anim',
-  frames: this.anims.generateFrameNumbers('hit_thief', { start: 0, end: 7 }), 
-  frameRate: 12, 
-  repeat: 0, 
-});
-
+      key: 'hit_thief_anim',
+      frames: this.anims.generateFrameNumbers('hit_thief', { start: 0, end: 7 }),
+      frameRate: 12,
+      repeat: 0,
+    });
 
     // 캐릭터
     this.character = this.physics.add
@@ -484,11 +511,7 @@ private FEVER_OVERLAP_PX = 2;
       .setScale(0.3);
     (this.bar.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
     (this.bar.body as Phaser.Physics.Arcade.Body).setImmovable(true);
-    (this.bar.body as Phaser.Physics.Arcade.Body).setSize(
-      this.bar.displayWidth,
-      this.bar.displayHeight * 1.5,
-      true
-    );
+    (this.bar.body as Phaser.Physics.Arcade.Body).setSize(this.bar.displayWidth, this.bar.displayHeight * 1.5, true);
 
     // 라이프 UI
     this.createLivesUI();
@@ -506,8 +529,14 @@ private FEVER_OVERLAP_PX = 2;
       this.tweens.add({ targets: countdown, scale: 0.6, duration: 300, ease: 'Back.Out' });
     };
     playFlash();
-    this.time.delayedCall(1000, () => { countdown.setTexture('num2'); playFlash(); });
-    this.time.delayedCall(2000, () => { countdown.setTexture('num1'); playFlash(); });
+    this.time.delayedCall(1000, () => {
+      countdown.setTexture('num2');
+      playFlash();
+    });
+    this.time.delayedCall(2000, () => {
+      countdown.setTexture('num1');
+      playFlash();
+    });
     this.time.delayedCall(3000, () => {
       (this.character.body as Phaser.Physics.Arcade.Body).setAllowGravity(true);
       countdown.destroy();
@@ -537,7 +566,7 @@ private FEVER_OVERLAP_PX = 2;
       this.character,
       this.bar,
       () => this.handleJump(),
-      () => this.canJumpFromAbove()
+      () => this.canJumpFromAbove(),
     );
 
     // 좌,우 투명벽
@@ -545,7 +574,14 @@ private FEVER_OVERLAP_PX = 2;
     const worldH = height;
     const WALL_THICKNESS = 40;
     const leftWall = this.add.rectangle(-WALL_THICKNESS / 2, worldH / 2, WALL_THICKNESS, worldH * 3, 0x000000, 0);
-    const rightWall = this.add.rectangle(worldW + WALL_THICKNESS / 2, worldH / 2, WALL_THICKNESS, worldH * 3, 0x000000, 0);
+    const rightWall = this.add.rectangle(
+      worldW + WALL_THICKNESS / 2,
+      worldH / 2,
+      WALL_THICKNESS,
+      worldH * 3,
+      0x000000,
+      0,
+    );
     this.physics.add.existing(leftWall, true);
     this.physics.add.existing(rightWall, true);
     this.physics.add.collider(this.character, leftWall as any);
@@ -562,32 +598,31 @@ private FEVER_OVERLAP_PX = 2;
         if (!go || typeof go.getData !== 'function' || !go.active) return false;
         return !go.getData('collected');
       },
-      this
+      this,
     );
 
     // 고릴라
-this.gorillaGroup = this.physics.add.group({ allowGravity: false, immovable: true });
-this.physics.add.overlap(
-  this.character,
-  this.gorillaGroup,
-  (_ch, g) => this.hitGorilla(g as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody), 
-  (_ch: any, g: any) => {
-    if (this.isRespawning) return false;
-    const go = g as Phaser.GameObjects.GameObject & { getData?: (k: string) => any; active?: boolean };
-    if (!go || typeof go.getData !== 'function' || !go.active) return false;
-    const hitUntil = Number(go.getData('hitUntil') ?? 0);
-    return this.time.now >= hitUntil;
-  },
-  this
-);
-
+    this.gorillaGroup = this.physics.add.group({ allowGravity: false, immovable: true });
+    this.physics.add.overlap(
+      this.character,
+      this.gorillaGroup,
+      (_ch, g) => this.hitGorilla(g as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody),
+      (_ch: any, g: any) => {
+        if (this.isRespawning) return false;
+        const go = g as Phaser.GameObjects.GameObject & { getData?: (k: string) => any; active?: boolean };
+        if (!go || typeof go.getData !== 'function' || !go.active) return false;
+        const hitUntil = Number(go.getData('hitUntil') ?? 0);
+        return this.time.now >= hitUntil;
+      },
+      this,
+    );
 
     // 초기 이벤트
     this.emitCoin(this.coin);
     this.emitFever(0, false, 0);
   }
 
-  // 라이프 UI 
+  // 라이프 UI
   private createLivesUI() {
     const { height } = this.cameras.main;
     const pad = 16;
@@ -630,29 +665,28 @@ this.physics.add.overlap(
     const vx = this.barVX * 15;
     cBody.setVelocityX(vx);
 
-  this.time.delayedCall(50, () => {
-  if (!this.character.active || this.poseActive || this.thiefHitPlaying || this.isHitFlash) return;
-  const vxx = cBody.velocity.x;
-  const DIR_THRESHOLD = 1;
-  if (vxx > DIR_THRESHOLD) this.setPose('rjump');
-  else if (vxx < -DIR_THRESHOLD) this.setPose('ljump');
-  else this.setPose('jump');
-});
+    this.time.delayedCall(50, () => {
+      if (!this.character.active || this.poseActive || this.thiefHitPlaying || this.isHitFlash) return;
+      const vxx = cBody.velocity.x;
+      const DIR_THRESHOLD = 1;
+      if (vxx > DIR_THRESHOLD) this.setPose('rjump');
+      else if (vxx < -DIR_THRESHOLD) this.setPose('ljump');
+      else this.setPose('jump');
+    });
 
     this.lastJumpAt = this.time.now;
   }
 
-private setPose(
-  key: 'character' | 'sit' | 'jump' | 'ljump' | 'rjump' | 'jump_item' | 'ljump_item' | 'rjump_item',
-  force = false
-) {
-  if (!force && (this.thiefHitPlaying || this.isHitFlash)) return;
+  private setPose(
+    key: 'character' | 'sit' | 'jump' | 'ljump' | 'rjump' | 'jump_item' | 'ljump_item' | 'rjump_item',
+    force = false,
+  ) {
+    if (!force && (this.thiefHitPlaying || this.isHitFlash)) return;
 
-  if (this.character.texture.key !== key) {
-    this.character.setTexture(key);
+    if (this.character.texture.key !== key) {
+      this.character.setTexture(key);
+    }
   }
-}
-
 
   private applyNormalJumpPose() {
     const key = this.lastDir === 'left' ? 'ljump' : this.lastDir === 'right' ? 'rjump' : 'jump';
@@ -693,7 +727,7 @@ private setPose(
     this.poseActive = true;
   }
 
-  // 낙하,리스폰 
+  // 낙하,리스폰
   private handleFallOut() {
     if (this.isRespawning) return;
     this.isRespawning = true;
@@ -712,22 +746,24 @@ private setPose(
     this.lives = Math.max(0, this.lives - 1);
     this.refreshLivesUI();
 
-   if (this.lives <= 0) {
-  // 게임 오버
-  this.gameOver = true;
-  this.physics.pause();
-  this.input.enabled = false;
+    if (this.lives <= 0) {
+      // 게임 오버
+      this.gameOver = true;
+      this.physics.pause();
+      this.input.enabled = false;
 
-  // 게임 오버 창
-  const finalScore = this.getMeters();
-  const finalCoin = this.coin;
-  window.dispatchEvent(new CustomEvent('game:over', {
-    detail: { score: finalScore, coin: finalCoin }
-  }));
+      // 게임 오버 창
+      const finalScore = this.getMeters();
+      const finalCoin = this.coin;
+      window.dispatchEvent(
+        new CustomEvent('game:over', {
+          detail: { score: finalScore, coin: finalCoin },
+        }),
+      );
 
-  this.character.disableBody(true, true);
-  return;
-}
+      this.character.disableBody(true, true);
+      return;
+    }
 
     const { width, height } = this.cameras.main;
     this.respawnTargetY = height / 3;
@@ -759,7 +795,7 @@ private setPose(
     }
   }
 
-  // React 이벤트 
+  // React 이벤트
   private emitScore(meters: number) {
     if (meters === this.lastEmittedMeters) return;
     this.lastEmittedMeters = meters;
@@ -774,22 +810,22 @@ private setPose(
     window.dispatchEvent(new CustomEvent('game:fever', { detail: { progress: progress01, active, timeLeftMs } }));
   }
 
-  // 피버 
-private startFever() {
-  this.feverActive = true;
-  this.feverUntil = this.time.now + this.FEVER_DURATION;
-  this.feverProgress = 0;
-  this.emitFever(0, true, this.FEVER_DURATION);
+  // 피버
+  private startFever() {
+    this.feverActive = true;
+    this.feverUntil = this.time.now + this.FEVER_DURATION;
+    this.feverProgress = 0;
+    this.emitFever(0, true, this.FEVER_DURATION);
 
-  this.initFeverOverlay();
-}
+    this.initFeverOverlay();
+  }
 
-private stopFever() {
-  this.feverActive = false;
-  this.emitFever(this.feverProgress / this.FEVER_GOAL, false, 0);
+  private stopFever() {
+    this.feverActive = false;
+    this.emitFever(this.feverProgress / this.FEVER_GOAL, false, 0);
 
-  this.destroyFeverOverlay();
-}
+    this.destroyFeverOverlay();
+  }
 
   private getMeters(): number {
     return Math.floor(this.totalAscentPx / this.PX_PER_M);
@@ -879,7 +915,13 @@ private stopFever() {
     item.disableBody(true, true);
 
     const ghost = this.add.image(x, y, tex).setScale(scale).setDepth(10);
-    this.tweens.add({ targets: ghost, scale: scale * 1.25, alpha: 0, duration: 150, onComplete: () => ghost.destroy() });
+    this.tweens.add({
+      targets: ghost,
+      scale: scale * 1.25,
+      alpha: 0,
+      duration: 150,
+      onComplete: () => ghost.destroy(),
+    });
 
     this.coin += val;
     this.emitCoin(this.coin);
@@ -936,8 +978,7 @@ private stopFever() {
     this.gorillaGroup.add(g);
   }
 
-
- private updateGorillas(delta: number) {
+  private updateGorillas(delta: number) {
     const { width, height } = this.cameras.main;
     const dt = delta / 1000;
     const toKill: Phaser.GameObjects.GameObject[] = [];
@@ -960,11 +1001,11 @@ private stopFever() {
       if (g.x < margin) {
         dir = 1;
         g.setData('dir', dir);
-        g.setFlipX(true); 
+        g.setFlipX(true);
       } else if (g.x > width - margin) {
         dir = -1;
         g.setData('dir', dir);
-        g.setFlipX(false); 
+        g.setFlipX(false);
       }
 
       if (y > height + 100) toKill.push(g);
@@ -974,197 +1015,189 @@ private stopFever() {
     for (const g of toKill) (g as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody).destroy();
   }
 
+  private hitGorilla(g: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {
+    if (this.isRespawning) return;
 
-private hitGorilla(g: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {
-  if (this.isRespawning) return;
+    const hitUntil = Number(g.getData('hitUntil') ?? 0);
+    if (this.time.now < hitUntil) return;
+    g.setData('hitUntil', this.time.now + this.GORILLA_HIT_COOLDOWN);
 
-  const hitUntil = Number(g.getData('hitUntil') ?? 0);
-  if (this.time.now < hitUntil) return;
-  g.setData('hitUntil', this.time.now + this.GORILLA_HIT_COOLDOWN);
+    const cBody = this.character.body as Phaser.Physics.Arcade.Body;
+    const pushLeft = this.character.x > g.x;
+    cBody.setVelocityX(pushLeft ? this.GORILLA_KNOCKBACK_X : -this.GORILLA_KNOCKBACK_X);
+    cBody.setVelocityY(-this.GORILLA_KNOCKBACK_Y);
 
-  const cBody = this.character.body as Phaser.Physics.Arcade.Body;
-  const pushLeft = this.character.x > g.x;
-  cBody.setVelocityX(pushLeft ? this.GORILLA_KNOCKBACK_X : -this.GORILLA_KNOCKBACK_X);
-  cBody.setVelocityY(-this.GORILLA_KNOCKBACK_Y);
+    if ((g.getData('type') as string) === 'block') {
+      this.stopSpin();
+      this.isHitFlash = true;
+      this.hitFlashUntil = this.time.now + 250;
+      this.character.setTexture('hit_block');
+    }
 
+    if ((g.getData('type') as string) === 'thief') {
+      this.coin = Math.max(0, this.coin - 5);
+      this.emitCoin(this.coin);
 
-  if ((g.getData('type') as string) === 'block') {
-    this.stopSpin();                    
-    this.isHitFlash = true;             
-    this.hitFlashUntil = this.time.now + 250; 
-    this.character.setTexture('hit_block');
+      this.stopSpin();
+
+      if (!this.thiefHitPlaying) {
+        this.thiefHitPlaying = true;
+        this.thiefHitFrame = 0;
+        this.thiefHitAccMs = 0;
+
+        this.character.setTexture('hit_thief');
+        this.character.setFrame(0);
+      }
+    }
   }
-
-if ((g.getData('type') as string) === 'thief') {
-  this.coin = Math.max(0, this.coin - 5);
-  this.emitCoin(this.coin);
-
-  this.stopSpin();
-
-  if (!this.thiefHitPlaying) {             
-    this.thiefHitPlaying = true;
-    this.thiefHitFrame = 0;
-    this.thiefHitAccMs = 0;
-
-    this.character.setTexture('hit_thief');
-    this.character.setFrame(0);
-  }
-}
-}
 
   // 프레임 루프
-update(_time: number, delta: number) {
-  if (!this.character.active || this.gameOver) return;
-  const cBody = this.character.body as Phaser.Physics.Arcade.Body;
+  update(_time: number, delta: number) {
+    if (!this.character.active || this.gameOver) return;
+    const cBody = this.character.body as Phaser.Physics.Arcade.Body;
 
-  this.jumpedThisFrame = false;
+    this.jumpedThisFrame = false;
 
-  // 리스폰 해제 
-  if (this.isRespawning && cBody.velocity.y > 0) {
-    this.isRespawning = false;
-    this.tweens.killTweensOf(this.character);
-    this.tweens.add({ targets: this.character, alpha: 1, duration: 400, ease: 'Sine.Out' });
-    this.lastYForScore = this.character.y;
-  }
-
-  // 스윕 보정 (Body 기반) 
-  if (cBody.velocity.y > 0 && !this.jumpedThisFrame) {
-    const barBody = this.bar.body as Phaser.Physics.Arcade.Body;
-    const charBody = this.character.body as Phaser.Physics.Arcade.Body;
-
-    const barTop = barBody.top;
-    const prevCharBottom = this.prevCharY + charBody.halfHeight;
-    const charBottom = this.character.y + charBody.halfHeight;
-
-    const horizontalOverlap = charBody.right > barBody.left && charBody.left < barBody.right;
-    const crossedDown = prevCharBottom <= barTop && charBottom >= barTop;
-
-    if (horizontalOverlap && crossedDown && this.time.now - this.lastJumpAt >= this.JUMP_COOLDOWN) {
-      const targetY = barTop - charBody.halfHeight + 0.5;
-      this.character.setY(targetY);
-      charBody.updateFromGameObject?.(); 
-
-      this.handleJump();
-      this.jumpedThisFrame = true;
-    }
-  }
-
-  if (Math.abs(cBody.velocity.x) > 10) {
-    this.lastDir = cBody.velocity.x < 0 ? 'left' : 'right';
-  } else {
-    this.lastDir = 'up';
-  }
-
-
-  if (this.thiefHitPlaying) {
-    this.thiefHitAccMs += delta;
-    const frameDur = 1000 / this.THIEF_HIT_FPS;
-
-    while (this.thiefHitAccMs >= frameDur && this.thiefHitPlaying) {
-      this.thiefHitAccMs -= frameDur;
-      this.thiefHitFrame++;
-
-      if (this.thiefHitFrame >= this.THIEF_HIT_TOTAL_FRAMES) {
-  this.thiefHitPlaying = false;          
-  const vy = cBody.velocity.y;
-  if (vy === 0) this.setPose('sit');    
-  else if (vy > 0) this.setPose('character');
-  else this.applyNormalJumpPose();
-} else {
-  this.character.setFrame(this.thiefHitFrame);
-}
+    // 리스폰 해제
+    if (this.isRespawning && cBody.velocity.y > 0) {
+      this.isRespawning = false;
+      this.tweens.killTweensOf(this.character);
+      this.tweens.add({ targets: this.character, alpha: 1, duration: 400, ease: 'Sine.Out' });
+      this.lastYForScore = this.character.y;
     }
 
-   
-  } else if (this.isHitFlash) {
- 
-    if (this.time.now >= this.hitFlashUntil) {
-      this.isHitFlash = false;
-      const vy = cBody.velocity.y;
-      if (vy === 0) this.setPose('sit');
-      else if (vy > 0) this.setPose('character');
-      else this.applyNormalJumpPose();
-    }
-  } else {
- 
-    const now = this.time.now;
-    const vy = cBody.velocity.y;
-    const apexPassed = this.prevVy < 0 && vy >= 0;
+    // 스윕 보정 (Body 기반)
+    if (cBody.velocity.y > 0 && !this.jumpedThisFrame) {
+      const barBody = this.bar.body as Phaser.Physics.Arcade.Body;
+      const charBody = this.character.body as Phaser.Physics.Arcade.Body;
 
-    if (this.poseActive) {
-      const minHoldOk = now >= this.poseUntil - (this.POSE_BASE_MS - this.POSE_MIN_MS);
-      const deadlinePassed = now >= this.poseUntil;
-      if (minHoldOk && (deadlinePassed || apexPassed)) {
-        this.poseActive = false;
-        this.stopSpin();
-        this.applyNormalJumpPose();
+      const barTop = barBody.top;
+      const prevCharBottom = this.prevCharY + charBody.halfHeight;
+      const charBottom = this.character.y + charBody.halfHeight;
+
+      const horizontalOverlap = charBody.right > barBody.left && charBody.left < barBody.right;
+      const crossedDown = prevCharBottom <= barTop && charBottom >= barTop;
+
+      if (horizontalOverlap && crossedDown && this.time.now - this.lastJumpAt >= this.JUMP_COOLDOWN) {
+        const targetY = barTop - charBody.halfHeight + 0.5;
+        this.character.setY(targetY);
+        charBody.updateFromGameObject?.();
+
+        this.handleJump();
+        this.jumpedThisFrame = true;
       }
+    }
+
+    if (Math.abs(cBody.velocity.x) > 10) {
+      this.lastDir = cBody.velocity.x < 0 ? 'left' : 'right';
     } else {
-      if (!this.isRespawning) {
+      this.lastDir = 'up';
+    }
+
+    if (this.thiefHitPlaying) {
+      this.thiefHitAccMs += delta;
+      const frameDur = 1000 / this.THIEF_HIT_FPS;
+
+      while (this.thiefHitAccMs >= frameDur && this.thiefHitPlaying) {
+        this.thiefHitAccMs -= frameDur;
+        this.thiefHitFrame++;
+
+        if (this.thiefHitFrame >= this.THIEF_HIT_TOTAL_FRAMES) {
+          this.thiefHitPlaying = false;
+          const vy = cBody.velocity.y;
+          if (vy === 0) this.setPose('sit');
+          else if (vy > 0) this.setPose('character');
+          else this.applyNormalJumpPose();
+        } else {
+          this.character.setFrame(this.thiefHitFrame);
+        }
+      }
+    } else if (this.isHitFlash) {
+      if (this.time.now >= this.hitFlashUntil) {
+        this.isHitFlash = false;
+        const vy = cBody.velocity.y;
         if (vy === 0) this.setPose('sit');
         else if (vy > 0) this.setPose('character');
+        else this.applyNormalJumpPose();
       }
-    }
-  }
+    } else {
+      const now = this.time.now;
+      const vy = cBody.velocity.y;
+      const apexPassed = this.prevVy < 0 && vy >= 0;
 
-  // 점수, 스폰 
-  if (!this.isRespawning) {
-    const dyUp = Math.max(0, this.lastYForScore - this.character.y);
-    if (dyUp > 0) {
-      this.totalAscentPx += dyUp;
-      const meters = Math.floor(this.totalAscentPx / this.PX_PER_M);
-      this.emitScore(meters);
-
-      this.scrollY += dyUp;
-
-      let spawned = 0;
-      const curMeters = this.getMeters();
-      const spawnChance = this.getSpawnChance(curMeters);
-
-      while (this.scrollY - this.lastSpawnScrollY >= this.SPAWN_GAP_PX && spawned < this.SPAWN_PER_FRAME_LIMIT) {
-        this.lastSpawnScrollY += this.SPAWN_GAP_PX;
-
-        if (Math.random() < spawnChance) {
-          this.spawnBanana();
-          spawned++;
+      if (this.poseActive) {
+        const minHoldOk = now >= this.poseUntil - (this.POSE_BASE_MS - this.POSE_MIN_MS);
+        const deadlinePassed = now >= this.poseUntil;
+        if (minHoldOk && (deadlinePassed || apexPassed)) {
+          this.poseActive = false;
+          this.stopSpin();
+          this.applyNormalJumpPose();
         }
-
-        // 고릴라 최대 수 제한
-        if (
-          this.gorillaGroup.getLength() < this.GORILLA_MAX_ON_SCREEN &&
-          Math.random() < this.GORILLA_SPAWN_PROB_PER_SLOT
-        ) {
-          this.spawnGorilla();
+      } else {
+        if (!this.isRespawning) {
+          if (vy === 0) this.setPose('sit');
+          else if (vy > 0) this.setPose('character');
         }
       }
     }
+
+    // 점수, 스폰
+    if (!this.isRespawning) {
+      const dyUp = Math.max(0, this.lastYForScore - this.character.y);
+      if (dyUp > 0) {
+        this.totalAscentPx += dyUp;
+        const meters = Math.floor(this.totalAscentPx / this.PX_PER_M);
+        this.emitScore(meters);
+
+        this.scrollY += dyUp;
+
+        let spawned = 0;
+        const curMeters = this.getMeters();
+        const spawnChance = this.getSpawnChance(curMeters);
+
+        while (this.scrollY - this.lastSpawnScrollY >= this.SPAWN_GAP_PX && spawned < this.SPAWN_PER_FRAME_LIMIT) {
+          this.lastSpawnScrollY += this.SPAWN_GAP_PX;
+
+          if (Math.random() < spawnChance) {
+            this.spawnBanana();
+            spawned++;
+          }
+
+          // 고릴라 최대 수 제한
+          if (
+            this.gorillaGroup.getLength() < this.GORILLA_MAX_ON_SCREEN &&
+            Math.random() < this.GORILLA_SPAWN_PROB_PER_SLOT
+          ) {
+            this.spawnGorilla();
+          }
+        }
+      }
+    }
+
+    this.lastYForScore = this.character.y;
+
+    this.updateBananas();
+    this.updateGorillas(delta);
+
+    this.updateSegmentsY();
+    this.cullBelow();
+    this.handleZoneTransition();
+    this.fillAbove();
+
+    if (this.feverActive) {
+      this.updateFeverSegmentsY();
+      this.cullFeverBelow();
+      this.fillFeverAbove();
+      this.fillFeverBelow();
+    }
+
+    if (this.feverActive && this.time.now >= this.feverUntil) this.stopFever();
+
+    this.checkOffscreenAndProcess();
+
+    this.prevVy = cBody.velocity.y;
+    this.prevCharY = this.character.y;
   }
-
-  this.lastYForScore = this.character.y;
-
-  this.updateBananas();
-  this.updateGorillas(delta);
-
-  this.updateSegmentsY();
-  this.cullBelow();
-  this.handleZoneTransition();
-  this.fillAbove();
-
-  if (this.feverActive) {
-    this.updateFeverSegmentsY();
-    this.cullFeverBelow();
-    this.fillFeverAbove();
-    this.fillFeverBelow();
-  }
-
-  if (this.feverActive && this.time.now >= this.feverUntil) this.stopFever();
-
-  this.checkOffscreenAndProcess();
-
-  this.prevVy = cBody.velocity.y;
-  this.prevCharY = this.character.y;
-}
-
 }
 
 export default GameScene;
