@@ -13,6 +13,16 @@ class GameScene extends Phaser.Scene {
   private barVX = 0;
   private prevCharY = 0;
 
+private jumpedThisFrame = false;
+
+private thiefHitPlaying = false;
+private thiefHitFrame = 0;
+private thiefHitAccMs = 0;
+private readonly THIEF_HIT_FPS = 12;        
+private readonly THIEF_HIT_TOTAL_FRAMES = 8; 
+
+
+
   private readonly JUMP_SPEED = 600;
   private readonly JUMP_COOLDOWN = 120;
 
@@ -80,6 +90,8 @@ class GameScene extends Phaser.Scene {
   private readonly GORILLA_KNOCKBACK_Y = -480;
   private readonly GORILLA_HIT_COOLDOWN = 400; 
   private readonly GORILLA_SPAWN_PROB_PER_SLOT = 0.15; 
+private isHitFlash = false;
+private hitFlashUntil = 0;
 
   
   // 배경
@@ -414,6 +426,12 @@ private FEVER_OVERLAP_PX = 2;
   this.load.image('bg_space_start',  getImage('game', 'bg_space_start'));
   this.load.image('bg_space_loop',   getImage('game', 'bg_space_loop'));
   this.load.image('bg_fever', getImage('game', 'bg_fever'));
+  this.load.image('hit_block', getImage('game', 'hit-blockgoril'));
+  this.load.spritesheet('hit_thief', getImage('game', 'hit-thiefgoril'), {
+  frameWidth: 630,
+  frameHeight: 630,
+});
+
 
   }
 
@@ -442,6 +460,13 @@ private FEVER_OVERLAP_PX = 2;
       frameRate: 10,
       repeat: -1,
     });
+    this.anims.create({
+  key: 'hit_thief_anim',
+  frames: this.anims.generateFrameNumbers('hit_thief', { start: 0, end: 7 }), 
+  frameRate: 12, 
+  repeat: 0, 
+});
+
 
     // 캐릭터
     this.character = this.physics.add
@@ -605,23 +630,29 @@ this.physics.add.overlap(
     const vx = this.barVX * 15;
     cBody.setVelocityX(vx);
 
-    this.time.delayedCall(50, () => {
-      if (!this.character.active || this.poseActive) return;
-      const vxx = cBody.velocity.x;
-      const DIR_THRESHOLD = 1;
-      if (vxx > DIR_THRESHOLD) this.setPose('rjump');
-      else if (vxx < -DIR_THRESHOLD) this.setPose('ljump');
-      else this.setPose('jump');
-    });
+  this.time.delayedCall(50, () => {
+  if (!this.character.active || this.poseActive || this.thiefHitPlaying || this.isHitFlash) return;
+  const vxx = cBody.velocity.x;
+  const DIR_THRESHOLD = 1;
+  if (vxx > DIR_THRESHOLD) this.setPose('rjump');
+  else if (vxx < -DIR_THRESHOLD) this.setPose('ljump');
+  else this.setPose('jump');
+});
 
     this.lastJumpAt = this.time.now;
   }
 
-  private setPose(
-    key: 'character' | 'sit' | 'jump' | 'ljump' | 'rjump' | 'jump_item' | 'ljump_item' | 'rjump_item'
-  ) {
-    if (this.character.texture.key !== key) this.character.setTexture(key);
+private setPose(
+  key: 'character' | 'sit' | 'jump' | 'ljump' | 'rjump' | 'jump_item' | 'ljump_item' | 'rjump_item',
+  force = false
+) {
+  if (!force && (this.thiefHitPlaying || this.isHitFlash)) return;
+
+  if (this.character.texture.key !== key) {
+    this.character.setTexture(key);
   }
+}
+
 
   private applyNormalJumpPose() {
     const key = this.lastDir === 'left' ? 'ljump' : this.lastDir === 'right' ? 'rjump' : 'jump';
@@ -956,55 +987,110 @@ private hitGorilla(g: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {
   cBody.setVelocityX(pushLeft ? this.GORILLA_KNOCKBACK_X : -this.GORILLA_KNOCKBACK_X);
   cBody.setVelocityY(-this.GORILLA_KNOCKBACK_Y);
 
-  if ((g.getData('type') as string) === 'thief') {
-    this.coin = Math.max(0, this.coin - 5);
-    this.emitCoin(this.coin);
+
+  if ((g.getData('type') as string) === 'block') {
+    this.stopSpin();                    
+    this.isHitFlash = true;             
+    this.hitFlashUntil = this.time.now + 250; 
+    this.character.setTexture('hit_block');
+  }
+
+if ((g.getData('type') as string) === 'thief') {
+  this.coin = Math.max(0, this.coin - 5);
+  this.emitCoin(this.coin);
+
+  this.stopSpin();
+
+  if (!this.thiefHitPlaying) {             
+    this.thiefHitPlaying = true;
+    this.thiefHitFrame = 0;
+    this.thiefHitAccMs = 0;
+
+    this.character.setTexture('hit_thief');
+    this.character.setFrame(0);
   }
 }
-
-
+}
 
   // 프레임 루프
-  update(_time: number, delta: number) {
-    if (!this.character.active || this.gameOver) return;
-    const cBody = this.character.body as Phaser.Physics.Arcade.Body;
+update(_time: number, delta: number) {
+  if (!this.character.active || this.gameOver) return;
+  const cBody = this.character.body as Phaser.Physics.Arcade.Body;
 
-    // 리스폰 해제
-    if (this.isRespawning && cBody.velocity.y > 0) {
-      this.isRespawning = false;
-      this.tweens.killTweensOf(this.character);
-      this.tweens.add({ targets: this.character, alpha: 1, duration: 400, ease: 'Sine.Out' });
-      this.lastYForScore = this.character.y;
+  this.jumpedThisFrame = false;
+
+  // 리스폰 해제 
+  if (this.isRespawning && cBody.velocity.y > 0) {
+    this.isRespawning = false;
+    this.tweens.killTweensOf(this.character);
+    this.tweens.add({ targets: this.character, alpha: 1, duration: 400, ease: 'Sine.Out' });
+    this.lastYForScore = this.character.y;
+  }
+
+  // 스윕 보정 (Body 기반) 
+  if (cBody.velocity.y > 0 && !this.jumpedThisFrame) {
+    const barBody = this.bar.body as Phaser.Physics.Arcade.Body;
+    const charBody = this.character.body as Phaser.Physics.Arcade.Body;
+
+    const barTop = barBody.top;
+    const prevCharBottom = this.prevCharY + charBody.halfHeight;
+    const charBottom = this.character.y + charBody.halfHeight;
+
+    const horizontalOverlap = charBody.right > barBody.left && charBody.left < barBody.right;
+    const crossedDown = prevCharBottom <= barTop && charBottom >= barTop;
+
+    if (horizontalOverlap && crossedDown && this.time.now - this.lastJumpAt >= this.JUMP_COOLDOWN) {
+      const targetY = barTop - charBody.halfHeight + 0.5;
+      this.character.setY(targetY);
+      charBody.updateFromGameObject?.(); 
+
+      this.handleJump();
+      this.jumpedThisFrame = true;
+    }
+  }
+
+  if (Math.abs(cBody.velocity.x) > 10) {
+    this.lastDir = cBody.velocity.x < 0 ? 'left' : 'right';
+  } else {
+    this.lastDir = 'up';
+  }
+
+
+  if (this.thiefHitPlaying) {
+    this.thiefHitAccMs += delta;
+    const frameDur = 1000 / this.THIEF_HIT_FPS;
+
+    while (this.thiefHitAccMs >= frameDur && this.thiefHitPlaying) {
+      this.thiefHitAccMs -= frameDur;
+      this.thiefHitFrame++;
+
+      if (this.thiefHitFrame >= this.THIEF_HIT_TOTAL_FRAMES) {
+  this.thiefHitPlaying = false;          
+  const vy = cBody.velocity.y;
+  if (vy === 0) this.setPose('sit');    
+  else if (vy > 0) this.setPose('character');
+  else this.applyNormalJumpPose();
+} else {
+  this.character.setFrame(this.thiefHitFrame);
+}
     }
 
-    // 바 충돌 스윕 보정
-    if (cBody.velocity.y > 0) {
-      const barTop = this.bar.y - this.bar.displayHeight * 0.5;
-      const charTop = this.character.y - this.character.displayHeight * 0.5;
-      const prevCharTop = this.prevCharY - this.character.displayHeight * 0.5;
-
-      const b = this.bar.getBounds();
-      const c = this.character.getBounds();
-      const horizontalOverlap = c.right > b.left && c.left < b.right;
-      const crossedDown = prevCharTop <= barTop && charTop >= barTop;
-
-      if (horizontalOverlap && crossedDown && this.time.now - this.lastJumpAt >= this.JUMP_COOLDOWN) {
-        const targetY = barTop - this.character.displayHeight * 0.5;
-        this.character.setY(targetY);
-        this.handleJump();
-      }
+   
+  } else if (this.isHitFlash) {
+ 
+    if (this.time.now >= this.hitFlashUntil) {
+      this.isHitFlash = false;
+      const vy = cBody.velocity.y;
+      if (vy === 0) this.setPose('sit');
+      else if (vy > 0) this.setPose('character');
+      else this.applyNormalJumpPose();
     }
-
-    if (Math.abs(cBody.velocity.x) > 10) {
-      this.lastDir = cBody.velocity.x < 0 ? 'left' : 'right';
-    } else {
-      this.lastDir = 'up';
-    }
-
-    // 아이템 포즈 유지,해제
+  } else {
+ 
     const now = this.time.now;
     const vy = cBody.velocity.y;
     const apexPassed = this.prevVy < 0 && vy >= 0;
+
     if (this.poseActive) {
       const minHoldOk = now >= this.poseUntil - (this.POSE_BASE_MS - this.POSE_MIN_MS);
       const deadlinePassed = now >= this.poseUntil;
@@ -1019,61 +1105,66 @@ private hitGorilla(g: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {
         else if (vy > 0) this.setPose('character');
       }
     }
+  }
 
-    // 점수,스폰
-    if (!this.isRespawning) {
-      const dyUp = Math.max(0, this.lastYForScore - this.character.y);
-      if (dyUp > 0) {
-        this.totalAscentPx += dyUp;
-        const meters = Math.floor(this.totalAscentPx / this.PX_PER_M);
-        this.emitScore(meters);
+  // 점수, 스폰 
+  if (!this.isRespawning) {
+    const dyUp = Math.max(0, this.lastYForScore - this.character.y);
+    if (dyUp > 0) {
+      this.totalAscentPx += dyUp;
+      const meters = Math.floor(this.totalAscentPx / this.PX_PER_M);
+      this.emitScore(meters);
 
-        this.scrollY += dyUp;
+      this.scrollY += dyUp;
 
-        let spawned = 0;
-        const curMeters = this.getMeters();
-        const spawnChance = this.getSpawnChance(curMeters);
+      let spawned = 0;
+      const curMeters = this.getMeters();
+      const spawnChance = this.getSpawnChance(curMeters);
 
-        while (this.scrollY - this.lastSpawnScrollY >= this.SPAWN_GAP_PX && spawned < this.SPAWN_PER_FRAME_LIMIT) {
-          this.lastSpawnScrollY += this.SPAWN_GAP_PX;
+      while (this.scrollY - this.lastSpawnScrollY >= this.SPAWN_GAP_PX && spawned < this.SPAWN_PER_FRAME_LIMIT) {
+        this.lastSpawnScrollY += this.SPAWN_GAP_PX;
 
-          if (Math.random() < spawnChance) {
-            this.spawnBanana();
-            spawned++;
-          }
+        if (Math.random() < spawnChance) {
+          this.spawnBanana();
+          spawned++;
+        }
 
-          // 고릴라 최대 수 제한
-          if (this.gorillaGroup.getLength() < this.GORILLA_MAX_ON_SCREEN && Math.random() < this.GORILLA_SPAWN_PROB_PER_SLOT) {
-            this.spawnGorilla();
-          }
+        // 고릴라 최대 수 제한
+        if (
+          this.gorillaGroup.getLength() < this.GORILLA_MAX_ON_SCREEN &&
+          Math.random() < this.GORILLA_SPAWN_PROB_PER_SLOT
+        ) {
+          this.spawnGorilla();
         }
       }
     }
-    this.lastYForScore = this.character.y;
+  }
 
-    this.updateBananas();
-    this.updateGorillas(delta);
+  this.lastYForScore = this.character.y;
 
-    this.updateSegmentsY();     
-    this.cullBelow();         
-    this.handleZoneTransition();
-    this.fillAbove();        
+  this.updateBananas();
+  this.updateGorillas(delta);
 
-if (this.feverActive) {
-  this.updateFeverSegmentsY();
-  this.cullFeverBelow();
-  this.fillFeverAbove();
+  this.updateSegmentsY();
+  this.cullBelow();
+  this.handleZoneTransition();
+  this.fillAbove();
+
+  if (this.feverActive) {
+    this.updateFeverSegmentsY();
+    this.cullFeverBelow();
+    this.fillFeverAbove();
     this.fillFeverBelow();
+  }
 
+  if (this.feverActive && this.time.now >= this.feverUntil) this.stopFever();
+
+  this.checkOffscreenAndProcess();
+
+  this.prevVy = cBody.velocity.y;
+  this.prevCharY = this.character.y;
 }
 
-    if (this.feverActive && this.time.now >= this.feverUntil) this.stopFever();
-
-    this.checkOffscreenAndProcess();
-
-    this.prevVy = vy;
-    this.prevCharY = this.character.y;
-  }
 }
 
 export default GameScene;
