@@ -414,50 +414,6 @@ class GameScene extends Phaser.Scene {
   private FEVER_ALPHA = 0.9;
   private FEVER_OVERLAP_PX = 2;
 
-  preload() {
-    this.load.image('bar', getImage('game', 'bar'));
-    this.load.image('character', getImage('game', 'character'));
-    this.load.image('num3', getImage('game', '3'));
-    this.load.image('num2', getImage('game', '2'));
-    this.load.image('num1', getImage('game', '1'));
-    this.load.image('sit', getImage('game', 'sit-monkey'));
-    this.load.image('jump', getImage('game', 'jump-monkey'));
-    this.load.image('ljump', getImage('game', 'ljump-monkey'));
-    this.load.image('rjump', getImage('game', 'rjump-monkey'));
-    this.load.image('jump_item', getImage('game', 'jump-monkey-item'));
-    this.load.image('ljump_item', getImage('game', 'ljump-monkey-item'));
-    this.load.image('rjump_item', getImage('game', 'rjump-monkey-item'));
-    this.load.image('flife', getImage('game', 'life_full'));
-    this.load.image('elife', getImage('game', 'life_empty'));
-    this.load.image('nbana', getImage('game', 'banana_normal'));
-    this.load.image('bbana', getImage('game', 'banana_bunch'));
-    this.load.image('gbana', getImage('game', 'banana_gold'));
-    this.load.image('fullguage', getImage('game', 'full_guage_bar'));
-    this.load.image('emptyguage', getImage('game', 'empty_guage_bar'));
-
-    this.load.spritesheet('gori_block_sheet', getImage('game', 'gorilla_block_sheet'), {
-      frameWidth: 300,
-      frameHeight: 300,
-    });
-    this.load.spritesheet('gori_thief_sheet', getImage('game', 'gorilla_thief_sheet'), {
-      frameWidth: 300,
-      frameHeight: 300,
-    });
-
-    this.load.image('bg_jungle_start', getImage('game', 'bg_jungle_start'));
-    this.load.image('bg_jungle_loop', getImage('game', 'bg_jungle_loop'));
-    this.load.image('bg_sky_start', getImage('game', 'bg_sky_start'));
-    this.load.image('bg_sky_loop', getImage('game', 'bg_sky_loop'));
-    this.load.image('bg_space_start', getImage('game', 'bg_space_start'));
-    this.load.image('bg_space_loop', getImage('game', 'bg_space_loop'));
-    this.load.image('bg_fever', getImage('game', 'bg_fever'));
-    this.load.image('hit_block', getImage('game', 'hit-blockgoril'));
-    this.load.spritesheet('hit_thief', getImage('game', 'hit-thiefgoril'), {
-      frameWidth: 630,
-      frameHeight: 630,
-    });
-  }
-
   create() {
     const { width, height } = this.cameras.main;
 

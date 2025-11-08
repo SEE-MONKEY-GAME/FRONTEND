@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { useEffect, useRef } from 'react';
 import GameScene from '@scenes/game-scene';
 import HomeScene from '@scenes/home-scene';
+import LoadScene from '@scenes/load-scene';
 
 let globalGame: Phaser.Game | null = null;
 
@@ -16,7 +17,7 @@ const Canvas = () => {
         transparent: true,
         antialias: true,
         pixelArt: false,
-        scene: [HomeScene, GameScene],
+        scene: [LoadScene, HomeScene, GameScene],
         scale: {
           mode: Phaser.Scale.RESIZE,
           autoCenter: Phaser.Scale.CENTER_BOTH,
