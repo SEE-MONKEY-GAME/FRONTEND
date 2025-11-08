@@ -1,6 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import Toggle from './toggle';
 import { useState } from 'react';
+import type { ImagesProps } from '@pages/home';
 import {
   optionCloseButtonCss,
   optionContactAreaCss,
@@ -18,21 +19,14 @@ import {
   optionUlCss,
   optionWrapperCss,
 } from '@styles/components/option.css';
-import { getImage } from '@utils/get-images';
 
 interface OptionProps {
   handleOption: () => void;
+  images: ImagesProps;
 }
 
-const Option = ({ handleOption }: OptionProps) => {
+const Option = ({ handleOption, images }: OptionProps) => {
   const [contact, setContact] = useState<boolean>(false);
-
-  const tab = getImage('home', 'option_tab');
-  const close = getImage('home', 'close_button');
-  const option_bgm = getImage('home', 'option_bgm');
-  const option_sound = getImage('home', 'option_sound');
-  const option_contact = getImage('home', 'option_contact_button');
-  const option_send = getImage('home', 'option_send_button');
 
   const handleContact = () => {
     setContact((contact) => !contact);
@@ -51,7 +45,7 @@ const Option = ({ handleOption }: OptionProps) => {
             <>
               <div css={optionContactAreaCss}>
                 <textarea name="contact" placeholder="의견을 작성해주세요." css={optionTextareaCss}></textarea>
-                <img src={option_send} alt="옵션_의견전송_버튼" css={optionSendButtonCss} />
+                <img src={images.option_send} alt="옵션_의견전송_버튼" css={optionSendButtonCss} />
               </div>
             </>
           ) : (
@@ -59,26 +53,31 @@ const Option = ({ handleOption }: OptionProps) => {
               <ul css={optionUlCss}>
                 <li css={optionLiCss}>
                   <div css={optionTitleCss}>
-                    <img src={option_sound} alt="옵션_효과음_이미지" css={optionIconCss} />
+                    <img src={images.option_sound} alt="옵션_효과음_이미지" css={optionIconCss} />
                     <span css={optionTextCss}>효과음</span>
                   </div>
                   <Toggle />
                 </li>
                 <li css={optionLiCss}>
                   <div css={optionTitleCss}>
-                    <img src={option_bgm} alt="옵션_배경음악_이미지" css={optionIconCss} />
+                    <img src={images.option_bgm} alt="옵션_배경음악_이미지" css={optionIconCss} />
                     <span css={optionTextCss}>배경음악</span>
                   </div>
                   <Toggle />
                 </li>
               </ul>
               <hr css={optionHrCss} />
-              <img src={option_contact} alt="옵션_의견작성_버튼" css={optionContactButtonCss} onClick={handleContact} />
+              <img
+                src={images.option_contact}
+                alt="옵션_의견작성_버튼"
+                css={optionContactButtonCss}
+                onClick={handleContact}
+              />
             </>
           )}
         </div>
-        <img src={tab} alt="옵션_탭" css={optionTabCss} />
-        <img src={close} alt="옵션_닫기" css={optionCloseButtonCss} onClick={onClickCloseButton} />
+        <img src={images.tab_option} alt="옵션_탭" css={optionTabCss} />
+        <img src={images.close} alt="옵션_닫기" css={optionCloseButtonCss} onClick={onClickCloseButton} />
       </div>
       <div css={optionOverlayCss} />
     </>

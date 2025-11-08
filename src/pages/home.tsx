@@ -1,5 +1,5 @@
 /** @jsxImportSource @emotion/react */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Attend from '@components/attend';
 import Guide from '@components/guide';
@@ -18,23 +18,134 @@ import {
   iconButtonGroupCss,
   iconButtonListCss,
 } from '@styles/pages/home.css';
-import { getImage } from '@utils/get-images';
+
+export interface ImagesProps {
+  leaf_left: string;
+  leaf_right: string;
+  help: string;
+  check: string;
+  rank: string;
+  shop: string;
+  etc: string;
+  gameStart: string;
+  close: string;
+  tab_option: string;
+  option_bgm: string;
+  option_sound: string;
+  option_contact: string;
+  option_send: string;
+  tab_guide: string;
+  guide_1: string;
+  guide_2: string;
+  guide_3: string;
+  prev_guide: string;
+  next_guide: string;
+  tab_check: string;
+  check_day1: string;
+  check_day2: string;
+  check_day3: string;
+  check_day4: string;
+  check_day5: string;
+  check_day6: string;
+  check_day7: string;
+  check_day1_lock: string;
+  check_day2_lock: string;
+  check_day3_lock: string;
+  check_day4_lock: string;
+  check_day5_lock: string;
+  check_day6_lock: string;
+  check_day7_lock: string;
+  check_day1_done: string;
+  check_day2_done: string;
+  check_day3_done: string;
+  check_day4_done: string;
+  check_day5_done: string;
+  check_day6_done: string;
+  check_day7_done: string;
+  check_day1_gift: string;
+  check_day2_gift: string;
+  check_day3_gift: string;
+  check_day4_gift: string;
+  check_day5_gift: string;
+  check_day6_gift: string;
+  check_day7_gift: string;
+}
 
 const Home = () => {
   const navigate = useNavigate();
+  const [images, setImages] = useState<ImagesProps>({
+    leaf_left: '',
+    leaf_right: '',
+    help: '',
+    check: '',
+    rank: '',
+    shop: '',
+    etc: '',
+    gameStart: '',
+    close: '',
+    tab_option: '',
+    option_bgm: '',
+    option_sound: '',
+    option_contact: '',
+    option_send: '',
+    tab_guide: '',
+    guide_1: '',
+    guide_2: '',
+    guide_3: '',
+    prev_guide: '',
+    next_guide: '',
+    tab_check: '',
+    check_day1: '',
+    check_day2: '',
+    check_day3: '',
+    check_day4: '',
+    check_day5: '',
+    check_day6: '',
+    check_day7: '',
+    check_day1_lock: '',
+    check_day2_lock: '',
+    check_day3_lock: '',
+    check_day4_lock: '',
+    check_day5_lock: '',
+    check_day6_lock: '',
+    check_day7_lock: '',
+    check_day1_done: '',
+    check_day2_done: '',
+    check_day3_done: '',
+    check_day4_done: '',
+    check_day5_done: '',
+    check_day6_done: '',
+    check_day7_done: '',
+    check_day1_gift: '',
+    check_day2_gift: '',
+    check_day3_gift: '',
+    check_day4_gift: '',
+    check_day5_gift: '',
+    check_day6_gift: '',
+    check_day7_gift: '',
+  });
+
   const [attend, setAttend] = useState<boolean>(false);
   const [guide, setGuide] = useState<boolean>(false);
   const [option, setOption] = useState<boolean>(false);
   const [transition, setTransition] = useState<boolean>(false);
 
-  const left = getImage('home', 'leaf_left');
-  const right = getImage('home', 'leaf_right');
-  const help = getImage('home', 'icon_help');
-  const check = getImage('home', 'icon_check');
-  const rank = getImage('home', 'icon_ranking');
-  const shop = getImage('home', 'icon_shop');
-  const etc = getImage('home', 'icon_option');
-  const gameStart = getImage('home', 'button_game_start');
+  useEffect(() => {
+    const preloaded = (window as any)['PRELOADED_IMAGES'] as ImagesProps | undefined;
+    if (preloaded) {
+      setImages(preloaded);
+    }
+
+    const handleImages = (event: CustomEvent<ImagesProps>) => {
+      setImages(event.detail);
+    };
+
+    window.addEventListener('images:loaded', handleImages as EventListener);
+
+    return () => {
+      window.removeEventListener('images:loaded', handleImages as EventListener);
+    };
+  }, []);
 
   const handleAttend = () => {
     setAttend((attend) => !attend);
@@ -60,34 +171,34 @@ const Home = () => {
   return (
     <>
       {transition && <div css={circleCss} />}
-      {attend && <Attend handleAttend={handleAttend} />}
-      {option && <Option handleOption={handleOption} />}
-      {guide && <Guide handleGameGuide={handleGameGuide} />}
+      {attend && <Attend handleAttend={handleAttend} images={images} />}
+      {option && <Option handleOption={handleOption} images={images} />}
+      {guide && <Guide handleGameGuide={handleGameGuide} images={images} />}
       <div css={backgroundCss}>
         <div css={coinCss}>
           <span css={coinTextCss}>1985</span>
         </div>
         <div css={bestScoreCss}>
           <div css={bestScoreTextCss}>
-            <img src={left} alt="왼쪽_장식_이미지" height={14} />
+            <img src={images.leaf_left} alt="왼쪽_장식_이미지" height={14} />
             <span>최고기록</span>
-            <img src={right} alt="오른쪽_장식_이미지" height={14} />
+            <img src={images.leaf_right} alt="오른쪽_장식_이미지" height={14} />
           </div>
           <span css={bestScoreValueCss}>5853 m</span>
         </div>
         <div css={iconButtonGroupCss}>
           <div css={iconButtonListCss}>
-            <img src={check} alt="출석" css={iconButtonCss} onClick={handleAttend} />
-            <img src={rank} alt="랭킹" css={iconButtonCss} />
-            <img src={shop} alt="상점" css={iconButtonCss} />
+            <img src={images.check} alt="출석" css={iconButtonCss} onClick={handleAttend} />
+            <img src={images.rank} alt="랭킹" css={iconButtonCss} />
+            <img src={images.shop} alt="상점" css={iconButtonCss} />
           </div>
           <div css={iconButtonListCss}>
-            <img src={etc} alt="옵션" css={iconButtonCss} onClick={handleOption} />
-            <img src={help} alt="게임방법" css={iconButtonCss} onClick={handleGameGuide} />
+            <img src={images.etc} alt="옵션" css={iconButtonCss} onClick={handleOption} />
+            <img src={images.help} alt="게임방법" css={iconButtonCss} onClick={handleGameGuide} />
           </div>
         </div>
         <div css={gameStartButtonCss} onClick={handleGameStart}>
-          <img src={gameStart} alt="게임시작" css={gameStartButtonImageCss} />
+          <img src={images.gameStart} alt="게임시작" css={gameStartButtonImageCss} />
         </div>
       </div>
     </>

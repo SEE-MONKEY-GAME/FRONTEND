@@ -1,6 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import AttendReward from './attend-reward';
 import { useState } from 'react';
+import type { ImagesProps } from '@pages/home';
 import {
   attendCloseButtonCss,
   attendGridCss,
@@ -17,9 +18,10 @@ type DayStatus = 'today' | 'claimed' | 'locked';
 
 interface AttendProps {
   handleAttend: () => void;
+  images: ImagesProps;
 }
 
-const Attend = ({ handleAttend }: AttendProps) => {
+const Attend = ({ handleAttend, images }: AttendProps) => {
   const [reward, setReward] = useState<number>(-1);
   const [statuses, setStatuses] = useState<DayStatus[]>([
     'claimed',
@@ -31,13 +33,10 @@ const Attend = ({ handleAttend }: AttendProps) => {
     'locked',
   ]);
 
-  const tab = getImage('home', 'check_tab');
-  const close = getImage('home', 'close_button');
-
   const getImages = Array.from({ length: 7 }, (_, i) => ({
-    today: getImage('home', `check_day${i + 1}`),
-    locked: getImage('home', `check_day${i + 1}_lock`),
-    claimed: getImage('home', `check_day${i + 1}_done`),
+    today: images[`check_day${i + 1}` as keyof ImagesProps],
+    locked: images[`check_day${i + 1}_lock` as keyof ImagesProps],
+    claimed: images[`check_day${i + 1}_done` as keyof ImagesProps],
   }));
 
   const getImageForDay = (index: number) => {
@@ -66,7 +65,7 @@ const Attend = ({ handleAttend }: AttendProps) => {
 
   return (
     <>
-      {reward >= 0 && <AttendReward index={reward} onClose={handleRewardClose} />}
+      {reward >= 0 && <AttendReward index={reward} onClose={handleRewardClose} images={images} />}
       <div css={attendWrapperCss}>
         <ul css={attendGridCss}>
           {statuses.map((_, i) => (
@@ -79,8 +78,8 @@ const Attend = ({ handleAttend }: AttendProps) => {
             </li>
           ))}
         </ul>
-        <img src={tab} alt="출석_탭" css={attendTabCss} />
-        <img src={close} alt="옵션_닫기" css={attendCloseButtonCss} onClick={handleAttend} />
+        <img src={images.tab_check} alt="출석_탭" css={attendTabCss} />
+        <img src={images.close} alt="옵션_닫기" css={attendCloseButtonCss} onClick={handleAttend} />
       </div>
       <div css={attendOverlayCss} />
     </>

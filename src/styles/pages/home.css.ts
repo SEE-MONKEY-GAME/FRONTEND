@@ -13,7 +13,6 @@ export const backgroundCss = css({
 export const coinCss = css({
   width: '122px',
   height: '50px',
-  // width: '10px',
   backgroundImage: `url(${getImage('home', 'coin')})`,
   backgroundRepeat: 'no-repeat',
   backgroundSize: 'cover',
