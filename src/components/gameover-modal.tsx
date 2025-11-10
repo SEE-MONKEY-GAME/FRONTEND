@@ -26,7 +26,9 @@ type Props = {
 export default function GameOverModal({ open, score, coin, onClose, onReplay }: Props) {
   const navigate = useNavigate();
 
-  if (!open) return null;
+  if (!open) {
+    return null;
+  }
 
   return (
     <div css={overlayCss} role="dialog" aria-modal="true" aria-label="Game Over">
@@ -54,7 +56,7 @@ export default function GameOverModal({ open, score, coin, onClose, onReplay }: 
             onClick={() => {
               onClose();
               window.dispatchEvent(new Event('game:end'));
-              navigate('/');
+              navigate('/home');
             }}
           >
             <img src={getImage('game', 'home')} alt="home" />
