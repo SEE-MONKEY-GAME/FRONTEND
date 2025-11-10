@@ -1,14 +1,16 @@
 import { css, keyframes } from '@emotion/react';
+import type { ImagesProps } from '@pages/home';
 import { theme } from '@styles/tokens';
 import { getImage } from '@utils/get-images';
 
-export const backgroundCss = css({
-  height: '100vh',
-  backgroundImage: `url(${getImage('home', 'background')})`,
-  backgroundRepeat: 'no-repeat',
-  backgroundSize: 'cover',
-  padding: '0 16px',
-});
+export const backgroundCss = (images: ImagesProps) =>
+  css({
+    height: '100vh',
+    backgroundImage: `url(${images.home_bg})`,
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: 'cover',
+    padding: '0 16px',
+  });
 
 export const coinCss = css({
   width: '122px',

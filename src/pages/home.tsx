@@ -20,6 +20,7 @@ import {
 } from '@styles/pages/home.css';
 
 export interface ImagesProps {
+  home_bg: string;
   leaf_left: string;
   leaf_right: string;
   help: string;
@@ -74,6 +75,7 @@ export interface ImagesProps {
 const Home = () => {
   const navigate = useNavigate();
   const [images, setImages] = useState<ImagesProps>({
+    home_bg: '',
     leaf_left: '',
     leaf_right: '',
     help: '',
@@ -174,7 +176,7 @@ const Home = () => {
       {attend && <Attend handleAttend={handleAttend} images={images} />}
       {option && <Option handleOption={handleOption} images={images} />}
       {guide && <Guide handleGameGuide={handleGameGuide} images={images} />}
-      <div css={backgroundCss}>
+      <div css={backgroundCss(images)}>
         <div css={coinCss}>
           <span css={coinTextCss}>1985</span>
         </div>

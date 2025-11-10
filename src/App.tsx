@@ -4,6 +4,7 @@ import Canvas from '@canvas/canvas';
 import { ThemeProvider } from '@emotion/react';
 import Game from '@pages/game';
 import Home from '@pages/home';
+import Load from '@pages/load';
 import { theme } from '@styles/tokens';
 
 const CanvasController = () => {
@@ -36,7 +37,8 @@ function App() {
         <Canvas />
         <CanvasController />
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Load />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/game" element={<Game />} />
         </Routes>
       </BrowserRouter>

@@ -7,6 +7,7 @@ class LoadScene extends Phaser.Scene {
   private bana!: Phaser.GameObjects.Image;
   private inner!: Phaser.GameObjects.Image;
   private outer!: Phaser.GameObjects.Image;
+  private text!: Phaser.GameObjects.Image;
   private maskGraphics!: Phaser.GameObjects.Graphics;
   private mask!: Phaser.Display.Masks.GeometryMask;
   private reactImages: Record<string, string> = {};
@@ -21,6 +22,8 @@ class LoadScene extends Phaser.Scene {
     this.load.image('load_bana', getImage('loading', 'loading_bana'));
     this.load.image('load_inner', getImage('loading', 'loading_inner'));
     this.load.image('load_outer', getImage('loading', 'loading_outer'));
+    this.load.image('load_text', getImage('loading', 'loading_text'));
+    this.load.image('load_touch', getImage('loading', 'loading_touch'));
   }
 
   create() {
@@ -41,12 +44,17 @@ class LoadScene extends Phaser.Scene {
       .image(width / 2, height / 2, 'load_inner')
       .setScale((width - 280) / this.textures.get('load_inner').getSourceImage().width)
       .setOrigin(0.5, 1)
-      .setPosition(width / 2, height - 60);
+      .setPosition(width / 2, height - 80);
     this.outer = this.add
       .image(width / 2, height / 2, 'load_outer')
       .setScale((width - 280) / this.textures.get('load_outer').getSourceImage().width)
       .setOrigin(0.5, 1)
-      .setPosition(width / 2, height - 60);
+      .setPosition(width / 2, height - 80);
+    this.text = this.add
+      .image(width / 2, height / 2, 'load_text')
+      .setScale(1.1)
+      .setOrigin(0.5, 1)
+      .setPosition(width / 2, height - 50);
 
     this.maskGraphics = this.add.graphics();
     this.mask = this.maskGraphics.createGeometryMask();
@@ -61,7 +69,27 @@ class LoadScene extends Phaser.Scene {
         }),
       );
 
-      this.scene.start('HomeScene');
+      this.inner.destroy();
+      this.outer.destroy();
+      this.text.destroy();
+
+      this.add
+        .image(width / 2, height / 2, 'load_touch')
+        .setScale(0.5)
+        .setOrigin(0.5)
+        .setPosition(width / 2, height - 80)
+        .setAlpha(1);
+
+      const touch = this.add
+        .rectangle(0, 0, width, height, 0x000000, 0)
+        .setOrigin(0, 0)
+        .setInteractive({ useHandCursor: true });
+
+      touch.on('pointerup', () => {
+        window.history.pushState({}, '', '/home');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+        this.scene.start('HomeScene');
+      });
     });
 
     this.loadAssets();
@@ -79,10 +107,13 @@ class LoadScene extends Phaser.Scene {
 
     this.outer.setScale(scale);
     this.outer.setOrigin(0.5, 1);
-    this.outer.setPosition(width / 2, height - 60);
+    this.outer.setPosition(width / 2, height - 80);
 
-    const visibleHeight = texture.height * progress;
-    this.outer.setCrop(0, texture.height - visibleHeight, texture.width, visibleHeight);
+    const textureWidth = texture.width;
+    const textureHeight = texture.height;
+    const visibleWidth = textureWidth * progress;
+
+    this.outer.setCrop(0, 0, visibleWidth, textureHeight);
   }
 
   private loadAssets() {
@@ -90,6 +121,8 @@ class LoadScene extends Phaser.Scene {
     this.load.image('bana', getImage('home', 'bana_sit'));
     this.load.image('platform', getImage('home', 'platform_tree'));
 
+    this.reactImages.home_bg = getImage('home', 'background');
+    this.load.image('home_bg', this.reactImages.home_bg);
     this.reactImages.leaf_left = getImage('home', 'leaf_left');
     this.load.image('leaf_left', this.reactImages.leaf_left);
     this.reactImages.leaf_right = getImage('home', 'leaf_right');
