@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
-import { getImage } from '@utils/get-images';
 
 export const FEVER_DURATION_MS = 8000;
 
 class GameScene extends Phaser.Scene {
+  private bgm?: Phaser.Sound.BaseSound;
+  private feverBgm?: Phaser.Sound.BaseSound;
   private bar!: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
   private character!: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
   private barCollider!: Phaser.Physics.Arcade.Collider;
@@ -241,6 +242,8 @@ class GameScene extends Phaser.Scene {
     const baseTopY = Math.round(baseTopMost.startTop + (this.scrollY - baseTopMost.spawnScroll));
 
     this.createFeverSegment(baseTopY, true);
+    this.feverBgm = this.sound.add('fever_time_bgm', { loop: true, volume: 0.4 });
+    this.feverBgm.play();
 
     this.fillFeverAbove();
     this.fillFeverBelow();
@@ -248,6 +251,7 @@ class GameScene extends Phaser.Scene {
 
   private destroyFeverOverlay() {
     this.feverSegs.forEach((s) => s.img.destroy());
+    this.feverBgm?.destroy();
     this.feverSegs = [];
   }
 
@@ -374,6 +378,7 @@ class GameScene extends Phaser.Scene {
     // 모든 타이머/트윈/리스너 정리
     this.tweens.killAll();
     this.time.removeAllEvents();
+    this.bgm?.stop();
 
     // 홈 씬으로 전환
     if (this.scene.isActive('HomeScene')) {
@@ -397,6 +402,7 @@ class GameScene extends Phaser.Scene {
     // 재시작
     this.physics.resume();
     this.input.enabled = true;
+    this.bgm?.destroy();
     this.scene.restart();
   };
 
@@ -416,6 +422,9 @@ class GameScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.cameras.main;
+
+    this.bgm = this.sound.add('game_bgm', { loop: true, volume: 0.4 });
+    this.bgm.play();
 
     this.physics.world.setBounds(0, 0, width, height);
     this.physics.world.gravity.y = 1200;
@@ -486,14 +495,17 @@ class GameScene extends Phaser.Scene {
     };
     playFlash();
     this.time.delayedCall(1000, () => {
+      this.sound.add('cound_down_sound', { volume: 0.6 }).play();
+    });
+    this.time.delayedCall(2000, () => {
       countdown.setTexture('num2');
       playFlash();
     });
-    this.time.delayedCall(2000, () => {
+    this.time.delayedCall(3000, () => {
       countdown.setTexture('num1');
       playFlash();
     });
-    this.time.delayedCall(3000, () => {
+    this.time.delayedCall(4000, () => {
       (this.character.body as Phaser.Physics.Arcade.Body).setAllowGravity(true);
       countdown.destroy();
     });
@@ -772,6 +784,7 @@ class GameScene extends Phaser.Scene {
     this.feverUntil = this.time.now + this.FEVER_DURATION;
     this.feverProgress = 0;
     this.emitFever(0, true, this.FEVER_DURATION);
+    this.bgm?.stop();
 
     this.initFeverOverlay();
   }
@@ -779,6 +792,7 @@ class GameScene extends Phaser.Scene {
   private stopFever() {
     this.feverActive = false;
     this.emitFever(this.feverProgress / this.FEVER_GOAL, false, 0);
+    this.bgm?.resume();
 
     this.destroyFeverOverlay();
   }

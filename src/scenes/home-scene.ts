@@ -1,12 +1,17 @@
 import Phaser from 'phaser';
 
 class HomeScene extends Phaser.Scene {
+  private bgm?: Phaser.Sound.BaseSound;
+
   constructor() {
     super('HomeScene');
   }
 
   create() {
     const { width, height } = this.cameras.main;
+
+    this.bgm = this.sound.add('home_bgm', { loop: true, volume: 0.4 });
+    this.bgm.play();
 
     // 상단 요소
     const upper = this.add.image(500, 0, 'platform');
@@ -29,6 +34,7 @@ class HomeScene extends Phaser.Scene {
     // Scene 전환
     window.addEventListener('game:start', () => {
       this.scene.start('GameScene');
+      this.bgm?.stop();
     });
   }
 }

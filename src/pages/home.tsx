@@ -19,6 +19,7 @@ import {
   iconButtonGroupCss,
   iconButtonListCss,
 } from '@styles/pages/home.css';
+import { getBGMs } from '@utils/get-sounds';
 
 export interface ImagesProps {
   home_bg: string;
@@ -166,6 +167,9 @@ const Home = () => {
   const [option, setOption] = useState<boolean>(false);
   const [transition, setTransition] = useState<boolean>(false);
 
+  const mainButtonSound = new Audio(getBGMs('button_main'));
+  const subButtonSound = new Audio(getBGMs('button_sub'));
+
   useEffect(() => {
     const preloaded = (window as any)['PRELOADED_IMAGES'] as ImagesProps | undefined;
     if (preloaded) {
@@ -184,26 +188,36 @@ const Home = () => {
   }, []);
 
   const handleAttend = () => {
+    subButtonSound.currentTime = 0;
+    subButtonSound.play();
     setAttend((attend) => !attend);
   };
 
   const handleShop = () => {
+    subButtonSound.currentTime = 0;
+    subButtonSound.play();
     setShop((shop) => !shop);
   };
 
   const handleGameGuide = () => {
+    subButtonSound.currentTime = 0;
+    subButtonSound.play();
     setGuide((guide) => !guide);
   };
 
   const handleOption = () => {
+    subButtonSound.currentTime = 0;
+    subButtonSound.play();
     setOption((option) => !option);
   };
 
   const handleGameStart = () => {
+    mainButtonSound.currentTime = 0;
+    mainButtonSound.play();
     setTransition(true);
-    window.dispatchEvent(new Event('game:start'));
 
     setTimeout(() => {
+      window.dispatchEvent(new Event('game:start'));
       navigate('/game');
     }, 1000);
   };
