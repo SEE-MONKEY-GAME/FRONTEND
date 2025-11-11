@@ -189,6 +189,40 @@ class LoadScene extends Phaser.Scene {
       this.load.image(key, this.reactImages[key]);
     });
 
+    this.reactImages.shop_frame = getImage('shop', 'shop_frame');
+    this.load.image('shop_frame', this.reactImages.shop_frame);
+    this.reactImages.shop_box = getImage('shop', 'shop_box');
+    this.load.image('shop_box', this.reactImages.shop_box);
+    this.reactImages.shop_tab_1 = getImage('shop', 'shop_tab_1');
+    this.load.image('shop_tab_1', this.reactImages.shop_tab_1);
+    this.reactImages.shop_tab_2 = getImage('shop', 'shop_tab_2');
+    this.load.image('shop_tab_2', this.reactImages.shop_tab_2);
+    this.reactImages.shop_container = getImage('shop', 'shop_container');
+    this.load.image('shop_container', this.reactImages.shop_container);
+    this.reactImages.shop_buy = getImage('shop', 'shop_buy');
+    this.load.image('shop_buy', this.reactImages.shop_buy);
+    this.reactImages.shop_notbuy = getImage('shop', 'shop_notbuy');
+    this.load.image('shop_notbuy', this.reactImages.shop_notbuy);
+    this.reactImages.shop_use = getImage('shop', 'shop_use');
+    this.load.image('shop_use', this.reactImages.shop_use);
+    this.reactImages.shop_notuse = getImage('shop', 'shop_notuse');
+    this.load.image('shop_notuse', this.reactImages.shop_notuse);
+    this.reactImages.shop_minus = getImage('shop', 'shop_minus');
+    this.load.image('shop_minus', this.reactImages.shop_minus);
+    this.reactImages.shop_plus = getImage('shop', 'shop_plus');
+    this.load.image('shop_plus', this.reactImages.shop_plus);
+    this.reactImages.shop_price = getImage('shop', 'shop_price');
+    this.load.image('shop_price', this.reactImages.shop_price);
+    this.reactImages.shop_coin = getImage('shop', 'shop_coin');
+    this.load.image('shop_coin', this.reactImages.shop_coin);
+
+    this.reactImages['ITEM-001'] = getImage('shop', 'ITEM-001');
+    this.load.image('ITEM-001', this.reactImages['ITEM-001']);
+    this.reactImages['ITEM-002'] = getImage('shop', 'ITEM-002');
+    this.load.image('ITEM-002', this.reactImages['ITEM-002']);
+    this.reactImages['SCARF-001'] = getImage('shop', 'SCARF-001');
+    this.load.image('SCARF-001', this.reactImages['SCARF-001']);
+
     // game
     this.load.image('bar', getImage('game', 'bar'));
     this.load.image('character', getImage('game', 'character'));
