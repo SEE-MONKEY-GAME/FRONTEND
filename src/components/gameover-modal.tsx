@@ -1,19 +1,18 @@
 /** @jsxImportSource @emotion/react */
+import { useNavigate } from 'react-router-dom';
 import {
-  overlayCss,
-  panelCss,
-  titleCss,
-  hrCss,
-  statWrapCss,
-  scoreLabelCss,
-  scoreValueCss,
+  btnRowCss,
   coinCss2,
   coinImgCss,
-  btnRowCss,
+  hrCss,
   iconBtnCss,
-} from '@styles/pages/game.css'; 
-
-import { useNavigate } from 'react-router-dom';
+  overlayCss,
+  panelCss,
+  scoreLabelCss,
+  scoreValueCss,
+  statWrapCss,
+  titleCss,
+} from '@styles/pages/game.css';
 import { getImage } from '@utils/get-images';
 
 type Props = {
@@ -27,7 +26,9 @@ type Props = {
 export default function GameOverModal({ open, score, coin, onClose, onReplay }: Props) {
   const navigate = useNavigate();
 
-  if (!open) return null;
+  if (!open) {
+    return null;
+  }
 
   return (
     <div css={overlayCss} role="dialog" aria-modal="true" aria-label="Game Over">
@@ -54,7 +55,8 @@ export default function GameOverModal({ open, score, coin, onClose, onReplay }: 
             type="button"
             onClick={() => {
               onClose();
-              navigate('/');
+              window.dispatchEvent(new Event('game:end'));
+              navigate('/home');
             }}
           >
             <img src={getImage('game', 'home')} alt="home" />
@@ -71,11 +73,7 @@ export default function GameOverModal({ open, score, coin, onClose, onReplay }: 
             <img src={getImage('game', 'retry')} alt="replay" />
           </button>
 
-          <button
-            css={iconBtnCss}
-            type="button"
-            onClick={() => console.log('share clicked')}
-          >
+          <button css={iconBtnCss} type="button" onClick={() => console.log('share clicked')}>
             <img src={getImage('game', 'share')} alt="share" />
           </button>
         </div>
