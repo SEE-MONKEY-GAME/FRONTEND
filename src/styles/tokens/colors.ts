@@ -1,7 +1,7 @@
 export const colors = {
   Yellow25: '#FEFDF0',
   Yellow50: '#FEFBE8',
-  Yellow100: '##FEF7C3',
+  Yellow100: '#FEF7C3',
   Yellow200: '#FEEE95',
   Yellow300: '#FDE272',
   Yellow400: '#FAC515',
