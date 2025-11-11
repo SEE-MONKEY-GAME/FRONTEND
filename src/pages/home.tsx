@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Attend from '@components/attend';
 import Guide from '@components/guide';
 import Option from '@components/option';
+import Shop from '@components/shop';
 import {
   backgroundCss,
   bestScoreCss,
@@ -70,6 +71,22 @@ export interface ImagesProps {
   check_day5_gift: string;
   check_day6_gift: string;
   check_day7_gift: string;
+  shop_frame: string;
+  shop_box: string;
+  shop_tab_1: string;
+  shop_tab_2: string;
+  shop_container: string;
+  shop_buy: string;
+  shop_notbuy: string;
+  shop_use: string;
+  shop_notuse: string;
+  shop_minus: string;
+  shop_plus: string;
+  shop_price: string;
+  shop_coin: string;
+  'ITEM-001': string;
+  'ITEM-002': string;
+  'SCARF-001': string;
 }
 
 const Home = () => {
@@ -125,9 +142,26 @@ const Home = () => {
     check_day5_gift: '',
     check_day6_gift: '',
     check_day7_gift: '',
+    shop_frame: '',
+    shop_box: '',
+    shop_tab_1: '',
+    shop_tab_2: '',
+    shop_container: '',
+    shop_buy: '',
+    shop_notbuy: '',
+    shop_use: '',
+    shop_notuse: '',
+    shop_minus: '',
+    shop_plus: '',
+    shop_price: '',
+    shop_coin: '',
+    'ITEM-001': '',
+    'ITEM-002': '',
+    'SCARF-001': '',
   });
 
   const [attend, setAttend] = useState<boolean>(false);
+  const [shop, setShop] = useState<boolean>(false);
   const [guide, setGuide] = useState<boolean>(false);
   const [option, setOption] = useState<boolean>(false);
   const [transition, setTransition] = useState<boolean>(false);
@@ -153,12 +187,16 @@ const Home = () => {
     setAttend((attend) => !attend);
   };
 
-  const handleOption = () => {
-    setOption((option) => !option);
+  const handleShop = () => {
+    setShop((shop) => !shop);
   };
 
   const handleGameGuide = () => {
     setGuide((guide) => !guide);
+  };
+
+  const handleOption = () => {
+    setOption((option) => !option);
   };
 
   const handleGameStart = () => {
@@ -174,8 +212,9 @@ const Home = () => {
     <>
       {transition && <div css={circleCss} />}
       {attend && <Attend handleAttend={handleAttend} images={images} />}
-      {option && <Option handleOption={handleOption} images={images} />}
+      {shop && <Shop handleShop={handleShop} images={images} />}
       {guide && <Guide handleGameGuide={handleGameGuide} images={images} />}
+      {option && <Option handleOption={handleOption} images={images} />}
       <div css={backgroundCss(images)}>
         <div css={coinCss}>
           <span css={coinTextCss}>1985</span>
@@ -192,7 +231,7 @@ const Home = () => {
           <div css={iconButtonListCss}>
             <img src={images.check} alt="출석" css={iconButtonCss} onClick={handleAttend} />
             <img src={images.rank} alt="랭킹" css={iconButtonCss} />
-            <img src={images.shop} alt="상점" css={iconButtonCss} />
+            <img src={images.shop} alt="상점" css={iconButtonCss} onClick={handleShop} />
           </div>
           <div css={iconButtonListCss}>
             <img src={images.etc} alt="옵션" css={iconButtonCss} onClick={handleOption} />
