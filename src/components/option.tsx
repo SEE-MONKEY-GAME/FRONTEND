@@ -26,7 +26,17 @@ interface OptionProps {
 }
 
 const Option = ({ handleOption, images }: OptionProps) => {
+  const [bgmOn, setBgmOn] = useState<boolean>(false);
+  const [effectOn, setEffectOn] = useState<boolean>(false);
   const [contact, setContact] = useState<boolean>(false);
+
+  const handleBgmToggle = () => {
+    setBgmOn((prev) => !prev);
+  };
+
+  const handleEffectToggle = () => {
+    setEffectOn((prev) => !prev);
+  };
 
   const handleContact = () => {
     setContact((contact) => !contact);
@@ -56,14 +66,14 @@ const Option = ({ handleOption, images }: OptionProps) => {
                     <img src={images.option_sound} alt="옵션_효과음_이미지" css={optionIconCss} />
                     <span css={optionTextCss}>효과음</span>
                   </div>
-                  <Toggle />
+                  <Toggle handleToggle={handleEffectToggle} toggle={effectOn} />
                 </li>
                 <li css={optionLiCss}>
                   <div css={optionTitleCss}>
                     <img src={images.option_bgm} alt="옵션_배경음악_이미지" css={optionIconCss} />
                     <span css={optionTextCss}>배경음악</span>
                   </div>
-                  <Toggle />
+                  <Toggle handleToggle={handleBgmToggle} toggle={bgmOn} />
                 </li>
               </ul>
               <hr css={optionHrCss} />

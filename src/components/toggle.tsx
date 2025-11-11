@@ -12,13 +12,12 @@ import {
   toggleTextOnCss,
 } from '@styles/components/toggle.css';
 
-const Toggle = () => {
-  const [toggle, setToggle] = useState<boolean>(false);
+interface ToggleProps {
+  handleToggle: () => void;
+  toggle: boolean;
+}
 
-  const handleToggle = () => {
-    setToggle((prev) => !prev);
-  };
-
+const Toggle = ({ handleToggle, toggle }: ToggleProps) => {
   return (
     <>
       <div onClick={handleToggle} css={[toggleCss, toggle ? toggleOnCss : toggleOffCss]}>
