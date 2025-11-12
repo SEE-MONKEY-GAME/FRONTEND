@@ -76,19 +76,15 @@ const skipGame = () => {
     return () => window.removeEventListener('game:over', onOver as EventListener);
   }, []);
 
-// 기존 replay 교체
 const replay = () => {
-  // 다음 시작은 버튼을 눌러야 하므로 대기 플래그를 끔
   (window as any).__queuedGameStart = false;
 
   window.dispatchEvent(new Event('game:replay'));
 
-  // UI 초기화
   setIsGameOver(false);
   setScore(0);
   setCoin(0);
 
-  // 🔥 로켓 프롬프트 다시 보여주기
   setShowRocketPrompt(true);
 };
 

@@ -29,9 +29,7 @@ export default function RocketPrompt({ open, onSkip, onUse }: RocketPromptProps)
       <div css={titleCss}>로켓을 타고 갈까요?</div>
 
       <div css={effectHostCss}>
-        {/* 뒤에서 돌아가는 스프라이트 효과 */}
         <div css={effectSpriteCss(effectSheet)} />
-        {/* 앞에 로켓 아이콘 */}
         <img src={rocketIcon} alt="로켓 아이콘" css={iconCss} draggable={false} />
       </div>
 

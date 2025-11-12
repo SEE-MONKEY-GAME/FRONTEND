@@ -370,8 +370,6 @@ class GameScene extends Phaser.Scene {
     this.feverActive = false;
     this.feverProgress = 0;
     this.destroyFeverOverlay();
-
-    // 모든 타이머/트윈/리스너 정리
     this.tweens.killAll();
     this.time.removeAllEvents();
 
@@ -502,14 +500,12 @@ const startCountdown = () => {
   });
 };
 
-// 이벤트 리스너 등록 직후에 넣기
 const onStart = () => startCountdown();
 window.addEventListener('game:start', onStart);
 this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
   window.removeEventListener('game:start', onStart);
 });
 
-// ✅ 버튼이 더 먼저 눌렸던 경우를 커버
 if ((window as any).__queuedGameStart) {
   (window as any).__queuedGameStart = false;
   startCountdown();
