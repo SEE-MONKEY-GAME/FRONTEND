@@ -1,5 +1,4 @@
 /** @jsxImportSource @emotion/react */
-import { useState } from 'react';
 import {
   toggleCss,
   toggleInnerCss,

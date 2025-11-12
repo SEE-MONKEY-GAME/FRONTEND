@@ -3,8 +3,8 @@ import { type ReactNode, createContext, useContext, useState } from 'react';
 interface SoundState {
   bgm: boolean;
   effect: boolean;
-  setBgm: (value: boolean) => void;
-  setEffect: (value: boolean) => void;
+  toggleBgm: () => void;
+  toggleEffect: () => void;
 }
 
 const SoundContext = createContext<SoundState | null>(null);
@@ -13,7 +13,15 @@ export const SoundProvider = ({ children }: { children: ReactNode }) => {
   const [bgm, setBgm] = useState(true);
   const [effect, setEffect] = useState(true);
 
-  return <SoundContext.Provider value={{ bgm, effect, setBgm, setEffect }}>{children}</SoundContext.Provider>;
+  const toggleBgm = () => {
+    setBgm((prev) => !prev);
+  };
+
+  const toggleEffect = () => {
+    setEffect((prev) => !prev);
+  };
+
+  return <SoundContext.Provider value={{ bgm, effect, toggleBgm, toggleEffect }}>{children}</SoundContext.Provider>;
 };
 
 /* eslint-disable react-refresh/only-export-components */
