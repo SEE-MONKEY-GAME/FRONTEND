@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import Canvas from '@canvas/canvas';
 import Toast from '@components/toaster';
+import { SoundProvider } from '@context/sound-context';
 import { ThemeProvider } from '@emotion/react';
 import Game from '@pages/game';
 import Home from '@pages/home';
@@ -34,16 +35,18 @@ const CanvasController = () => {
 function App() {
   return (
     <ThemeProvider theme={theme}>
-      <Toast />
-      <BrowserRouter>
-        <Canvas />
-        <CanvasController />
-        <Routes>
-          <Route path="/" element={<Load />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/game" element={<Game />} />
-        </Routes>
-      </BrowserRouter>
+      <SoundProvider>
+        <Toast />
+        <BrowserRouter>
+          <Canvas />
+          <CanvasController />
+          <Routes>
+            <Route path="/" element={<Load />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/game" element={<Game />} />
+          </Routes>
+        </BrowserRouter>
+      </SoundProvider>
     </ThemeProvider>
   );
 }

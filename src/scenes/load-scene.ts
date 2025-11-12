@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { getImage } from '@utils/get-images';
+import { getBGMs, getEffects } from '@utils/get-sounds';
 
 class LoadScene extends Phaser.Scene {
   private background!: Phaser.GameObjects.Image;
@@ -117,6 +118,23 @@ class LoadScene extends Phaser.Scene {
   }
 
   private loadAssets() {
+    // bgm
+    this.load.audio('home_bgm', getBGMs('home'));
+    this.load.audio('game_bgm', getBGMs('game'));
+    this.load.audio('fever_time_bgm', getBGMs('fever_time'));
+    this.load.audio('button_main_sound', getBGMs('button_main'));
+    this.load.audio('button_sub_sound', getBGMs('button_sub'));
+    this.load.audio('daily_reward_sound', getBGMs('daily_reward'));
+    this.load.audio('rockt_boost_1_sound', getBGMs('rocket_boost_1'));
+    this.load.audio('rockt_boost_2_sound', getBGMs('rocket_boost_2'));
+
+    this.load.audio('banana_1_sound', getEffects('banana_1'));
+    this.load.audio('banana_2_sound', getEffects('banana_2'));
+    this.load.audio('banana_3_sound', getEffects('banana_3'));
+    this.load.audio('hit_sound', getEffects('hit'));
+    this.load.audio('jump_sound', getEffects('jump'));
+    this.load.audio('count_down_sound', getEffects('count_down'));
+
     // home
     this.load.image('bana', getImage('home', 'bana_sit'));
     this.load.image('platform', getImage('home', 'platform_tree'));

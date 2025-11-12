@@ -1,6 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import ShopPopup from './shop-popup';
 import { useState } from 'react';
+import { useSound } from '@context/sound-context';
 import type { ImagesProps } from '@pages/home';
 import {
   shopBoxCss,
@@ -15,6 +16,7 @@ import {
   shopTabCss,
   shopWrapperCss,
 } from '@styles/components/shop.css';
+import { getBGMs } from '@utils/get-sounds';
 
 interface ShopProps {
   handleShop: () => void;
@@ -26,21 +28,40 @@ const Shop = ({ handleShop, images }: ShopProps) => {
   const [itemPopup, setItemPopup] = useState(-1);
   const [costumePopup, setCostumePopup] = useState(-1);
   const [overlay, setOverlay] = useState(false);
+  const { effect } = useSound();
+
+  const subButtonSound = new Audio(getBGMs('button_sub'));
 
   const onClickItem = () => {
+    if (effect) {
+      subButtonSound.currentTime = 0;
+      subButtonSound.play();
+    }
     setSelect([1, 2]);
   };
 
   const onClickCostume = () => {
+    if (effect) {
+      subButtonSound.currentTime = 0;
+      subButtonSound.play();
+    }
     setSelect([2, 1]);
   };
 
   const handleItem = (index: number) => {
+    if (effect) {
+      subButtonSound.currentTime = 0;
+      subButtonSound.play();
+    }
     setItemPopup(index);
     setOverlay(!overlay);
   };
 
   const handleCostume = (index: number) => {
+    if (effect) {
+      subButtonSound.currentTime = 0;
+      subButtonSound.play();
+    }
     setCostumePopup(index);
     setOverlay(!overlay);
   };

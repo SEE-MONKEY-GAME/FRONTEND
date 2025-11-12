@@ -1,9 +1,17 @@
 import Phaser from 'phaser';
-import { getImage } from '@utils/get-images';
 
 export const FEVER_DURATION_MS = 8000;
 
 class GameScene extends Phaser.Scene {
+  private bgm?: Phaser.Sound.BaseSound;
+  private feverBgm?: Phaser.Sound.BaseSound;
+  private effect_nbanana?: Phaser.Sound.BaseSound;
+  private effect_bbanana?: Phaser.Sound.BaseSound;
+  private effect_gbanana?: Phaser.Sound.BaseSound;
+  private effect_hit?: Phaser.Sound.BaseSound;
+  private effect_jump?: Phaser.Sound.BaseSound;
+  private effect_count_down?: Phaser.Sound.BaseSound;
+
   private bar!: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
   private character!: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
   private barCollider!: Phaser.Physics.Arcade.Collider;
@@ -241,6 +249,8 @@ class GameScene extends Phaser.Scene {
     const baseTopY = Math.round(baseTopMost.startTop + (this.scrollY - baseTopMost.spawnScroll));
 
     this.createFeverSegment(baseTopY, true);
+    this.feverBgm = this.sound.add('fever_time_bgm', { loop: true, volume: 0.4 });
+    this.feverBgm.play();
 
     this.fillFeverAbove();
     this.fillFeverBelow();
@@ -248,6 +258,7 @@ class GameScene extends Phaser.Scene {
 
   private destroyFeverOverlay() {
     this.feverSegs.forEach((s) => s.img.destroy());
+    this.feverBgm?.destroy();
     this.feverSegs = [];
   }
 
@@ -376,11 +387,17 @@ class GameScene extends Phaser.Scene {
     this.time.removeAllEvents();
 
     // 홈 씬으로 전환
-    if (this.scene.isActive('HomeScene')) {
-      this.scene.stop('GameScene');
-    } else {
-      this.scene.start('HomeScene');
+    if (this.bgm?.isPlaying) {
+      this.bgm.stop();
     }
+
+    if (this.feverBgm?.isPlaying) {
+      this.feverBgm.stop();
+    }
+
+    this.game.events.off('UPDATE_SOUND_STATE', this.handleSoundState, this);
+    this.scene.stop('GameScene');
+    this.scene.start('HomeScene');
   };
   private onReplay = () => {
     if (!this.scene.isActive()) return;
@@ -397,6 +414,15 @@ class GameScene extends Phaser.Scene {
     // 재시작
     this.physics.resume();
     this.input.enabled = true;
+
+    if (this.bgm?.isPlaying) {
+      this.bgm.stop();
+    }
+
+    if (this.feverBgm?.isPlaying) {
+      this.feverBgm.stop();
+    }
+
     this.scene.restart();
   };
 
@@ -416,6 +442,17 @@ class GameScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.cameras.main;
+
+    if (!this.bgm) {
+      this.bgm = this.sound.add('game_bgm', { loop: true, volume: 0.4 });
+    }
+
+    const init = (this.game as any).INIT_SOUND_STATE;
+    if (init.bgm) {
+      this.bgm?.play();
+    }
+
+    this.game.events.on('UPDATE_SOUND_STATE', this.handleSoundState, this);
 
     this.physics.world.setBounds(0, 0, width, height);
     this.physics.world.gravity.y = 1200;
@@ -485,15 +522,21 @@ class GameScene extends Phaser.Scene {
       this.tweens.add({ targets: countdown, scale: 0.6, duration: 300, ease: 'Back.Out' });
     };
     playFlash();
-    this.time.delayedCall(1000, () => {
+    if (init.effect) {
+      this.time.delayedCall(1000, () => {
+        this.effect_count_down = this.sound.add('count_down_sound', { volume: 0.5 });
+        this.effect_count_down.play();
+      });
+    }
+    this.time.delayedCall(2000, () => {
       countdown.setTexture('num2');
       playFlash();
     });
-    this.time.delayedCall(2000, () => {
+    this.time.delayedCall(3000, () => {
       countdown.setTexture('num1');
       playFlash();
     });
-    this.time.delayedCall(3000, () => {
+    this.time.delayedCall(4000, () => {
       (this.character.body as Phaser.Physics.Arcade.Body).setAllowGravity(true);
       countdown.destroy();
     });
@@ -620,6 +663,12 @@ class GameScene extends Phaser.Scene {
     cBody.setVelocityY(-this.JUMP_SPEED);
     const vx = this.barVX * 15;
     cBody.setVelocityX(vx);
+
+    const init = (this.game as any).INIT_SOUND_STATE;
+    if (init.effect) {
+      this.effect_jump = this.sound.add('jump_sound', { volume: 0.6 });
+      this.effect_jump.play();
+    }
 
     this.time.delayedCall(50, () => {
       if (!this.character.active || this.poseActive || this.thiefHitPlaying || this.isHitFlash) return;
@@ -772,6 +821,7 @@ class GameScene extends Phaser.Scene {
     this.feverUntil = this.time.now + this.FEVER_DURATION;
     this.feverProgress = 0;
     this.emitFever(0, true, this.FEVER_DURATION);
+    this.bgm?.stop();
 
     this.initFeverOverlay();
   }
@@ -779,6 +829,7 @@ class GameScene extends Phaser.Scene {
   private stopFever() {
     this.feverActive = false;
     this.emitFever(this.feverProgress / this.FEVER_GOAL, false, 0);
+    this.bgm?.resume();
 
     this.destroyFeverOverlay();
   }
@@ -882,6 +933,26 @@ class GameScene extends Phaser.Scene {
     this.coin += val;
     this.emitCoin(this.coin);
 
+    const init = (this.game as any).INIT_SOUND_STATE;
+
+    if (init.effect) {
+      this.effect_nbanana = this.sound.add('banana_1_sound', { volume: 0.5 });
+      this.effect_bbanana = this.sound.add('banana_2_sound', { volume: 0.5 });
+      this.effect_gbanana = this.sound.add('banana_3_sound', { volume: 0.5 });
+
+      switch (tex) {
+        case 'nbana':
+          this.effect_nbanana.play();
+          break;
+        case 'bbana':
+          this.effect_bbanana.play();
+          break;
+        case 'gbana':
+          this.effect_gbanana.play();
+          break;
+      }
+    }
+
     if (this.feverActive) {
       this.emitFever(0, true, Math.max(0, this.feverUntil - this.time.now));
     } else {
@@ -983,11 +1054,18 @@ class GameScene extends Phaser.Scene {
     cBody.setVelocityX(pushLeft ? this.GORILLA_KNOCKBACK_X : -this.GORILLA_KNOCKBACK_X);
     cBody.setVelocityY(-this.GORILLA_KNOCKBACK_Y);
 
+    const init = (this.game as any).INIT_SOUND_STATE;
+    this.effect_hit = this.sound.add('hit_sound', { volume: 1.5 });
+
     if ((g.getData('type') as string) === 'block') {
       this.stopSpin();
       this.isHitFlash = true;
       this.hitFlashUntil = this.time.now + 250;
       this.character.setTexture('hit_block');
+
+      if (init.effect) {
+        this.effect_hit.play();
+      }
     }
 
     if ((g.getData('type') as string) === 'thief') {
@@ -995,6 +1073,10 @@ class GameScene extends Phaser.Scene {
       this.emitCoin(this.coin);
 
       this.stopSpin();
+
+      if (init.effect) {
+        this.effect_hit.play();
+      }
 
       if (!this.thiefHitPlaying) {
         this.thiefHitPlaying = true;
@@ -1153,6 +1235,25 @@ class GameScene extends Phaser.Scene {
 
     this.prevVy = cBody.velocity.y;
     this.prevCharY = this.character.y;
+  }
+
+  // BGM 및 효과음 상태 조정
+  private handleSoundState({ bgm, effect }: { bgm: boolean; effect: boolean }) {
+    if (this.bgm) {
+      if (bgm && !this.bgm.isPlaying) {
+        this.bgm.play();
+      } else if (!bgm && this.bgm.isPlaying) {
+        this.bgm.stop();
+      }
+    }
+
+    if (this.feverBgm) {
+      if (bgm && !this.feverBgm.isPlaying) {
+        this.feverBgm.play();
+      } else if (!bgm && this.feverBgm.isPlaying) {
+        this.feverBgm.stop();
+      }
+    }
   }
 }
 

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { useEffect, useRef } from 'react';
+import { useSound } from '@context/sound-context';
 import GameScene from '@scenes/game-scene';
 import HomeScene from '@scenes/home-scene';
 import LoadScene from '@scenes/load-scene';
@@ -8,6 +9,7 @@ let globalGame: Phaser.Game | null = null;
 
 const Canvas = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { bgm, effect } = useSound();
 
   useEffect(() => {
     if (containerRef.current && !globalGame) {
@@ -28,7 +30,10 @@ const Canvas = () => {
         },
       });
     }
-  }, []);
+
+    (globalGame as any).INIT_SOUND_STATE = { bgm, effect };
+    globalGame?.events.emit('UPDATE_SOUND_STATE', { bgm, effect });
+  }, [bgm, effect]);
 
   return (
     <div

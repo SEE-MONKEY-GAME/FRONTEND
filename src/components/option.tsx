@@ -1,8 +1,9 @@
 /** @jsxImportSource @emotion/react */
 import Toggle from './toggle';
-import { type ReactElement, type ReactHTMLElement, useState } from 'react';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { createFeedback } from '@api/feedback-api';
+import { useSound } from '@context/sound-context';
 import type { ImagesProps } from '@pages/home';
 import {
   optionCloseButtonCss,
@@ -28,6 +29,7 @@ interface OptionProps {
 }
 
 const Option = ({ handleOption, images }: OptionProps) => {
+  const { bgm, effect, toggleBgm, toggleEffect } = useSound();
   const [contact, setContact] = useState<boolean>(false);
   const [feedback, setFeedback] = useState<string>('');
 
@@ -93,14 +95,14 @@ const Option = ({ handleOption, images }: OptionProps) => {
                     <img src={images.option_sound} alt="옵션_효과음_이미지" css={optionIconCss} />
                     <span css={optionTextCss}>효과음</span>
                   </div>
-                  <Toggle />
+                  <Toggle handleToggle={() => toggleEffect()} toggle={effect} />
                 </li>
                 <li css={optionLiCss}>
                   <div css={optionTitleCss}>
                     <img src={images.option_bgm} alt="옵션_배경음악_이미지" css={optionIconCss} />
                     <span css={optionTextCss}>배경음악</span>
                   </div>
-                  <Toggle />
+                  <Toggle handleToggle={() => toggleBgm()} toggle={bgm} />
                 </li>
               </ul>
               <hr css={optionHrCss} />
