@@ -1,5 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { useNavigate } from 'react-router-dom';
+import { createGameResult } from '@api/game-api';
+import type { ImagesProps } from '@pages/game';
 import {
   btnRowCss,
   coinCss2,
@@ -13,7 +15,6 @@ import {
   statWrapCss,
   titleCss,
 } from '@styles/pages/game.css';
-import { getImage } from '@utils/get-images';
 
 type Props = {
   open: boolean;
@@ -21,18 +22,40 @@ type Props = {
   coin: number;
   onClose: () => void;
   onReplay: () => void;
+  images: ImagesProps;
 };
 
-export default function GameOverModal({ open, score, coin, onClose, onReplay }: Props) {
+export default function GameOverModal({ open, score, coin, onClose, onReplay, images }: Props) {
   const navigate = useNavigate();
 
   if (!open) {
     return null;
   }
 
+  const exitGame = async () => {
+    try {
+      const response = await createGameResult(score, coin);
+      onClose();
+      window.dispatchEvent(new Event('game:end'));
+      navigate('/home');
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const retryGame = async () => {
+    try {
+      const response = await createGameResult(score, coin);
+      onClose();
+      onReplay();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div css={overlayCss} role="dialog" aria-modal="true" aria-label="Game Over">
-      <div css={panelCss}>
+      <div css={panelCss(images)}>
         <div css={titleCss}>Game Over</div>
 
         <div css={statWrapCss}>
@@ -44,37 +67,22 @@ export default function GameOverModal({ open, score, coin, onClose, onReplay }: 
 
         <div css={statWrapCss}>
           <div css={coinCss2}>
-            <img src={getImage('game', 'onecoin')} alt="coin" css={coinImgCss} />
+            <img src={images.onecoin} alt="coin" css={coinImgCss} />
             {coin}
           </div>
         </div>
 
         <div css={btnRowCss}>
-          <button
-            css={iconBtnCss}
-            type="button"
-            onClick={() => {
-              onClose();
-              window.dispatchEvent(new Event('game:end'));
-              navigate('/home');
-            }}
-          >
-            <img src={getImage('game', 'home')} alt="home" />
+          <button css={iconBtnCss} type="button" onClick={exitGame}>
+            <img src={images.home} alt="home" />
           </button>
 
-          <button
-            css={iconBtnCss}
-            type="button"
-            onClick={() => {
-              onClose();
-              onReplay();
-            }}
-          >
-            <img src={getImage('game', 'retry')} alt="replay" />
+          <button css={iconBtnCss} type="button" onClick={retryGame}>
+            <img src={images.retry} alt="replay" />
           </button>
 
           <button css={iconBtnCss} type="button" onClick={() => console.log('share clicked')}>
-            <img src={getImage('game', 'share')} alt="share" />
+            <img src={images.share} alt="share" />
           </button>
         </div>
       </div>
