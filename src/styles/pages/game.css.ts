@@ -1,26 +1,26 @@
 import { css, keyframes } from '@emotion/react';
 import type { ImagesProps } from '@pages/game';
 import { theme } from '@styles/tokens';
-import { getImage } from '@utils/get-images';
 
-export const coinCss = css({
-  position: 'absolute',
-  top: 20,
-  left: 12,
-  width: 94,
-  height: 50,
-  backgroundImage: `url(${getImage('game', 'coin')})`,
-  backgroundRepeat: 'no-repeat',
-  backgroundSize: 'cover',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'flex-end',
-  paddingRight: 16,
-  zIndex: 3,
-  pointerEvents: 'none',
-});
+export const coinCss = (images: ImagesProps) =>
+  css({
+    position: 'absolute',
+    top: 28,
+    left: 0,
+    width: '110px',
+    height: '40px',
+    backgroundImage: `url(${images.coin_count})`,
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: '100% auto',
+    zIndex: 3,
+    pointerEvents: 'none',
+  });
 
 export const coinTextCss = css({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  lineHeight: '40px',
+  paddingRight: 16,
   color: '#ffffffff',
   fontFamily: `${theme.fonts.title}`,
   fontSize: 16,
@@ -43,7 +43,7 @@ export const currentScoreCss = css({
 
 export const feverWrapCss = css({
   position: 'absolute',
-  top: 48,
+  top: 64,
   left: '50%',
   transform: 'translateX(-50%)',
   width: 320,

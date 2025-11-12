@@ -246,6 +246,8 @@ class LoadScene extends Phaser.Scene {
     this.load.image('empty_guage_bar', this.reactImages['empty_guage_bar']);
     this.reactImages['full_guage_bar'] = getImage('game', 'full_guage_bar');
     this.load.image('full_guage_bar', this.reactImages['full_guage_bar']);
+    this.reactImages['coin_count'] = getImage('game', 'coin_count');
+    this.load.image('coin_count', this.reactImages['coin_count']);
     this.reactImages['home'] = getImage('game', 'home');
     this.load.image('home', this.reactImages['home']);
     this.reactImages['retry'] = getImage('game', 'retry');

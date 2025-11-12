@@ -10,6 +10,7 @@ export interface ImagesProps {
   empty_guage_bar: string;
   full_guage_bar: string;
   'gameover-tab': string;
+  coin_count: string;
   home: string;
   retry: string;
   share: string;
@@ -21,6 +22,7 @@ export default function GamePage() {
     empty_guage_bar: '',
     full_guage_bar: '',
     'gameover-tab': '',
+    coin_count: '',
     home: '',
     retry: '',
     share: '',
@@ -108,7 +110,7 @@ export default function GamePage() {
       <div style={{ width: '100%', height: '100vh', position: 'relative', background: 'transparent' }}>
         <span css={currentScoreCss}>{score} m</span>
 
-        <div css={coinCss}>
+        <div css={coinCss(images)}>
           <span css={coinTextCss}>{coin}</span>
         </div>
 
