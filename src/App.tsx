@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import Canvas from '@canvas/canvas';
+import Toast from '@components/toaster';
 import { SoundProvider } from '@context/sound-context';
 import { ThemeProvider } from '@emotion/react';
 import Game from '@pages/game';
@@ -35,6 +36,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <SoundProvider>
+        <Toast />
         <BrowserRouter>
           <Canvas />
           <CanvasController />

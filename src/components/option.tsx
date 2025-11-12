@@ -1,6 +1,8 @@
 /** @jsxImportSource @emotion/react */
 import Toggle from './toggle';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
+import { createFeedback } from '@api/feedback-api';
 import { useSound } from '@context/sound-context';
 import type { ImagesProps } from '@pages/home';
 import {
@@ -29,9 +31,33 @@ interface OptionProps {
 const Option = ({ handleOption, images }: OptionProps) => {
   const { bgm, effect, toggleBgm, toggleEffect } = useSound();
   const [contact, setContact] = useState<boolean>(false);
+  const [feedback, setFeedback] = useState<string>('');
 
   const handleContact = () => {
     setContact((contact) => !contact);
+  };
+
+  const onChangeFeedback = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFeedback(e.target.value);
+  };
+
+  const submitFeedback = async () => {
+    const date = String(new Date().toISOString());
+
+    if (feedback === '') {
+      toast.error('피드백 내용을 입력해주세요.');
+      return;
+    }
+
+    try {
+      const response = await createFeedback(feedback, date);
+      toast.success('피드백이 전송이 완료되었습니다.');
+      setFeedback('');
+      setContact(false);
+    } catch (error) {
+      console.log(error);
+      toast.error(`피드백 전송에 실패했습니다.\n다시 시도해주세요.`);
+    }
   };
 
   const onClickCloseButton = () => {
@@ -46,8 +72,19 @@ const Option = ({ handleOption, images }: OptionProps) => {
           {contact ? (
             <>
               <div css={optionContactAreaCss}>
-                <textarea name="contact" placeholder="의견을 작성해주세요." css={optionTextareaCss}></textarea>
-                <img src={images.option_send} alt="옵션_의견전송_버튼" css={optionSendButtonCss} />
+                <textarea
+                  name="contact"
+                  value={feedback}
+                  onChange={onChangeFeedback}
+                  placeholder="의견을 작성해주세요."
+                  css={optionTextareaCss}
+                ></textarea>
+                <img
+                  src={images.option_send}
+                  alt="옵션_의견전송_버튼"
+                  css={optionSendButtonCss}
+                  onClick={submitFeedback}
+                />
               </div>
             </>
           ) : (
