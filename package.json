@@ -23,6 +23,7 @@
     "phaser": "^3.90.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.9.4",
     "vite-tsconfig-paths": "^5.1.4"
   },
