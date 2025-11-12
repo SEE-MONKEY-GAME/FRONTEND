@@ -252,6 +252,11 @@ class LoadScene extends Phaser.Scene {
       frameWidth: 300,
       frameHeight: 300,
     });
+    this.load.spritesheet('rocketmotion', getImage('game', 'rocketmotion'), {
+  frameWidth: 503,
+  frameHeight: 884,
+  endFrame: 1,             
+});
 
     this.load.image('bg_jungle_start', getImage('game', 'bg_jungle_start'));
     this.load.image('bg_jungle_loop', getImage('game', 'bg_jungle_loop'));

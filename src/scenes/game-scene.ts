@@ -394,6 +394,9 @@ class GameScene extends Phaser.Scene {
     this.feverProgress = 0;
     this.destroyFeverOverlay();
 
+  this.tweens.killAll();
+  this.time.removeAllEvents();
+
     // 재시작
     this.physics.resume();
     this.input.enabled = true;
@@ -474,29 +477,44 @@ class GameScene extends Phaser.Scene {
 
     // 카운트다운
     const countdown = this.add
-      .image(width / 2, height / 2, 'num3')
-      .setOrigin(0.5)
-      .setScale(0.6)
-      .setDepth(9999)
-      .setScrollFactor(0);
+  .image(width / 2, height / 2, 'num3')
+  .setOrigin(0.5)
+  .setScale(0.6)
+  .setDepth(9999)
+  .setScrollFactor(0)
+  .setVisible(false); 
 
-    const playFlash = () => {
-      countdown.setScale(0.3);
-      this.tweens.add({ targets: countdown, scale: 0.6, duration: 300, ease: 'Back.Out' });
-    };
-    playFlash();
-    this.time.delayedCall(1000, () => {
-      countdown.setTexture('num2');
-      playFlash();
-    });
-    this.time.delayedCall(2000, () => {
-      countdown.setTexture('num1');
-      playFlash();
-    });
-    this.time.delayedCall(3000, () => {
-      (this.character.body as Phaser.Physics.Arcade.Body).setAllowGravity(true);
-      countdown.destroy();
-    });
+const playFlash = () => {
+  countdown.setScale(0.3);
+  this.tweens.add({ targets: countdown, scale: 0.6, duration: 300, ease: 'Back.Out' });
+};
+
+const startCountdown = () => {
+  countdown.setVisible(true);
+  countdown.setTexture('num3'); 
+  playFlash();
+
+  this.time.delayedCall(1000, () => { countdown.setTexture('num2'); playFlash(); });
+  this.time.delayedCall(2000, () => { countdown.setTexture('num1'); playFlash(); });
+  this.time.delayedCall(3000, () => {
+    (this.character.body as Phaser.Physics.Arcade.Body).setAllowGravity(true);
+    countdown.destroy();
+  });
+};
+
+// 이벤트 리스너 등록 직후에 넣기
+const onStart = () => startCountdown();
+window.addEventListener('game:start', onStart);
+this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+  window.removeEventListener('game:start', onStart);
+});
+
+// ✅ 버튼이 더 먼저 눌렸던 경우를 커버
+if ((window as any).__queuedGameStart) {
+  (window as any).__queuedGameStart = false;
+  startCountdown();
+}
+
 
     this.prevBarX = this.bar.x;
     this.prevCharY = this.character.y;

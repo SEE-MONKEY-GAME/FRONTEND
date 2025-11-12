@@ -3,6 +3,7 @@ import { useFeverProgressAnimator } from '../hooks/useFeverProgressAnimator';
 import { useEffect, useState } from 'react';
 import FeverGauge from '@components/fever-gauge';
 import GameOverModal from '@components/gameover-modal';
+import RocketPrompt from '@components/rocketprompt';
 import { FEVER_DURATION_MS } from '@scenes/game-scene';
 import { circleCss, coinCss, coinTextCss, currentScoreCss, feverEmptyCss, feverWrapCss } from '@styles/pages/game.css';
 
@@ -13,6 +14,8 @@ export default function GamePage() {
   const [isGameOver, setIsGameOver] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
   const [finalCoin, setFinalCoin] = useState(0);
+  const [showRocketPrompt, setShowRocketPrompt] = useState(true);
+
 
   const {
     progress: feverProgress,
@@ -22,6 +25,19 @@ export default function GamePage() {
   } = useFeverProgressAnimator({
     drainMs: FEVER_DURATION_MS,
   });
+
+  
+const startGame = () => {
+  (window as any).__queuedGameStart = true;   
+  window.dispatchEvent(new Event('game:start'));
+  setShowRocketPrompt(false);
+};
+const skipGame = () => {
+  (window as any).__queuedGameStart = true;   
+  window.dispatchEvent(new Event('game:start'));
+  setShowRocketPrompt(false);
+};
+
 
   useEffect(() => {
     const onScore = (e: CustomEvent<{ score: number }>) => setScore(e.detail.score);
@@ -60,12 +76,22 @@ export default function GamePage() {
     return () => window.removeEventListener('game:over', onOver as EventListener);
   }, []);
 
-  const replay = () => {
-    window.dispatchEvent(new Event('game:replay'));
-    setIsGameOver(false);
-    setScore(0);
-    setCoin(0);
-  };
+// 기존 replay 교체
+const replay = () => {
+  // 다음 시작은 버튼을 눌러야 하므로 대기 플래그를 끔
+  (window as any).__queuedGameStart = false;
+
+  window.dispatchEvent(new Event('game:replay'));
+
+  // UI 초기화
+  setIsGameOver(false);
+  setScore(0);
+  setCoin(0);
+
+  // 🔥 로켓 프롬프트 다시 보여주기
+  setShowRocketPrompt(true);
+};
+
 
   return (
     <>
@@ -91,6 +117,11 @@ export default function GamePage() {
           onClose={() => setIsGameOver(false)}
           onReplay={replay}
         />
+        <RocketPrompt
+  open={showRocketPrompt}
+  onSkip={skipGame}
+  onUse={startGame}
+/>
       </div>
     </>
   );
