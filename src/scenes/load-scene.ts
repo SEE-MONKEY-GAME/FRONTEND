@@ -133,7 +133,7 @@ class LoadScene extends Phaser.Scene {
     this.load.audio('banana_3_sound', getEffects('banana_3'));
     this.load.audio('hit_sound', getEffects('hit'));
     this.load.audio('jump_sound', getEffects('jump'));
-    this.load.audio('cound_down_sound', getEffects('count_down'));
+    this.load.audio('count_down_sound', getEffects('count_down'));
 
     // home
     this.load.image('bana', getImage('home', 'bana_sit'));
