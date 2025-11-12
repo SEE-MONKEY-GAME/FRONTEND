@@ -5,6 +5,7 @@ import Attend from '@components/attend';
 import Guide from '@components/guide';
 import Option from '@components/option';
 import Shop from '@components/shop';
+import { useSound } from '@context/sound-context';
 import {
   backgroundCss,
   bestScoreCss,
@@ -166,6 +167,7 @@ const Home = () => {
   const [guide, setGuide] = useState<boolean>(false);
   const [option, setOption] = useState<boolean>(false);
   const [transition, setTransition] = useState<boolean>(false);
+  const { effect } = useSound();
 
   const mainButtonSound = new Audio(getBGMs('button_main'));
   const subButtonSound = new Audio(getBGMs('button_sub'));
@@ -188,32 +190,43 @@ const Home = () => {
   }, []);
 
   const handleAttend = () => {
-    subButtonSound.currentTime = 0;
-    subButtonSound.play();
+    if (effect) {
+      subButtonSound.currentTime = 0;
+      subButtonSound.play();
+    }
     setAttend((attend) => !attend);
   };
 
   const handleShop = () => {
-    subButtonSound.currentTime = 0;
-    subButtonSound.play();
+    if (effect) {
+      subButtonSound.currentTime = 0;
+      subButtonSound.play();
+    }
     setShop((shop) => !shop);
   };
 
   const handleGameGuide = () => {
-    subButtonSound.currentTime = 0;
-    subButtonSound.play();
+    if (effect) {
+      subButtonSound.currentTime = 0;
+      subButtonSound.play();
+    }
     setGuide((guide) => !guide);
   };
 
   const handleOption = () => {
-    subButtonSound.currentTime = 0;
-    subButtonSound.play();
+    if (effect) {
+      subButtonSound.currentTime = 0;
+      subButtonSound.play();
+    }
     setOption((option) => !option);
   };
 
   const handleGameStart = () => {
-    mainButtonSound.currentTime = 0;
-    mainButtonSound.play();
+    if (effect) {
+      mainButtonSound.currentTime = 0;
+      mainButtonSound.play();
+    }
+
     setTransition(true);
 
     setTimeout(() => {
