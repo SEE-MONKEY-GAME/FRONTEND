@@ -84,16 +84,19 @@ const Attend = ({ handleAttend, images, refreshMember }: AttendProps) => {
   };
 
   const handleRewardOpen = async (index: number) => {
-    try {
-      const response = await createDailyCheckin();
-    } catch (error) {
-      toast.error('더 이상 출석할 수 없어요');
-      console.log(error);
-    }
-
     if (statuses[index] === 'today') {
+      try {
+        const response = await createDailyCheckin();
+      } catch (error) {
+        toast.error('잠시 후 다시 시도해주세요');
+        console.log(error);
+      }
       refreshMember();
       setReward(index);
+    } else if (statuses[index] === 'claimed') {
+      toast.error('오늘은 이미 출석했어요');
+    } else {
+      toast.error('아직 출석할 수 없어요');
     }
   };
 
