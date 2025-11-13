@@ -3,6 +3,7 @@ import Toggle from './toggle';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { createFeedback } from '@api/feedback-api';
+import { updateSound } from '@api/member-api';
 import { useSound } from '@context/sound-context';
 import type { ImagesProps } from '@pages/home';
 import {
@@ -29,7 +30,7 @@ interface OptionProps {
 }
 
 const Option = ({ handleOption, images }: OptionProps) => {
-  const { bgm, effect, toggleBgm, toggleEffect } = useSound();
+  const { bgm, effect, setBgm, setEffect } = useSound();
   const [contact, setContact] = useState<boolean>(false);
   const [feedback, setFeedback] = useState<string>('');
 
@@ -65,6 +66,24 @@ const Option = ({ handleOption, images }: OptionProps) => {
     handleOption();
   };
 
+  const handleBgm = async () => {
+    try {
+      const response = await updateSound('BGM', !bgm);
+      setBgm((prev) => !prev);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleEffect = async () => {
+    try {
+      const response = await updateSound('EFFECT', !effect);
+      setEffect((prev) => !prev);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <>
       <div css={optionWrapperCss}>
@@ -95,14 +114,14 @@ const Option = ({ handleOption, images }: OptionProps) => {
                     <img src={images.option_sound} alt="옵션_효과음_이미지" css={optionIconCss} />
                     <span css={optionTextCss}>효과음</span>
                   </div>
-                  <Toggle handleToggle={() => toggleEffect()} toggle={effect} />
+                  <Toggle handleToggle={handleEffect} toggle={effect} />
                 </li>
                 <li css={optionLiCss}>
                   <div css={optionTitleCss}>
                     <img src={images.option_bgm} alt="옵션_배경음악_이미지" css={optionIconCss} />
                     <span css={optionTextCss}>배경음악</span>
                   </div>
-                  <Toggle handleToggle={() => toggleBgm()} toggle={bgm} />
+                  <Toggle handleToggle={handleBgm} toggle={bgm} />
                 </li>
               </ul>
               <hr css={optionHrCss} />

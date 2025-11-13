@@ -15,3 +15,20 @@ export const selectMemberData = async () => {
 
   return response.json();
 };
+
+export const updateSound = async (type: string, enabled: boolean) => {
+  const response = await fetch(`${BASE_URL}/member/sound`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Hash 1`,
+    },
+    body: JSON.stringify({ type, enabled }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`ERROR: ${response.status}`);
+  }
+
+  return response.json();
+};
