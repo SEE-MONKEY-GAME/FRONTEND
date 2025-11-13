@@ -5,6 +5,7 @@ export const createFeedback = async (content: string, createdAt: string) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Hash 1`,
     },
     body: JSON.stringify({ content, createdAt }),
   });

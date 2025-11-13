@@ -5,6 +5,7 @@ export const selectMemberData = async () => {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Hash 1`,
     },
   });
 
