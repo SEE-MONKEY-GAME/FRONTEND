@@ -167,7 +167,7 @@ const Shop = ({ handleShop, images, equipment, refreshMember }: ShopProps) => {
                 if (data) {
                   return (
                     <li key={index} css={shopBoxCss(images)}>
-                      <span css={shopItemCountCss}>{data.quantity > 0 && data.quantity}</span>
+                      <span css={shopItemCountCss}>{data.quantity}</span>
                       <img
                         src={images[data.item.code as keyof ImagesProps]}
                         alt={data.item.code}
