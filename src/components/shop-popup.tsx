@@ -23,6 +23,7 @@ interface ShopPopupProps {
   handlePopup: (index: number) => void;
   images: ImagesProps;
   data: ItemDetailProps | CostumeDetailProps;
+  refreshData: (token: string) => Promise<void>;
   refreshMember: (token: string) => Promise<void>;
 }
 
@@ -52,12 +53,13 @@ const isItemDetail = (data: ItemDetailProps | CostumeDetailProps): data is ItemD
   );
 };
 
-const ShopPopup = ({ handlePopup, images, data, refreshMember }: ShopPopupProps) => {
+const ShopPopup = ({ handlePopup, images, data, refreshData, refreshMember }: ShopPopupProps) => {
   const { token } = useToken();
 
   const buyItem = async (itemId: number) => {
     try {
       const response = await createItem(token, itemId);
+      refreshData(token);
       refreshMember(token);
       toast.success(`${data.name} 구매 완료 🍌`);
     } catch (error) {
@@ -69,6 +71,7 @@ const ShopPopup = ({ handlePopup, images, data, refreshMember }: ShopPopupProps)
   const buyCostume = async (costumeId: number) => {
     try {
       const response = await createCostume(token, costumeId);
+      refreshData(token);
       refreshMember(token);
       toast.success(`${data.name} 구매 완료 🍌`);
       handlePopup(-1);
