@@ -1,5 +1,4 @@
 /** @jsxImportSource @emotion/react */
-import { useEffect } from 'react';
 import { useSound } from '@context/sound-context';
 import type { ImagesProps } from '@pages/home';
 import {

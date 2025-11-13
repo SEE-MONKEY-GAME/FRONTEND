@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import AttendReward from './attend-reward';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ImagesProps } from '@pages/home';
 import {
   attendCloseButtonCss,
@@ -12,26 +12,30 @@ import {
   attendTabCss,
   attendWrapperCss,
 } from '@styles/components/attend.css';
-import { getImage } from '@utils/get-images';
 
 type DayStatus = 'today' | 'claimed' | 'locked';
 
 interface AttendProps {
   handleAttend: () => void;
   images: ImagesProps;
+  todayCheckIn: boolean;
+  checkinStreak: number;
 }
 
-const Attend = ({ handleAttend, images }: AttendProps) => {
+const Attend = ({ handleAttend, images, todayCheckIn, checkinStreak }: AttendProps) => {
   const [reward, setReward] = useState<number>(-1);
-  const [statuses, setStatuses] = useState<DayStatus[]>([
-    'claimed',
-    'claimed',
-    'today',
-    'locked',
-    'locked',
-    'locked',
-    'locked',
-  ]);
+
+  const statuses: DayStatus[] = useMemo(() => {
+    return Array.from({ length: 7 }, (_, i) => {
+      if (i < checkinStreak) {
+        return 'claimed';
+      }
+      if (i === checkinStreak && !todayCheckIn) {
+        return 'today';
+      }
+      return 'locked';
+    });
+  }, [todayCheckIn, checkinStreak]);
 
   const getImages = Array.from({ length: 7 }, (_, i) => ({
     today: images[`check_day${i + 1}` as keyof ImagesProps],
@@ -60,7 +64,6 @@ const Attend = ({ handleAttend, images }: AttendProps) => {
 
   const handleRewardClose = () => {
     setReward(-1);
-    setStatuses((prev) => prev.map((status) => (status === 'today' ? 'claimed' : status)));
   };
 
   return (

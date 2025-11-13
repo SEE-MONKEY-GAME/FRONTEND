@@ -1,6 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { selectMemberData } from '@api/member-api';
 import Attend from '@components/attend';
 import Guide from '@components/guide';
 import Option from '@components/option';
@@ -91,6 +92,16 @@ export interface ImagesProps {
   'SCARF-001': string;
 }
 
+interface MemberProps {
+  memberId: number;
+  coin: number;
+  checkinStreak: number;
+  todayCheckIn: boolean;
+  topRecord: number;
+  sound: boolean; // 백엔드 수정 필요
+  equipment: string[];
+}
+
 const Home = () => {
   const navigate = useNavigate();
   const [images, setImages] = useState<ImagesProps>({
@@ -161,6 +172,15 @@ const Home = () => {
     'ITEM-002': '',
     'SCARF-001': '',
   });
+  const [member, setMember] = useState<MemberProps>({
+    memberId: 0,
+    coin: 0,
+    checkinStreak: 0,
+    todayCheckIn: false,
+    topRecord: 0,
+    sound: true, // 백엔드 수정 필요
+    equipment: [],
+  });
 
   const [attend, setAttend] = useState<boolean>(false);
   const [shop, setShop] = useState<boolean>(false);
@@ -187,6 +207,29 @@ const Home = () => {
     return () => {
       window.removeEventListener('images:loaded', handleImages as EventListener);
     };
+  }, []);
+
+  useEffect(() => {
+    const getMemberData = async () => {
+      try {
+        const response = await selectMemberData();
+        setMember({
+          memberId: response.data.memberId,
+          coin: response.data.coin,
+          checkinStreak: response.data.checkinStreak,
+          todayCheckIn: response.data.todayCheckIn,
+          topRecord: response.data.topRecord,
+          sound: response.data.sound,
+          equipment: response.data.equipment,
+        });
+
+        return response;
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    getMemberData();
   }, []);
 
   const handleAttend = () => {
@@ -238,13 +281,20 @@ const Home = () => {
   return (
     <>
       {transition && <div css={circleCss} />}
-      {attend && <Attend handleAttend={handleAttend} images={images} />}
+      {attend && (
+        <Attend
+          handleAttend={handleAttend}
+          images={images}
+          todayCehckIn={member.todayCheckIn}
+          checkinStreak={member.checkinStreak}
+        />
+      )}
       {shop && <Shop handleShop={handleShop} images={images} />}
       {guide && <Guide handleGameGuide={handleGameGuide} images={images} />}
       {option && <Option handleOption={handleOption} images={images} />}
       <div css={backgroundCss(images)}>
         <div css={coinCss}>
-          <span css={coinTextCss}>1985</span>
+          <span css={coinTextCss}>{member.coin}</span>
         </div>
         <div css={bestScoreCss}>
           <div css={bestScoreTextCss}>
@@ -252,7 +302,7 @@ const Home = () => {
             <span>최고기록</span>
             <img src={images.leaf_right} alt="오른쪽_장식_이미지" height={14} />
           </div>
-          <span css={bestScoreValueCss}>5853 m</span>
+          <span css={bestScoreValueCss}>{member.topRecord} m</span>
         </div>
         <div css={iconButtonGroupCss}>
           <div css={iconButtonListCss}>
