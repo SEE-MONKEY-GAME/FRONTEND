@@ -7,7 +7,7 @@ interface UserState {
 
 const UserContext = createContext<UserState | null>(null);
 
-export const SoundProvider = ({ children }: { children: ReactNode }) => {
+export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string>('');
 
   return <UserContext.Provider value={{ token, setToken }}>{children}</UserContext.Provider>;
@@ -17,7 +17,7 @@ export const SoundProvider = ({ children }: { children: ReactNode }) => {
 export const useToken = () => {
   const context = useContext(UserContext);
   if (!context) {
-    throw new Error('useSound must be used within a SoundProvider');
+    throw new Error('useToken must be used within a UserProvider');
   }
   return context;
 };
