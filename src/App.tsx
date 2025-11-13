@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import Canvas from '@canvas/canvas';
 import Toast from '@components/toaster';
 import { SoundProvider } from '@context/sound-context';
+import { UserProvider } from '@context/user-context';
 import { ThemeProvider } from '@emotion/react';
 import Game from '@pages/game';
 import Home from '@pages/home';
@@ -35,18 +36,20 @@ const CanvasController = () => {
 function App() {
   return (
     <ThemeProvider theme={theme}>
-      <SoundProvider>
-        <Toast />
-        <BrowserRouter>
-          <Canvas />
-          <CanvasController />
-          <Routes>
-            <Route path="/" element={<Load />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/game" element={<Game />} />
-          </Routes>
-        </BrowserRouter>
-      </SoundProvider>
+      <UserProvider>
+        <SoundProvider>
+          <Toast />
+          <BrowserRouter>
+            <Canvas />
+            <CanvasController />
+            <Routes>
+              <Route path="/" element={<Load />} />
+              <Route path="/home" element={<Home />} />
+              <Route path="/game" element={<Game />} />
+            </Routes>
+          </BrowserRouter>
+        </SoundProvider>
+      </UserProvider>
     </ThemeProvider>
   );
 }
