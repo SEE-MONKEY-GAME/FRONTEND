@@ -48,17 +48,9 @@ export const attendLastLiCss = css({
 });
 
 export const attendImageCss = css({
-  height: '96px',
-
-  '@media (max-width: 350px)': {
-    height: '88px',
-  },
+  height: 'calc((100vw - 90px) / 3)',
 });
 
 export const attendLastImageCss = css({
-  height: '80px',
-
-  '@media (max-width: 350px)': {
-    height: '72px',
-  },
+  height: 'calc((100vw - 140px) / 3)',
 });

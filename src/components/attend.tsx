@@ -1,6 +1,8 @@
 /** @jsxImportSource @emotion/react */
 import AttendReward from './attend-reward';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
+import { createDailyCheckin, selectDailyCheckin } from '@api/checkin-api';
 import type { ImagesProps } from '@pages/home';
 import {
   attendCloseButtonCss,
@@ -15,27 +17,52 @@ import {
 
 type DayStatus = 'today' | 'claimed' | 'locked';
 
+interface CheckinProps {
+  checkedToday: boolean;
+  checkinStreak: number;
+  lastCheckin: string | null;
+  today: string;
+}
+
 interface AttendProps {
   handleAttend: () => void;
   images: ImagesProps;
-  todayCheckIn: boolean;
-  checkinStreak: number;
+  refreshMember: () => Promise<void>;
 }
 
-const Attend = ({ handleAttend, images, todayCheckIn, checkinStreak }: AttendProps) => {
+const Attend = ({ handleAttend, images, refreshMember }: AttendProps) => {
   const [reward, setReward] = useState<number>(-1);
+  const [checkin, setCheckin] = useState<CheckinProps>({
+    checkedToday: false,
+    checkinStreak: 0,
+    lastCheckin: null,
+    today: '',
+  });
 
   const statuses: DayStatus[] = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {
-      if (i < checkinStreak) {
+      if (i < checkin.checkinStreak) {
         return 'claimed';
       }
-      if (i === checkinStreak && !todayCheckIn) {
+      if (i === checkin.checkinStreak && !checkin.checkedToday) {
         return 'today';
       }
       return 'locked';
     });
-  }, [todayCheckIn, checkinStreak]);
+  }, [checkin]);
+
+  useEffect(() => {
+    const getDailyCheckin = async () => {
+      try {
+        const response = await selectDailyCheckin();
+        setCheckin(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    getDailyCheckin();
+  }, []);
 
   const getImages = Array.from({ length: 7 }, (_, i) => ({
     today: images[`check_day${i + 1}` as keyof ImagesProps],
@@ -56,8 +83,16 @@ const Attend = ({ handleAttend, images, todayCheckIn, checkinStreak }: AttendPro
     return getImages[index].today;
   };
 
-  const handleRewardOpen = (index: number) => {
+  const handleRewardOpen = async (index: number) => {
+    try {
+      const response = await createDailyCheckin();
+    } catch (error) {
+      toast.error('더 이상 출석할 수 없어요');
+      console.log(error);
+    }
+
     if (statuses[index] === 'today') {
+      refreshMember();
       setReward(index);
     }
   };
