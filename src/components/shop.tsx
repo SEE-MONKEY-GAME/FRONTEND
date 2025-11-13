@@ -53,27 +53,27 @@ const Shop = ({ handleShop, images, equipment, refreshMember }: ShopProps) => {
 
   const subButtonSound = new Audio(getBGMs('button_sub'));
 
+  const getItemsData = async (token: string) => {
+    try {
+      const response = await selectItems(token);
+      setItems(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getCostumeData = async (token: string) => {
+    try {
+      const response = await selectCostumes(token);
+      setCostumes(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
-    const getItemsData = async () => {
-      try {
-        const response = await selectItems(token);
-        setItems(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    const getCostumeData = async () => {
-      try {
-        const response = await selectCostumes(token);
-        setCostumes(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    getItemsData();
-    getCostumeData();
+    getItemsData(token);
+    getCostumeData(token);
   }, []);
 
   const equipCostume = async (type: string, name: string, costumeId: number) => {
@@ -139,6 +139,7 @@ const Shop = ({ handleShop, images, equipment, refreshMember }: ShopProps) => {
           handlePopup={handleItem}
           images={images}
           data={items[itemPopup].item as ItemDetailProps}
+          refreshData={getItemsData}
           refreshMember={refreshMember}
         />
       )}
@@ -147,6 +148,7 @@ const Shop = ({ handleShop, images, equipment, refreshMember }: ShopProps) => {
           handlePopup={handleCostume}
           images={images}
           data={costumes[costumePopup].costume as CostumeDetailProps}
+          refreshData={getCostumeData}
           refreshMember={refreshMember}
         />
       )}
