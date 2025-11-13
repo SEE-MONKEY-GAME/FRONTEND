@@ -213,7 +213,7 @@ const Home = () => {
     };
   }, []);
 
-  const getMemberData = async () => {
+  const getMemberData = async (token: string) => {
     try {
       const response = await selectMemberData(token);
       setMember({
@@ -245,7 +245,7 @@ const Home = () => {
   };
 
   useEffect(() => {
-    getMemberData();
+    getMemberData(token);
   }, []);
 
   const handleAttend = () => {
