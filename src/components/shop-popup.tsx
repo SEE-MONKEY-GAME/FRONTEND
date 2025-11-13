@@ -2,6 +2,7 @@
 import toast from 'react-hot-toast';
 import { createCostume } from '@api/costume-api';
 import { createItem } from '@api/item-api';
+import { useToken } from '@context/user-context';
 import type { ImagesProps } from '@pages/home';
 import {
   shopItemBoxCss,
@@ -52,9 +53,11 @@ const isItemDetail = (data: ItemDetailProps | CostumeDetailProps): data is ItemD
 };
 
 const ShopPopup = ({ handlePopup, images, data, refreshMember }: ShopPopupProps) => {
+  const { token } = useToken();
+
   const buyItem = async (itemId: number) => {
     try {
-      const response = await createItem(itemId);
+      const response = await createItem(token, itemId);
       refreshMember();
       toast.success(`${data.name} 구매 완료 🍌`);
     } catch (error) {

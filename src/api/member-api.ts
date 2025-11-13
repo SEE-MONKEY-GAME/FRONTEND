@@ -1,11 +1,11 @@
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-export const selectMemberData = async () => {
+export const selectMemberData = async (token: string) => {
   const response = await fetch(`${BASE_URL}/member`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Hash 1`,
+      Authorization: `Hash ${token}`,
     },
   });
 
@@ -16,12 +16,12 @@ export const selectMemberData = async () => {
   return response.json();
 };
 
-export const updateSound = async (type: string, enabled: boolean) => {
+export const updateSound = async (token: string, type: string, enabled: boolean) => {
   const response = await fetch(`${BASE_URL}/member/sound`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Hash 1`,
+      Authorization: `Hash ${token}`,
     },
     body: JSON.stringify({ type, enabled }),
   });

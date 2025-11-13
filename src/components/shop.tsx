@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { deleteCostume, putCostume, selectCostumes } from '@api/costume-api';
 import { selectItems } from '@api/item-api';
 import { useSound } from '@context/sound-context';
+import { useToken } from '@context/user-context';
 import type { ImagesProps } from '@pages/home';
 import {
   shopBoxCss,
@@ -47,6 +48,7 @@ const Shop = ({ handleShop, images, equipment, refreshMember }: ShopProps) => {
   const [itemPopup, setItemPopup] = useState(-1);
   const [costumePopup, setCostumePopup] = useState(-1);
   const [overlay, setOverlay] = useState(false);
+  const { token } = useToken();
   const { effect } = useSound();
 
   const subButtonSound = new Audio(getBGMs('button_sub'));
@@ -54,7 +56,7 @@ const Shop = ({ handleShop, images, equipment, refreshMember }: ShopProps) => {
   useEffect(() => {
     const getItemsData = async () => {
       try {
-        const response = await selectItems();
+        const response = await selectItems(token);
         setItems(response.data);
       } catch (error) {
         console.log(error);
@@ -63,7 +65,7 @@ const Shop = ({ handleShop, images, equipment, refreshMember }: ShopProps) => {
 
     const getCostumeData = async () => {
       try {
-        const response = await selectCostumes();
+        const response = await selectCostumes(token);
         setCostumes(response.data);
       } catch (error) {
         console.log(error);
@@ -76,7 +78,7 @@ const Shop = ({ handleShop, images, equipment, refreshMember }: ShopProps) => {
 
   const equipCostume = async (type: string, name: string, costumeId: number) => {
     try {
-      const response = await putCostume(type, costumeId);
+      const response = await putCostume(token, type, costumeId);
       refreshMember();
       toast.success(`${name} 장착 완료 🍌`);
     } catch (error) {
@@ -87,7 +89,7 @@ const Shop = ({ handleShop, images, equipment, refreshMember }: ShopProps) => {
 
   const unequipCostume = async (type: string, name: string) => {
     try {
-      const response = await deleteCostume(type);
+      const response = await deleteCostume(token, type);
       refreshMember();
       toast.success(`${name} 장착 해제 🍌`);
     } catch (error) {
