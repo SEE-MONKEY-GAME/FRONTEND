@@ -98,7 +98,8 @@ interface MemberProps {
   checkinStreak: number;
   todayCheckIn: boolean;
   topRecord: number;
-  sound: boolean; // 백엔드 수정 필요
+  bgmSound: boolean;
+  effectSound: boolean;
   equipment: [];
 }
 
@@ -178,7 +179,8 @@ const Home = () => {
     checkinStreak: 0,
     todayCheckIn: false,
     topRecord: 0,
-    sound: true, // 백엔드 수정 필요
+    bgmSound: true,
+    effectSound: true,
     equipment: [],
   });
 
@@ -187,7 +189,7 @@ const Home = () => {
   const [guide, setGuide] = useState<boolean>(false);
   const [option, setOption] = useState<boolean>(false);
   const [transition, setTransition] = useState<boolean>(false);
-  const { effect } = useSound();
+  const { effect, setBgm, setEffect } = useSound();
 
   const mainButtonSound = new Audio(getBGMs('button_main'));
   const subButtonSound = new Audio(getBGMs('button_sub'));
@@ -218,9 +220,13 @@ const Home = () => {
         checkinStreak: response.data.checkinStreak,
         todayCheckIn: response.data.todayCheckIn,
         topRecord: response.data.topRecord,
-        sound: response.data.sound,
+        bgmSound: response.data.bgmSound,
+        effectSound: response.data.effectSound,
         equipment: response.data.equipment,
       });
+
+      setBgm(response.data.bgmSound);
+      setEffect(response.data.effectSound);
 
       const equipment = response.data.equipment;
 
