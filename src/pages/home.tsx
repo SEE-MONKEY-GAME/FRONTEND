@@ -222,7 +222,15 @@ const Home = () => {
         equipment: response.data.equipment,
       });
 
-      return response;
+      const equipment = response.data.equipment;
+
+      if (equipment.length > 0) {
+        equipment.forEach((eq: { type: string; code: string }) => {
+          window.dispatchEvent(new CustomEvent('UPDATE_CHARACTER', { detail: { type: eq.type, code: eq.code } }));
+        });
+      } else {
+        window.dispatchEvent(new CustomEvent('UPDATE_CHARACTER', { detail: { type: '', code: '' } }));
+      }
     } catch (error) {
       console.log(error);
     }
