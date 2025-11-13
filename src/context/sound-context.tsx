@@ -10,8 +10,8 @@ interface SoundState {
 const SoundContext = createContext<SoundState | null>(null);
 
 export const SoundProvider = ({ children }: { children: ReactNode }) => {
-  const [bgm, setBgm] = useState(true);
-  const [effect, setEffect] = useState(true);
+  const [bgm, setBgm] = useState(false);
+  const [effect, setEffect] = useState(false);
 
   return <SoundContext.Provider value={{ bgm, effect, setBgm, setEffect }}>{children}</SoundContext.Provider>;
 };
