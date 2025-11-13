@@ -1,25 +1,26 @@
 import { css, keyframes } from '@emotion/react';
+import type { ImagesProps } from '@pages/game';
 import { theme } from '@styles/tokens';
-import { getImage } from '@utils/get-images';
 
-export const coinCss = css({
-  position: 'absolute',
-  top: 20,
-  left: 12,
-  width: 94,
-  height: 50,
-  backgroundImage: `url(${getImage('game', 'coin')})`,
-  backgroundRepeat: 'no-repeat',
-  backgroundSize: 'cover',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'flex-end',
-  paddingRight: 16,
-  zIndex: 3,
-  pointerEvents: 'none',
-});
+export const coinCss = (images: ImagesProps) =>
+  css({
+    position: 'absolute',
+    top: 28,
+    left: 0,
+    width: '110px',
+    height: '40px',
+    backgroundImage: `url(${images.coin_count})`,
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: '100% auto',
+    zIndex: 3,
+    pointerEvents: 'none',
+  });
 
 export const coinTextCss = css({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  lineHeight: '40px',
+  paddingRight: 16,
   color: '#ffffffff',
   fontFamily: `${theme.fonts.title}`,
   fontSize: 16,
@@ -42,7 +43,7 @@ export const currentScoreCss = css({
 
 export const feverWrapCss = css({
   position: 'absolute',
-  top: 48,
+  top: 64,
   left: '50%',
   transform: 'translateX(-50%)',
   width: 320,
@@ -52,26 +53,28 @@ export const feverWrapCss = css({
   marginTop: 20,
 });
 
-export const feverEmptyCss = css({
-  position: 'absolute',
-  inset: 0,
-  height: 30,
-  backgroundImage: `url(${getImage('game', 'empty_guage_bar')})`,
-  backgroundRepeat: 'no-repeat',
-  backgroundSize: '100% 100%',
-  backgroundPosition: 'left center',
-});
+export const feverEmptyCss = (images: ImagesProps) =>
+  css({
+    position: 'absolute',
+    inset: 0,
+    height: 30,
+    backgroundImage: `url(${images.empty_guage_bar})`,
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: '100% 100%',
+    backgroundPosition: 'left center',
+  });
 
-export const feverFullCss = css({
-  position: 'absolute',
-  inset: 0,
-  height: 30,
-  backgroundImage: `url(${getImage('game', 'full_guage_bar')})`,
-  backgroundRepeat: 'no-repeat',
-  backgroundSize: '100% 100%',
-  backgroundPosition: 'left center',
-  transition: 'clip-path 120ms linear',
-});
+export const feverFullCss = (images: ImagesProps) =>
+  css({
+    position: 'absolute',
+    inset: 0,
+    height: 30,
+    backgroundImage: `url(${images.full_guage_bar})`,
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: '100% 100%',
+    backgroundPosition: 'left center',
+    transition: 'clip-path 120ms linear',
+  });
 
 // (임시)
 const feverPulse = keyframes`
@@ -109,18 +112,19 @@ export const overlayCss = css({
   zIndex: 50,
 });
 
-export const panelCss = css({
-  position: 'relative',
-  width: 311,
-  height: 392,
-  backgroundImage: `url(${getImage('game', 'gameover-tab')})`,
-  backgroundRepeat: 'no-repeat',
-  backgroundSize: '100% 100%',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  paddingTop: 28,
-});
+export const panelCss = (images: ImagesProps) =>
+  css({
+    position: 'relative',
+    width: 311,
+    height: 392,
+    backgroundImage: `url(${images['gameover-tab']})`,
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: '100% 100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    paddingTop: 28,
+  });
 
 export const titleCss = css({
   fontFamily: `${theme.fonts.title}`,

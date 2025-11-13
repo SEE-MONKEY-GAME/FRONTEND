@@ -242,6 +242,23 @@ class LoadScene extends Phaser.Scene {
     this.load.image('SCARF-001', this.reactImages['SCARF-001']);
 
     // game
+    this.reactImages['empty_guage_bar'] = getImage('game', 'empty_guage_bar');
+    this.load.image('empty_guage_bar', this.reactImages['empty_guage_bar']);
+    this.reactImages['full_guage_bar'] = getImage('game', 'full_guage_bar');
+    this.load.image('full_guage_bar', this.reactImages['full_guage_bar']);
+    this.reactImages['coin_count'] = getImage('game', 'coin_count');
+    this.load.image('coin_count', this.reactImages['coin_count']);
+    this.reactImages['home'] = getImage('game', 'home');
+    this.load.image('home', this.reactImages['home']);
+    this.reactImages['retry'] = getImage('game', 'retry');
+    this.load.image('retry', this.reactImages['retry']);
+    this.reactImages['share'] = getImage('game', 'share');
+    this.load.image('share', this.reactImages['share']);
+    this.reactImages['onecoin'] = getImage('game', 'onecoin');
+    this.load.image('onecoin', this.reactImages['onecoin']);
+    this.reactImages['gameover-tab'] = getImage('game', 'gameover-tab');
+    this.load.image('gameover-tab', this.reactImages['gameover-tab']);
+
     this.load.image('bar', getImage('game', 'bar'));
     this.load.image('character', getImage('game', 'character'));
     this.load.image('num3', getImage('game', '3'));

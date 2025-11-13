@@ -6,13 +6,50 @@ import GameOverModal from '@components/gameover-modal';
 import { FEVER_DURATION_MS } from '@scenes/game-scene';
 import { circleCss, coinCss, coinTextCss, currentScoreCss, feverEmptyCss, feverWrapCss } from '@styles/pages/game.css';
 
+export interface ImagesProps {
+  empty_guage_bar: string;
+  full_guage_bar: string;
+  'gameover-tab': string;
+  coin_count: string;
+  home: string;
+  retry: string;
+  share: string;
+  onecoin: string;
+}
+
 export default function GamePage() {
+  const [images, setImages] = useState<ImagesProps>({
+    empty_guage_bar: '',
+    full_guage_bar: '',
+    'gameover-tab': '',
+    coin_count: '',
+    home: '',
+    retry: '',
+    share: '',
+    onecoin: '',
+  });
   const [score, setScore] = useState(0);
   const [coin, setCoin] = useState(0);
-
   const [isGameOver, setIsGameOver] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
   const [finalCoin, setFinalCoin] = useState(0);
+
+  useEffect(() => {
+    const preloaded = (window as any)['PRELOADED_IMAGES'] as ImagesProps | undefined;
+    if (preloaded) {
+      setImages(preloaded);
+    }
+
+    const handleImages = (event: CustomEvent<ImagesProps>) => {
+      setImages(event.detail);
+    };
+
+    window.addEventListener('images:loaded', handleImages as EventListener);
+
+    return () => {
+      window.removeEventListener('images:loaded', handleImages as EventListener);
+    };
+  }, []);
 
   const {
     progress: feverProgress,
@@ -73,12 +110,12 @@ export default function GamePage() {
       <div style={{ width: '100%', height: '100vh', position: 'relative', background: 'transparent' }}>
         <span css={currentScoreCss}>{score} m</span>
 
-        <div css={coinCss}>
+        <div css={coinCss(images)}>
           <span css={coinTextCss}>{coin}</span>
         </div>
 
         <div css={feverWrapCss} aria-label="Fever Gauge">
-          <div css={feverEmptyCss} />
+          <div css={feverEmptyCss(images)} />
           <div style={{ position: 'absolute', inset: 0 }}>
             <FeverGauge width={320} height={30} progress={feverProgress} />
           </div>
@@ -90,6 +127,7 @@ export default function GamePage() {
           coin={finalCoin}
           onClose={() => setIsGameOver(false)}
           onReplay={replay}
+          images={images}
         />
       </div>
     </>
