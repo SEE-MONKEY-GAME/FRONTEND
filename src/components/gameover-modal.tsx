@@ -1,6 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { useNavigate } from 'react-router-dom';
 import { createGameResult } from '@api/game-api';
+import { useToken } from '@context/user-context';
 import type { ImagesProps } from '@pages/game';
 import {
   btnRowCss,
@@ -27,6 +28,7 @@ type Props = {
 
 export default function GameOverModal({ open, score, coin, onClose, onReplay, images }: Props) {
   const navigate = useNavigate();
+  const { token } = useToken();
 
   if (!open) {
     return null;
@@ -34,7 +36,7 @@ export default function GameOverModal({ open, score, coin, onClose, onReplay, im
 
   const exitGame = async () => {
     try {
-      const response = await createGameResult(score, coin);
+      const response = await createGameResult(token, score, coin);
       onClose();
       window.dispatchEvent(new Event('game:end'));
       navigate('/home');
@@ -45,7 +47,7 @@ export default function GameOverModal({ open, score, coin, onClose, onReplay, im
 
   const retryGame = async () => {
     try {
-      const response = await createGameResult(score, coin);
+      const response = await createGameResult(token, score, coin);
       onClose();
       onReplay();
     } catch (error) {

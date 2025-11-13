@@ -2,6 +2,7 @@
 import toast from 'react-hot-toast';
 import { createCostume } from '@api/costume-api';
 import { createItem } from '@api/item-api';
+import { useToken } from '@context/user-context';
 import type { ImagesProps } from '@pages/home';
 import {
   shopItemBoxCss,
@@ -22,7 +23,7 @@ interface ShopPopupProps {
   handlePopup: (index: number) => void;
   images: ImagesProps;
   data: ItemDetailProps | CostumeDetailProps;
-  refreshMember: () => Promise<void>;
+  refreshMember: (token: string) => Promise<void>;
 }
 
 export interface ItemDetailProps {
@@ -52,10 +53,12 @@ const isItemDetail = (data: ItemDetailProps | CostumeDetailProps): data is ItemD
 };
 
 const ShopPopup = ({ handlePopup, images, data, refreshMember }: ShopPopupProps) => {
+  const { token } = useToken();
+
   const buyItem = async (itemId: number) => {
     try {
-      const response = await createItem(itemId);
-      refreshMember();
+      const response = await createItem(token, itemId);
+      refreshMember(token);
       toast.success(`${data.name} 구매 완료 🍌`);
     } catch (error) {
       toast.error(`${data.name} 구매 실패`);
@@ -65,8 +68,8 @@ const ShopPopup = ({ handlePopup, images, data, refreshMember }: ShopPopupProps)
 
   const buyCostume = async (costumeId: number) => {
     try {
-      const response = await createCostume(costumeId);
-      refreshMember();
+      const response = await createCostume(token, costumeId);
+      refreshMember(token);
       toast.success(`${data.name} 구매 완료 🍌`);
       handlePopup(-1);
     } catch (error) {

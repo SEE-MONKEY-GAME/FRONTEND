@@ -7,6 +7,7 @@ import Guide from '@components/guide';
 import Option from '@components/option';
 import Shop from '@components/shop';
 import { useSound } from '@context/sound-context';
+import { useToken } from '@context/user-context';
 import {
   backgroundCss,
   bestScoreCss,
@@ -189,6 +190,7 @@ const Home = () => {
   const [guide, setGuide] = useState<boolean>(false);
   const [option, setOption] = useState<boolean>(false);
   const [transition, setTransition] = useState<boolean>(false);
+  const { token } = useToken();
   const { effect, setBgm, setEffect } = useSound();
 
   const mainButtonSound = new Audio(getBGMs('button_main'));
@@ -213,7 +215,7 @@ const Home = () => {
 
   const getMemberData = async () => {
     try {
-      const response = await selectMemberData();
+      const response = await selectMemberData(token);
       setMember({
         memberId: response.data.memberId,
         coin: response.data.coin,

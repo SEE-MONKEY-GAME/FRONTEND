@@ -3,6 +3,7 @@ import AttendReward from './attend-reward';
 import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { createDailyCheckin, selectDailyCheckin } from '@api/checkin-api';
+import { useToken } from '@context/user-context';
 import type { ImagesProps } from '@pages/home';
 import {
   attendCloseButtonCss,
@@ -27,10 +28,11 @@ interface CheckinProps {
 interface AttendProps {
   handleAttend: () => void;
   images: ImagesProps;
-  refreshMember: () => Promise<void>;
+  refreshMember: (token: string) => Promise<void>;
 }
 
 const Attend = ({ handleAttend, images, refreshMember }: AttendProps) => {
+  const { token } = useToken();
   const [reward, setReward] = useState<number>(-1);
   const [checkin, setCheckin] = useState<CheckinProps>({
     checkedToday: false,
@@ -54,7 +56,7 @@ const Attend = ({ handleAttend, images, refreshMember }: AttendProps) => {
   useEffect(() => {
     const getDailyCheckin = async () => {
       try {
-        const response = await selectDailyCheckin();
+        const response = await selectDailyCheckin(token);
         setCheckin(response.data);
       } catch (error) {
         console.log(error);
@@ -86,12 +88,12 @@ const Attend = ({ handleAttend, images, refreshMember }: AttendProps) => {
   const handleRewardOpen = async (index: number) => {
     if (statuses[index] === 'today') {
       try {
-        const response = await createDailyCheckin();
+        const response = await createDailyCheckin(token);
       } catch (error) {
         toast.error('잠시 후 다시 시도해주세요');
         console.log(error);
       }
-      refreshMember();
+      refreshMember(token);
       setReward(index);
     } else if (statuses[index] === 'claimed') {
       toast.error('오늘은 이미 출석했어요');

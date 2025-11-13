@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { createFeedback } from '@api/feedback-api';
 import { updateSound } from '@api/member-api';
 import { useSound } from '@context/sound-context';
+import { useToken } from '@context/user-context';
 import type { ImagesProps } from '@pages/home';
 import {
   optionCloseButtonCss,
@@ -30,6 +31,7 @@ interface OptionProps {
 }
 
 const Option = ({ handleOption, images }: OptionProps) => {
+  const { token } = useToken();
   const { bgm, effect, setBgm, setEffect } = useSound();
   const [contact, setContact] = useState<boolean>(false);
   const [feedback, setFeedback] = useState<string>('');
@@ -51,7 +53,7 @@ const Option = ({ handleOption, images }: OptionProps) => {
     }
 
     try {
-      const response = await createFeedback(feedback, date);
+      const response = await createFeedback(token, feedback, date);
       toast.success('피드백 전송 완료 🍌');
       setFeedback('');
       setContact(false);
@@ -68,7 +70,7 @@ const Option = ({ handleOption, images }: OptionProps) => {
 
   const handleBgm = async () => {
     try {
-      const response = await updateSound('BGM', !bgm);
+      const response = await updateSound(token, 'BGM', !bgm);
       setBgm((prev) => !prev);
     } catch (error) {
       console.log(error);
@@ -77,7 +79,7 @@ const Option = ({ handleOption, images }: OptionProps) => {
 
   const handleEffect = async () => {
     try {
-      const response = await updateSound('EFFECT', !effect);
+      const response = await updateSound(token, 'EFFECT', !effect);
       setEffect((prev) => !prev);
     } catch (error) {
       console.log(error);
