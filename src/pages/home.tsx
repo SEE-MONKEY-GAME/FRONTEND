@@ -289,14 +289,7 @@ const Home = () => {
   return (
     <>
       {transition && <div css={circleCss} />}
-      {attend && (
-        <Attend
-          handleAttend={handleAttend}
-          images={images}
-          todayCheckIn={member.todayCheckIn}
-          checkinStreak={member.checkinStreak}
-        />
-      )}
+      {attend && <Attend handleAttend={handleAttend} images={images} refreshMember={getMemberData} />}
       {shop && (
         <Shop handleShop={handleShop} images={images} equipment={member.equipment} refreshMember={getMemberData} />
       )}
