@@ -1,6 +1,9 @@
 /** @jsxImportSource @emotion/react */
-import ShopPopup from './shop-popup';
-import { useState } from 'react';
+import ShopPopup, { type CostumeDetailProps, type ItemDetailProps } from './shop-popup';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { deleteCostume, putCostume, selectCostumes } from '@api/costume-api';
+import { selectItems } from '@api/item-api';
 import { useSound } from '@context/sound-context';
 import type { ImagesProps } from '@pages/home';
 import {
@@ -8,6 +11,8 @@ import {
   shopCloseButtonCss,
   shopGridCss,
   shopItemButtonCss,
+  shopItemCountCss,
+  shopItemUseButtonCss,
   shopOptionCss,
   shopOverlayCss,
   shopReadyCss,
@@ -21,9 +26,23 @@ import { getBGMs } from '@utils/get-sounds';
 interface ShopProps {
   handleShop: () => void;
   images: ImagesProps;
+  equipment: [];
+  refreshMember: () => Promise<void>;
 }
 
-const Shop = ({ handleShop, images }: ShopProps) => {
+export interface ItemProps {
+  item: ItemDetailProps;
+  quantity: number;
+}
+
+export interface CostumeProps {
+  costume: CostumeDetailProps;
+  owned: boolean;
+}
+
+const Shop = ({ handleShop, images, equipment, refreshMember }: ShopProps) => {
+  const [items, setItems] = useState<ItemProps[]>([]);
+  const [costumes, setCostumes] = useState<CostumeProps[]>([]);
   const [select, setSelect] = useState([1, 2]);
   const [itemPopup, setItemPopup] = useState(-1);
   const [costumePopup, setCostumePopup] = useState(-1);
@@ -31,6 +50,51 @@ const Shop = ({ handleShop, images }: ShopProps) => {
   const { effect } = useSound();
 
   const subButtonSound = new Audio(getBGMs('button_sub'));
+
+  useEffect(() => {
+    const getItemsData = async () => {
+      try {
+        const response = await selectItems();
+        setItems(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const getCostumeData = async () => {
+      try {
+        const response = await selectCostumes();
+        setCostumes(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    getItemsData();
+    getCostumeData();
+  }, []);
+
+  const equipCostume = async (type: string, name: string, costumeId: number) => {
+    try {
+      const response = await putCostume(type, costumeId);
+      refreshMember();
+      toast.success(`${name} 장착 완료 🍌`);
+    } catch (error) {
+      toast.error(`${name} 장착 실패`);
+      console.log(error);
+    }
+  };
+
+  const unequipCostume = async (type: string, name: string) => {
+    try {
+      const response = await deleteCostume(type);
+      refreshMember();
+      toast.success(`${name} 장착 해제 🍌`);
+    } catch (error) {
+      toast.error(`${name} 장착 해제 실패`);
+      console.log(error);
+    }
+  };
 
   const onClickItem = () => {
     if (effect) {
@@ -68,8 +132,22 @@ const Shop = ({ handleShop, images }: ShopProps) => {
 
   return (
     <>
-      {itemPopup !== -1 && <ShopPopup handlePopup={handleItem} images={images} />}
-      {costumePopup !== -1 && <ShopPopup handlePopup={handleCostume} images={images} />}
+      {itemPopup !== -1 && (
+        <ShopPopup
+          handlePopup={handleItem}
+          images={images}
+          data={items[itemPopup].item as ItemDetailProps}
+          refreshMember={refreshMember}
+        />
+      )}
+      {costumePopup !== -1 && (
+        <ShopPopup
+          handlePopup={handleCostume}
+          images={images}
+          data={costumes[costumePopup].costume as CostumeDetailProps}
+          refreshMember={refreshMember}
+        />
+      )}
       <div css={shopWrapperCss}>
         <div css={shopSelectCss}>
           <div css={shopOptionCss(select[0], images)} onClick={onClickItem}>
@@ -82,47 +160,76 @@ const Shop = ({ handleShop, images }: ShopProps) => {
         <div>
           {select[0] === 1 ? (
             <ul css={shopGridCss}>
-              {Array.from({ length: 4 }).map((_, index) =>
-                index === 0 ? (
-                  <li key={index} css={shopBoxCss(images)} onClick={() => handleItem(index)}>
-                    <img src={images['ITEM-001']} alt="상점_아이템_001" css={shopResourceCss} />
-                    <div css={shopItemButtonCss(images)}>
-                      <img src={images.shop_coin} alt="동전_이미지" width={24} />
-                      500
-                    </div>
-                  </li>
-                ) : index === 1 ? (
-                  <li key={index} css={shopBoxCss(images)} onClick={() => handleItem(index)}>
-                    <img src={images['ITEM-002']} alt="상점_아이템_002" css={shopResourceCss} />
-                    <div css={shopItemButtonCss(images)}>
-                      <img src={images.shop_coin} alt="동전_이미지" width={24} />
-                      500
-                    </div>
-                  </li>
-                ) : (
+              {Array.from({ length: 4 }).map((_, index) => {
+                const data = items[index];
+                if (data) {
+                  return (
+                    <li key={index} css={shopBoxCss(images)}>
+                      <span css={shopItemCountCss}>{data.quantity > 0 && data.quantity}</span>
+                      <img
+                        src={images[data.item.code as keyof ImagesProps]}
+                        alt={data.item.code}
+                        css={shopResourceCss}
+                      />
+                      <div css={shopItemButtonCss(images)} onClick={() => handleItem(index)}>
+                        <img src={images.shop_coin} alt="동전_이미지" width={24} />
+                        {data.item.cost}
+                      </div>
+                    </li>
+                  );
+                }
+                return (
                   <li key={index} css={[shopBoxCss(images), shopReadyCss]}>
                     준비중
                   </li>
-                ),
-              )}
+                );
+              })}
             </ul>
           ) : (
             <ul css={shopGridCss}>
-              {Array.from({ length: 4 }).map((_, index) =>
-                index === 0 ? (
-                  <li key={index} css={shopBoxCss(images)} onClick={() => handleCostume(index)}>
-                    <img src={images['SCARF-001']} alt="상점_코스튬_001" css={shopResourceCss} />
-                    <div css={shopItemButtonCss(images)}>
-                      <img src={images.shop_coin} alt="동전_이미지" width={24} />
-                      500
-                    </div>
-                  </li>
-                ) : (
+              {Array.from({ length: 4 }).map((_, index) => {
+                const data = costumes[index];
+                if (data) {
+                  return (
+                    <li key={index} css={shopBoxCss(images)}>
+                      <img
+                        src={images[data.costume.code as keyof ImagesProps]}
+                        alt={data.costume.code}
+                        css={shopResourceCss}
+                      />
+                      {data.owned ? (
+                        equipment.some((eq: { id: number }) => eq.id === data.costume.id) ? (
+                          <img
+                            src={images.shop_notuse}
+                            alt="코스튬_해제하기_버튼"
+                            width={76}
+                            css={shopItemUseButtonCss}
+                            onClick={() => unequipCostume(data.costume.type, data.costume.name)}
+                          />
+                        ) : (
+                          <img
+                            src={images.shop_use}
+                            alt="코스튬_장착하기_버튼"
+                            width={76}
+                            css={shopItemUseButtonCss}
+                            onClick={() => equipCostume(data.costume.type, data.costume.name, data.costume.id)}
+                          />
+                        )
+                      ) : (
+                        <div css={shopItemButtonCss(images)} onClick={() => handleCostume(index)}>
+                          <img src={images.shop_coin} alt="동전_이미지" width={24} />
+                          {data.costume.cost}
+                        </div>
+                      )}
+                    </li>
+                  );
+                }
+                return (
                   <li key={index} css={[shopBoxCss(images), shopReadyCss]}>
                     준비중
                   </li>
-                ),
-              )}
+                );
+              })}
             </ul>
           )}
         </div>

@@ -137,6 +137,7 @@ class LoadScene extends Phaser.Scene {
 
     // home
     this.load.image('bana', getImage('home', 'bana_sit'));
+    this.load.image('bana_SCARF-001', getImage('home', 'bana_sit_SCARF-001'));
     this.load.image('platform', getImage('home', 'platform_tree'));
 
     this.reactImages.home_bg = getImage('home', 'background');
