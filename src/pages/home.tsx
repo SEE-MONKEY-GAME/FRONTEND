@@ -23,6 +23,7 @@ import {
   iconButtonListCss,
 } from '@styles/pages/home.css';
 import { getBGMs } from '@utils/get-sounds';
+import { openRank } from '@utils/open-rank';
 
 export interface ImagesProps {
   home_bg: string;
@@ -256,6 +257,14 @@ const Home = () => {
     setAttend((attend) => !attend);
   };
 
+  const handleRank = () => {
+    if (effect) {
+      subButtonSound.currentTime = 0;
+      subButtonSound.play();
+    }
+    openRank();
+  };
+
   const handleShop = () => {
     if (effect) {
       subButtonSound.currentTime = 0;
@@ -318,7 +327,7 @@ const Home = () => {
         <div css={iconButtonGroupCss}>
           <div css={iconButtonListCss}>
             <img src={images.check} alt="출석" css={iconButtonCss} onClick={handleAttend} />
-            <img src={images.rank} alt="랭킹" css={iconButtonCss} />
+            <img src={images.rank} alt="랭킹" css={iconButtonCss} onClick={handleRank} />
             <img src={images.shop} alt="상점" css={iconButtonCss} onClick={handleShop} />
           </div>
           <div css={iconButtonListCss}>

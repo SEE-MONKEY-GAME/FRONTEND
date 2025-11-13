@@ -16,6 +16,7 @@ import {
   statWrapCss,
   titleCss,
 } from '@styles/pages/game.css';
+import { submitScore } from '@utils/submit-score';
 
 type Props = {
   open: boolean;
@@ -37,6 +38,7 @@ export default function GameOverModal({ open, score, coin, onClose, onReplay, im
   const exitGame = async () => {
     try {
       const response = await createGameResult(token, score, coin);
+      submitScore(score);
       onClose();
       window.dispatchEvent(new Event('game:end'));
       navigate('/home');
@@ -48,6 +50,7 @@ export default function GameOverModal({ open, score, coin, onClose, onReplay, im
   const retryGame = async () => {
     try {
       const response = await createGameResult(token, score, coin);
+      submitScore(score);
       onClose();
       onReplay();
     } catch (error) {
