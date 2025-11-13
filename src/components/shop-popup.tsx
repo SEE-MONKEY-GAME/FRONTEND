@@ -68,7 +68,7 @@ const ShopPopup = ({ handlePopup, images, data, refreshMember }: ShopPopupProps)
 
   const buyCostume = async (costumeId: number) => {
     try {
-      const response = await createCostume(costumeId);
+      const response = await createCostume(token, costumeId);
       refreshMember();
       toast.success(`${data.name} 구매 완료 🍌`);
       handlePopup(-1);
