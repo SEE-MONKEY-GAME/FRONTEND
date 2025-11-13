@@ -13,7 +13,7 @@
     "deploy": "ait deploy"
   },
   "dependencies": {
-    "@apps-in-toss/web-framework": "^1.2.1",
+    "@apps-in-toss/web-framework": "^1.4.6",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@supabase/supabase-js": "^2.75.0",
