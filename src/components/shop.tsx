@@ -28,7 +28,7 @@ interface ShopProps {
   handleShop: () => void;
   images: ImagesProps;
   equipment: [];
-  refreshMember: () => Promise<void>;
+  refreshMember: (token: string) => Promise<void>;
 }
 
 export interface ItemProps {
@@ -79,7 +79,7 @@ const Shop = ({ handleShop, images, equipment, refreshMember }: ShopProps) => {
   const equipCostume = async (type: string, name: string, costumeId: number) => {
     try {
       const response = await putCostume(token, type, costumeId);
-      refreshMember();
+      refreshMember(token);
       toast.success(`${name} 장착 완료 🍌`);
     } catch (error) {
       toast.error(`${name} 장착 실패`);
@@ -90,7 +90,7 @@ const Shop = ({ handleShop, images, equipment, refreshMember }: ShopProps) => {
   const unequipCostume = async (type: string, name: string) => {
     try {
       const response = await deleteCostume(token, type);
-      refreshMember();
+      refreshMember(token);
       toast.success(`${name} 장착 해제 🍌`);
     } catch (error) {
       toast.error(`${name} 장착 해제 실패`);

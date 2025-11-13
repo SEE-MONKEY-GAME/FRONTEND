@@ -28,7 +28,7 @@ interface CheckinProps {
 interface AttendProps {
   handleAttend: () => void;
   images: ImagesProps;
-  refreshMember: () => Promise<void>;
+  refreshMember: (token: string) => Promise<void>;
 }
 
 const Attend = ({ handleAttend, images, refreshMember }: AttendProps) => {
@@ -93,7 +93,7 @@ const Attend = ({ handleAttend, images, refreshMember }: AttendProps) => {
         toast.error('잠시 후 다시 시도해주세요');
         console.log(error);
       }
-      refreshMember();
+      refreshMember(token);
       setReward(index);
     } else if (statuses[index] === 'claimed') {
       toast.error('오늘은 이미 출석했어요');
