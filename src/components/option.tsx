@@ -51,12 +51,12 @@ const Option = ({ handleOption, images }: OptionProps) => {
 
     try {
       const response = await createFeedback(feedback, date);
-      toast.success('피드백이 전송이 완료되었습니다.');
+      toast.success('피드백 전송 완료 🍌');
       setFeedback('');
       setContact(false);
     } catch (error) {
       console.log(error);
-      toast.error(`피드백 전송에 실패했습니다.\n다시 시도해주세요.`);
+      toast.error(`피드백 전송 실패`);
     }
   };
 

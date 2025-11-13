@@ -99,7 +99,7 @@ interface MemberProps {
   todayCheckIn: boolean;
   topRecord: number;
   sound: boolean; // 백엔드 수정 필요
-  equipment: string[];
+  equipment: [];
 }
 
 const Home = () => {
@@ -209,26 +209,26 @@ const Home = () => {
     };
   }, []);
 
+  const getMemberData = async () => {
+    try {
+      const response = await selectMemberData();
+      setMember({
+        memberId: response.data.memberId,
+        coin: response.data.coin,
+        checkinStreak: response.data.checkinStreak,
+        todayCheckIn: response.data.todayCheckIn,
+        topRecord: response.data.topRecord,
+        sound: response.data.sound,
+        equipment: response.data.equipment,
+      });
+
+      return response;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
-    const getMemberData = async () => {
-      try {
-        const response = await selectMemberData();
-        setMember({
-          memberId: response.data.memberId,
-          coin: response.data.coin,
-          checkinStreak: response.data.checkinStreak,
-          todayCheckIn: response.data.todayCheckIn,
-          topRecord: response.data.topRecord,
-          sound: response.data.sound,
-          equipment: response.data.equipment,
-        });
-
-        return response;
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
     getMemberData();
   }, []);
 
@@ -285,11 +285,13 @@ const Home = () => {
         <Attend
           handleAttend={handleAttend}
           images={images}
-          todayCehckIn={member.todayCheckIn}
+          todayCheckIn={member.todayCheckIn}
           checkinStreak={member.checkinStreak}
         />
       )}
-      {shop && <Shop handleShop={handleShop} images={images} />}
+      {shop && (
+        <Shop handleShop={handleShop} images={images} equipment={member.equipment} refreshMember={getMemberData} />
+      )}
       {guide && <Guide handleGameGuide={handleGameGuide} images={images} />}
       {option && <Option handleOption={handleOption} images={images} />}
       <div css={backgroundCss(images)}>
