@@ -45,7 +45,7 @@ const Option = ({ handleOption, images }: OptionProps) => {
   };
 
   const submitFeedback = async () => {
-    const date = String(new Date().toISOString());
+    const date = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' }).replace(' ', 'T');
 
     if (feedback === '') {
       toast.error('피드백 내용을 입력해주세요.');
