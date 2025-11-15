@@ -27,15 +27,37 @@ export default function GamePage() {
   });
 
   
+// 게임 시작(로켓 사용)
 const startGame = () => {
-  (window as any).__queuedGameStart = true;   
-  window.dispatchEvent(new Event('game:start'));
+  const w = window as any;
+  w.__rocketStart = true;       // 로켓 모드
+  w.__queuedGameStart = true;   // GameScene이 생기면 바로 시작
+
+  window.dispatchEvent(new Event('game:play')); // ✅ 여기만 변경
   setShowRocketPrompt(false);
 };
+
+// 건너뛰기(일반 시작, 카운트다운)
 const skipGame = () => {
-  (window as any).__queuedGameStart = true;   
-  window.dispatchEvent(new Event('game:start'));
+  const w = window as any;
+  w.__rocketStart = false;      // 일반 모드
+  w.__queuedGameStart = true;
+
+  window.dispatchEvent(new Event('game:play')); // ✅ 여기도 변경
   setShowRocketPrompt(false);
+};
+
+const replay = () => {
+  const w = window as any;
+  w.__queuedGameStart = false;
+  w.__rocketStart = false;
+
+  window.dispatchEvent(new Event('game:replay'));
+
+  setIsGameOver(false);
+  setScore(0);
+  setCoin(0);
+  setShowRocketPrompt(true);
 };
 
 
@@ -76,18 +98,6 @@ const skipGame = () => {
     return () => window.removeEventListener('game:over', onOver as EventListener);
   }, []);
 
-const replay = () => {
-  (window as any).__queuedGameStart = false;
-
-  window.dispatchEvent(new Event('game:replay'));
-
-  setIsGameOver(false);
-  setScore(0);
-  setCoin(0);
-
-  setShowRocketPrompt(true);
-};
-
 
   return (
     <>
@@ -113,7 +123,7 @@ const replay = () => {
           onClose={() => setIsGameOver(false)}
           onReplay={replay}
         />
-        <RocketPrompt
+      <RocketPrompt
   open={showRocketPrompt}
   onSkip={skipGame}
   onUse={startGame}

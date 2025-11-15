@@ -77,6 +77,14 @@ class GameScene extends Phaser.Scene {
 
   private spinTween?: Phaser.Tweens.Tween;
 
+  private rocketActive = false;
+  private rocketEndTime = 0;
+  private readonly ROCKET_DURATION = 5000;   // 5초
+  private readonly ROCKET_DISTANCE_M = 801;  // 800m
+
+    private rocketFrameTimer?: Phaser.Time.TimerEvent;
+  private rocketFrameIndex = 0;
+
   // 장애물
   private gorillaGroup!: Phaser.Physics.Arcade.Group;
   private readonly GORILLA_SCALE = 0.33;
@@ -451,6 +459,13 @@ class GameScene extends Phaser.Scene {
       frameRate: 12,
       repeat: 0,
     });
+    this.anims.create({
+  key: 'rocketmotion_loop',
+  frames: this.anims.generateFrameNumbers('rocketmotion', { start: 0, end: 1 }),
+  frameRate: 6,  // 적당한 속도
+  repeat: -1,
+});
+
 
     // 캐릭터
     this.character = this.physics.add
@@ -500,15 +515,78 @@ const startCountdown = () => {
   });
 };
 
-const onStart = () => startCountdown();
-window.addEventListener('game:start', onStart);
+const startRocketBoost = () => {
+  const w = window as any;
+  w.__queuedGameStart = false;
+  w.__rocketStart = false;
+
+  this.rocketActive = true;
+  this.rocketEndTime = this.time.now + this.ROCKET_DURATION;
+
+  const { width, height } = this.cameras.main;
+
+  // 원숭이를 화면 중앙에 고정
+  this.character.setPosition(width / 2, height / 2);
+
+  const cBody = this.character.body as Phaser.Physics.Arcade.Body;
+  cBody.setVelocity(0, 0);
+  cBody.setAllowGravity(false);   // 중력 끔
+
+  // ✅ 로켓 스프라이트 시트로 텍스처 교체 + 첫 프레임 설정
+  this.character.setTexture('rocketmotion', 0);  // frame 0
+  this.character.setOrigin(0.5, 0.5);
+  this.character.setScale(0.18); // 필요하면 여기 값 조절해서 크기 맞추기
+
+  // ✅ 기존 타이머 있으면 제거
+  if (this.rocketFrameTimer) {
+    this.rocketFrameTimer.remove();
+    this.rocketFrameTimer = undefined;
+  }
+
+  // ✅ 2프레임(0, 1)을 번갈아가며 보여주는 타이머
+  this.rocketFrameIndex = 0;
+  this.rocketFrameTimer = this.time.addEvent({
+    delay: 1000 / 6, // frameRate 6fps 느낌
+    loop: true,
+    callback: () => {
+      this.rocketFrameIndex = (this.rocketFrameIndex + 1) % 2; // 0 ↔ 1
+      this.character.setFrame(this.rocketFrameIndex);
+    },
+  });
+
+  // 점수 기준 Y 초기화
+  this.lastYForScore = this.character.y;
+  this.prevCharY = this.character.y;
+  this.prevVy = 0;
+};
+
+
+
+// ✅ game:start 이벤트 처리: 로켓이면 로켓, 아니면 카운트다운
+const onPlay = () => {
+  const w = window as any;
+  if (w.__rocketStart) {
+    startRocketBoost();
+  } else {
+    w.__queuedGameStart = false;
+    startCountdown();
+  }
+};
+
+window.addEventListener('game:play', onPlay);
 this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
-  window.removeEventListener('game:start', onStart);
+  window.removeEventListener('game:play', onPlay);
 });
 
+// ✅ queued 플래그 처리도 그대로 유지
 if ((window as any).__queuedGameStart) {
-  (window as any).__queuedGameStart = false;
-  startCountdown();
+  const w = window as any;
+  if (w.__rocketStart) {
+    startRocketBoost();
+  } else {
+    w.__queuedGameStart = false;
+    startCountdown();
+  }
 }
 
 
@@ -1025,6 +1103,63 @@ if ((window as any).__queuedGameStart) {
   update(_time: number, delta: number) {
     if (!this.character.active || this.gameOver) return;
     const cBody = this.character.body as Phaser.Physics.Arcade.Body;
+
+    // ✅ 1) 로켓 모드일 때
+ if (this.rocketActive) {
+  const dt = delta; // ms 단위
+  const totalPx = this.ROCKET_DISTANCE_M * this.PX_PER_M;
+  const speedPxPerMs = totalPx / this.ROCKET_DURATION;
+  const stepPx = speedPxPerMs * dt;
+
+  this.totalAscentPx += stepPx;
+  const meters = Math.floor(this.totalAscentPx / this.PX_PER_M);
+  this.emitScore(meters);
+
+  this.scrollY += stepPx;
+  this.lastSpawnScrollY = this.scrollY;
+
+  this.updateSegmentsY();
+  this.cullBelow();
+  this.handleZoneTransition();
+  this.fillAbove();
+
+  if (this.feverActive) {
+    this.updateFeverSegmentsY();
+    this.cullFeverBelow();
+    this.fillFeverAbove();
+    this.fillFeverBelow();
+  }
+
+  // 캐릭터는 화면 중앙 고정
+  cBody.setVelocity(0, 0);
+
+  if (this.time.now >= this.rocketEndTime) {
+    this.rocketActive = false;
+
+    // ✅ 로켓 프레임 토글 타이머 정리
+    if (this.rocketFrameTimer) {
+      this.rocketFrameTimer.remove();
+      this.rocketFrameTimer = undefined;
+    }
+
+    // ✅ 다시 원숭이 이미지로 복귀
+    this.character.setTexture('character');
+    this.character.setOrigin(0.5, 0.5);
+    this.character.setScale(this.CHARACTER_SCALE);
+
+    // ✅ 중력 다시 켜고, 바로 떨어지도록 살짝 아래로 속도 줌
+    cBody.setAllowGravity(true);
+    cBody.setVelocityY(100);
+
+    this.lastYForScore = this.character.y;
+    this.prevCharY = this.character.y;
+    this.prevVy = cBody.velocity.y;
+  }
+
+  return; // 로켓 중에는 일반 업데이트 스킵
+}
+
+
 
     this.jumpedThisFrame = false;
 

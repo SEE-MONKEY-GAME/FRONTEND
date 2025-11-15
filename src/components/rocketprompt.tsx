@@ -19,10 +19,10 @@ interface RocketPromptProps {
 export default function RocketPrompt({ open, onSkip, onUse }: RocketPromptProps) {
   if (!open) return null;
 
-  const rocketIcon   = getImage('game', 'rocket_icon');
-  const effectSheet  = getImage('game', 'rocket_icon_effect'); 
-  const skipBtn      = getImage('game', 'skip_btn');
-  const useBtn       = getImage('game', 'use_btn');
+  const rocketIcon  = getImage('game', 'rocket_icon');
+  const effectSheet = getImage('game', 'rocket_icon_effect');
+  const skipBtn     = getImage('game', 'skip_btn');
+  const useBtn      = getImage('game', 'use_btn');
 
   return (
     <div css={overlayCss} role="dialog" aria-modal="true" aria-label="로켓 사용 안내">
