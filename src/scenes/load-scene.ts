@@ -241,6 +241,8 @@ class LoadScene extends Phaser.Scene {
     this.load.image('nbana', getImage('game', 'banana_normal'));
     this.load.image('bbana', getImage('game', 'banana_bunch'));
     this.load.image('gbana', getImage('game', 'banana_gold'));
+    this.load.image('rocket', getImage('game', 'rocket'));
+
     this.load.image('fullguage', getImage('game', 'full_guage_bar'));
     this.load.image('emptyguage', getImage('game', 'empty_guage_bar'));
 
