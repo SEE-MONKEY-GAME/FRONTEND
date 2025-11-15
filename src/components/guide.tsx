@@ -1,5 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { useState } from 'react';
+import { useSound } from '@context/sound-context';
 import type { ImagesProps } from '@pages/home';
 import {
   guideCloseButtonCss,
@@ -13,7 +14,7 @@ import {
   guideTabCss,
   guideWrapperCss,
 } from '@styles/components/guide.css';
-import { getImage } from '@utils/get-images';
+import { getBGMs } from '@utils/get-sounds';
 
 interface GuideProps {
   handleGameGuide: () => void;
@@ -22,6 +23,9 @@ interface GuideProps {
 
 const Guide = ({ handleGameGuide, images }: GuideProps) => {
   const [page, setPage] = useState<number>(0);
+  const { effect } = useSound();
+
+  const subButtonSound = new Audio(getBGMs('button_sub'));
 
   const slides = [
     {
@@ -39,10 +43,18 @@ const Guide = ({ handleGameGuide, images }: GuideProps) => {
   ];
 
   const onClickPrev = () => {
+    if (effect) {
+      subButtonSound.currentTime = 0;
+      subButtonSound.play();
+    }
     setPage((page) => page - 1);
   };
 
   const onClickNext = () => {
+    if (effect) {
+      subButtonSound.currentTime = 0;
+      subButtonSound.play();
+    }
     setPage((page) => page + 1);
   };
 

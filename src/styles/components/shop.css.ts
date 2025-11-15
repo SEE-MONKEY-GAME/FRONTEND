@@ -85,6 +85,7 @@ export const shopBoxCss = (images: ImagesProps) =>
     width: 'calc((100vw - 102px) / 2)',
     aspectRatio: '1',
     minWidth: '120px',
+    position: 'relative',
   });
 
 export const shopItemButtonCss = (images: ImagesProps) =>
@@ -107,6 +108,33 @@ export const shopItemButtonCss = (images: ImagesProps) =>
     left: '50%',
     transform: 'translateX(-50%)',
   });
+
+export const shopItemUseButtonCss = css({
+  position: 'relative',
+  top: '12px',
+  left: '50%',
+  transform: 'translateX(-50%)',
+});
+
+export const shopItemCountCss = css({
+  backgroundColor: `${colors.Orange500}`,
+  border: `1px solid ${colors.Orange600}`,
+  color: 'white',
+  fontFamily: `${fonts.title}`,
+  borderRadius: '50%',
+  minWidth: '13px',
+  maxWidth: '13px',
+  height: '13px',
+  lineHeight: '13px',
+  padding: '3px',
+  fontSize: '11px',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  position: 'absolute',
+  top: 14,
+  right: 20,
+});
 
 export const shopResourceCss = css({
   width: '70%',

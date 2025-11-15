@@ -1,6 +1,9 @@
 /** @jsxImportSource @emotion/react */
 import AttendReward from './attend-reward';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
+import { createDailyCheckin, selectDailyCheckin } from '@api/checkin-api';
+import { useToken } from '@context/user-context';
 import type { ImagesProps } from '@pages/home';
 import {
   attendCloseButtonCss,
@@ -12,26 +15,56 @@ import {
   attendTabCss,
   attendWrapperCss,
 } from '@styles/components/attend.css';
-import { getImage } from '@utils/get-images';
 
 type DayStatus = 'today' | 'claimed' | 'locked';
+
+interface CheckinProps {
+  checkedToday: boolean;
+  checkinStreak: number;
+  lastCheckin: string | null;
+  today: string;
+}
 
 interface AttendProps {
   handleAttend: () => void;
   images: ImagesProps;
+  refreshMember: (token: string) => Promise<void>;
 }
 
-const Attend = ({ handleAttend, images }: AttendProps) => {
+const Attend = ({ handleAttend, images, refreshMember }: AttendProps) => {
+  const { token } = useToken();
   const [reward, setReward] = useState<number>(-1);
-  const [statuses, setStatuses] = useState<DayStatus[]>([
-    'claimed',
-    'claimed',
-    'today',
-    'locked',
-    'locked',
-    'locked',
-    'locked',
-  ]);
+  const [checkin, setCheckin] = useState<CheckinProps>({
+    checkedToday: false,
+    checkinStreak: 0,
+    lastCheckin: null,
+    today: '',
+  });
+
+  const statuses: DayStatus[] = useMemo(() => {
+    return Array.from({ length: 7 }, (_, i) => {
+      if (i < checkin.checkinStreak) {
+        return 'claimed';
+      }
+      if (i === checkin.checkinStreak && !checkin.checkedToday) {
+        return 'today';
+      }
+      return 'locked';
+    });
+  }, [checkin]);
+
+  useEffect(() => {
+    const getDailyCheckin = async () => {
+      try {
+        const response = await selectDailyCheckin(token);
+        setCheckin(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    getDailyCheckin();
+  }, []);
 
   const getImages = Array.from({ length: 7 }, (_, i) => ({
     today: images[`check_day${i + 1}` as keyof ImagesProps],
@@ -52,15 +85,25 @@ const Attend = ({ handleAttend, images }: AttendProps) => {
     return getImages[index].today;
   };
 
-  const handleRewardOpen = (index: number) => {
+  const handleRewardOpen = async (index: number) => {
     if (statuses[index] === 'today') {
+      try {
+        const response = await createDailyCheckin(token);
+      } catch (error) {
+        toast.error('잠시 후 다시 시도해주세요');
+        console.log(error);
+      }
+      refreshMember(token);
       setReward(index);
+    } else if (statuses[index] === 'claimed') {
+      toast.error('오늘은 이미 출석했어요');
+    } else {
+      toast.error('아직 출석할 수 없어요');
     }
   };
 
   const handleRewardClose = () => {
     setReward(-1);
-    setStatuses((prev) => prev.map((status) => (status === 'today' ? 'claimed' : status)));
   };
 
   return (

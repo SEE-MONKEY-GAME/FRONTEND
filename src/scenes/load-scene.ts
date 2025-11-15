@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { getImage } from '@utils/get-images';
+import { getBGMs, getEffects } from '@utils/get-sounds';
 
 class LoadScene extends Phaser.Scene {
   private background!: Phaser.GameObjects.Image;
@@ -117,8 +118,26 @@ class LoadScene extends Phaser.Scene {
   }
 
   private loadAssets() {
+    // bgm
+    this.load.audio('home_bgm', getBGMs('home'));
+    this.load.audio('game_bgm', getBGMs('game'));
+    this.load.audio('fever_time_bgm', getBGMs('fever_time'));
+    this.load.audio('button_main_sound', getBGMs('button_main'));
+    this.load.audio('button_sub_sound', getBGMs('button_sub'));
+    this.load.audio('daily_reward_sound', getBGMs('daily_reward'));
+    this.load.audio('rockt_boost_1_sound', getBGMs('rocket_boost_1'));
+    this.load.audio('rockt_boost_2_sound', getBGMs('rocket_boost_2'));
+
+    this.load.audio('banana_1_sound', getEffects('banana_1'));
+    this.load.audio('banana_2_sound', getEffects('banana_2'));
+    this.load.audio('banana_3_sound', getEffects('banana_3'));
+    this.load.audio('hit_sound', getEffects('hit'));
+    this.load.audio('jump_sound', getEffects('jump'));
+    this.load.audio('count_down_sound', getEffects('count_down'));
+
     // home
     this.load.image('bana', getImage('home', 'bana_sit'));
+    this.load.image('bana_SCARF-001', getImage('home', 'bana_sit_SCARF-001'));
     this.load.image('platform', getImage('home', 'platform_tree'));
 
     this.reactImages.home_bg = getImage('home', 'background');
@@ -224,6 +243,23 @@ class LoadScene extends Phaser.Scene {
     this.load.image('SCARF-001', this.reactImages['SCARF-001']);
 
     // game
+    this.reactImages['empty_guage_bar'] = getImage('game', 'empty_guage_bar');
+    this.load.image('empty_guage_bar', this.reactImages['empty_guage_bar']);
+    this.reactImages['full_guage_bar'] = getImage('game', 'full_guage_bar');
+    this.load.image('full_guage_bar', this.reactImages['full_guage_bar']);
+    this.reactImages['coin_count'] = getImage('game', 'coin_count');
+    this.load.image('coin_count', this.reactImages['coin_count']);
+    this.reactImages['home'] = getImage('game', 'home');
+    this.load.image('home', this.reactImages['home']);
+    this.reactImages['retry'] = getImage('game', 'retry');
+    this.load.image('retry', this.reactImages['retry']);
+    this.reactImages['share'] = getImage('game', 'share');
+    this.load.image('share', this.reactImages['share']);
+    this.reactImages['onecoin'] = getImage('game', 'onecoin');
+    this.load.image('onecoin', this.reactImages['onecoin']);
+    this.reactImages['gameover-tab'] = getImage('game', 'gameover-tab');
+    this.load.image('gameover-tab', this.reactImages['gameover-tab']);
+
     this.load.image('bar', getImage('game', 'bar'));
     this.load.image('character', getImage('game', 'character'));
     this.load.image('num3', getImage('game', '3'));

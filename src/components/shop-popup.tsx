@@ -1,10 +1,13 @@
 /** @jsxImportSource @emotion/react */
+import toast from 'react-hot-toast';
+import { createCostume } from '@api/costume-api';
+import { createItem } from '@api/item-api';
+import { useToken } from '@context/user-context';
 import type { ImagesProps } from '@pages/home';
 import {
   shopItemBoxCss,
   shopItemBoxResourceCss,
   shopItemButtonsCss,
-  shopItemCountCss,
   shopItemDetailCss,
   shopItemExplainCss,
   shopItemLayoutCss,
@@ -19,30 +22,85 @@ import {
 interface ShopPopupProps {
   handlePopup: (index: number) => void;
   images: ImagesProps;
+  data: ItemDetailProps | CostumeDetailProps;
+  refreshData: (token: string) => Promise<void>;
+  refreshMember: (token: string) => Promise<void>;
 }
 
-// 아이템인지, 코스튬인지 판별 필요
-const ShopPopup = ({ handlePopup, images }: ShopPopupProps) => {
+export interface ItemDetailProps {
+  id: number;
+  name: string;
+  code: string;
+  cost: number;
+  desc: string;
+}
+
+export interface CostumeDetailProps {
+  id: number;
+  name: string;
+  type: string;
+  code: string;
+  cost: number;
+  desc: string;
+}
+
+const isItemDetail = (data: ItemDetailProps | CostumeDetailProps): data is ItemDetailProps => {
+  return (
+    (data as ItemDetailProps).id !== undefined &&
+    (data as ItemDetailProps).code !== undefined &&
+    (data as ItemDetailProps).desc !== undefined &&
+    !(data as CostumeDetailProps).type
+  );
+};
+
+const ShopPopup = ({ handlePopup, images, data, refreshData, refreshMember }: ShopPopupProps) => {
+  const { token } = useToken();
+
+  const buyItem = async (itemId: number) => {
+    try {
+      const response = await createItem(token, itemId);
+      refreshData(token);
+      refreshMember(token);
+      toast.success(`${data.name} 구매 완료 🍌`);
+    } catch (error) {
+      toast.error(`${data.name} 구매 실패`);
+      console.log(error);
+    }
+  };
+
+  const buyCostume = async (costumeId: number) => {
+    try {
+      const response = await createCostume(token, costumeId);
+      refreshData(token);
+      refreshMember(token);
+      toast.success(`${data.name} 구매 완료 🍌`);
+      handlePopup(-1);
+    } catch (error) {
+      toast.error(`${data.name} 구매 실패.`);
+      console.log(error);
+    }
+  };
+
   return (
     <>
       <div css={shopPopuopWrapperCss}>
         <div css={shopItemDetailCss}>
-          <div css={shopItemTitleCss}>아이템 이름</div>
+          <div css={shopItemTitleCss}>{data.name}</div>
           <div css={shopItemLayoutCss}>
             <div css={shopItemBoxCss(images)}>
-              <img src={images['ITEM-001']} alt="아이템_상세_이미지" css={shopItemBoxResourceCss} />
+              <img src={images[data.code as keyof ImagesProps]} alt={data.code} css={shopItemBoxResourceCss} />
             </div>
             <div>
               <div css={shopItemPriceCss}>
                 <img src={images.shop_coin} alt="동전_이미지" width={24} />
-                <span css={shopItemPriceNumberCss}>500</span>
+                <span css={shopItemPriceNumberCss}>{data.cost}</span>
               </div>
-              <div css={shopItemExplainCss}>로켓을 타고 날아올라 더 높은 곳에서 시작해요.</div>
-              <div css={shopItemCountCss}>
+              <div css={shopItemExplainCss}>{data.desc}</div>
+              {/* <div css={shopItemCountCss}>
                 <img src={images.shop_minus} alt="아이템_개수_감소" width={18} />
                 <span>0</span>
                 <img src={images.shop_plus} alt="아이템_개수_증가" width={18} />
-              </div>
+              </div> */}
             </div>
           </div>
           <div css={shopItemButtonsCss}>
@@ -52,7 +110,16 @@ const ShopPopup = ({ handlePopup, images }: ShopPopupProps) => {
               css={shopPopupButtonCss}
               onClick={() => handlePopup(-1)}
             />
-            <img src={images.shop_buy} alt="아이템_구매하기" css={shopPopupButtonCss} />
+            <img
+              src={images.shop_buy}
+              alt="코스튬_구매하기"
+              css={shopPopupButtonCss}
+              onClick={
+                isItemDetail(data)
+                  ? () => buyItem((data as ItemDetailProps).id)
+                  : () => buyCostume((data as CostumeDetailProps).id)
+              }
+            />
           </div>
         </div>
         <img src={images.shop_container} alt="상점_상세_탭" css={shopPopupTabCss} />

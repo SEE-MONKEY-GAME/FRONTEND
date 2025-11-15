@@ -10,23 +10,23 @@
     "@jridgewell/gen-mapping" "^0.3.5"
     "@jridgewell/trace-mapping" "^0.3.24"
 
-"@apps-in-toss/analytics@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@apps-in-toss/analytics/-/analytics-1.2.1.tgz#4b8096b4a71fc763ca8e7a44a8dab316afda76d1"
-  integrity sha512-f7DkecR+gM5qtD2zaQiTATgZw3zybJuKmI8ja29U5kO9lSE1DPzUdKUnClu9h+JI4veiQERFJSbPKSsgpxsG9Q==
+"@apps-in-toss/analytics@1.4.6":
+  version "1.4.6"
+  resolved "https://registry.yarnpkg.com/@apps-in-toss/analytics/-/analytics-1.4.6.tgz#e117cb4192f93b3cba42f6853060ff16289281f9"
+  integrity sha512-wPQih6XkwRd7hYQeR3X22BxzPmPzLDPwSgtyVokZcLb/4S4XsEt6vW8OBUPcSokP363aDGTX8KlbUuEY7obKlw==
 
-"@apps-in-toss/bridge-core@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@apps-in-toss/bridge-core/-/bridge-core-1.2.1.tgz#379e51e7a0b869e1ba03e6666fde64a14091753c"
-  integrity sha512-n4YGItDvAuO3Yu4AjmHLLf5raT8ob0iE+w8FXAMSOgpJq7NylAb73FxtQezoNXw7anNyzQMaL82iUpRkx6tfxg==
+"@apps-in-toss/bridge-core@1.4.6":
+  version "1.4.6"
+  resolved "https://registry.yarnpkg.com/@apps-in-toss/bridge-core/-/bridge-core-1.4.6.tgz#671f0e437f0dc14ec4aecce9eae85c6b0e93196f"
+  integrity sha512-1nY15bnon+d+LgvsUuLTEYvj8mAjxLiepsgBUnkpccIwFSqG52IGtbTPF8SwoK8X5njSPV0DGBwE/iB/yElS3A==
 
-"@apps-in-toss/cli@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@apps-in-toss/cli/-/cli-1.2.1.tgz#75bdde3319ef414287819230663ce948913fb5a4"
-  integrity sha512-YYccuvsv83cBUVlJzcwrWQflNlx3vr+d5J1lmoCKHPS49ujYxnq7rp3FE0cA/COmYE9Mp30s7/wmmInbcMlIlw==
+"@apps-in-toss/cli@1.4.6":
+  version "1.4.6"
+  resolved "https://registry.yarnpkg.com/@apps-in-toss/cli/-/cli-1.4.6.tgz#0f006ab6dac6df17774bccd4d734c0b75f3e2f47"
+  integrity sha512-oJzrHiG56nTudguIS+O44X2OkrmhktrDjbJsiXVbBYjIf8ExOW1Dy3RwgFVc66LStiHzdFh1ye2/VNJ3B+y/vA==
   dependencies:
     "@clack/prompts" "^0.10.0"
-    "@granite-js/utils" "0.1.22"
+    "@granite-js/utils" "0.1.28"
     "@sentry/cli" "^2.46.0"
     clipanion "^4.0.0-rc.4"
     dedent "^1.6.0"
@@ -35,35 +35,35 @@
     source-map "^0.8.0-beta.0"
     unzipper "^0.12.3"
 
-"@apps-in-toss/framework@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@apps-in-toss/framework/-/framework-1.2.1.tgz#f5dbff03ab0a281a387e029384b93f24cafbe91d"
-  integrity sha512-rLsxVhAAM/2CJQGZwtUsYg9XomhpCNGHQe1F62mjZXNlc+WhNJyivNh4Gnwtk+mvW8XcFPweancbJtjz0Fv+ww==
+"@apps-in-toss/framework@1.4.6":
+  version "1.4.6"
+  resolved "https://registry.yarnpkg.com/@apps-in-toss/framework/-/framework-1.4.6.tgz#049b7632b6a34d41f52da7301a0c33c7b78ac734"
+  integrity sha512-FiNEtXoEIu/oSi9YwiP6JdPeLuyVHJKQBR09TU0Tct6+jD8BsTqEaw0THt30u+JOy8h32kCbAwa6tY2t6otVug==
   dependencies:
-    "@apps-in-toss/analytics" "1.2.1"
-    "@apps-in-toss/cli" "1.2.1"
-    "@apps-in-toss/native-modules" "1.2.1"
-    "@apps-in-toss/plugins" "1.2.1"
-    "@apps-in-toss/types" "1.2.1"
+    "@apps-in-toss/analytics" "1.4.6"
+    "@apps-in-toss/cli" "1.4.6"
+    "@apps-in-toss/native-modules" "1.4.6"
+    "@apps-in-toss/plugins" "1.4.6"
+    "@apps-in-toss/types" "1.4.6"
     es-hangul "^2.3.2"
 
-"@apps-in-toss/native-modules@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@apps-in-toss/native-modules/-/native-modules-1.2.1.tgz#1430042c9323d453c6e5a7c9b000466404bd3856"
-  integrity sha512-In584DtLTjD6Xpue2RaepdHpydujmtal5O3933XX5pB48pqSTiZWglQO1RhcsgNSp3bm91ukZb2ewMJLSbFHnw==
+"@apps-in-toss/native-modules@1.4.6":
+  version "1.4.6"
+  resolved "https://registry.yarnpkg.com/@apps-in-toss/native-modules/-/native-modules-1.4.6.tgz#5ffb7013f8943410b4f1f7247b89546677d672fa"
+  integrity sha512-pDqvW6qY4Ieom4vfXYIb1oDQR/U4W4K9kZNNF9tfgpZQfZfoyfJJSc8/WB/NSAdqIGTwZtRq/HK+frQQkFneaA==
   dependencies:
-    "@apps-in-toss/types" "^1.2.1"
+    "@apps-in-toss/types" "^1.4.6"
     es-toolkit "^1.39.3"
 
-"@apps-in-toss/plugins@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@apps-in-toss/plugins/-/plugins-1.2.1.tgz#65be672733c8d5bc01b23bf27c0a036286d75111"
-  integrity sha512-AfM5nNVFFxXX5jUmg1Ng7ni5pd7zUIPM2etw/O9u0DMo1jP24okTTf4j60I6Cs1Cp2YQsqldFJbJrLvjXCdJJQ==
+"@apps-in-toss/plugins@1.4.6":
+  version "1.4.6"
+  resolved "https://registry.yarnpkg.com/@apps-in-toss/plugins/-/plugins-1.4.6.tgz#3ad9d444c44be1da8b0313317ec0653884595bf0"
+  integrity sha512-y06Irks2nf9RJmXhDmuAU+1GZG/35jux/gl7fNc9BRtORdL1ptaguAu5JnogWQ6I8rZA4GrQFlG03rZCQCdeaA==
   dependencies:
-    "@granite-js/plugin-core" "0.1.22"
-    "@granite-js/plugin-micro-frontend" "0.1.22"
-    "@granite-js/plugin-sentry" "0.1.22"
-    "@granite-js/utils" "0.1.22"
+    "@granite-js/plugin-core" "0.1.28"
+    "@granite-js/plugin-micro-frontend" "0.1.28"
+    "@granite-js/plugin-sentry" "0.1.28"
+    "@granite-js/utils" "0.1.28"
     archiver "^7.0.1"
     connect "^3.7.0"
     esbuild "0.25.5"
@@ -71,41 +71,41 @@
     picocolors "^1.1.1"
     uuidv7 "^1.0.2"
 
-"@apps-in-toss/types@1.2.1", "@apps-in-toss/types@^1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@apps-in-toss/types/-/types-1.2.1.tgz#6aaab1f446309cdad44da1594c65011a50840f07"
-  integrity sha512-tnVbEnSMPe7d8M1K91fc3LLtuHA/YufWRmbS2/kwvedxgLiwFIAmt25Z8GUv87ycwUbZwAweSbIlfSilX3lfYA==
+"@apps-in-toss/types@1.4.6", "@apps-in-toss/types@^1.4.6":
+  version "1.4.6"
+  resolved "https://registry.yarnpkg.com/@apps-in-toss/types/-/types-1.4.6.tgz#5be625584946426f98c9e98af89061a728557136"
+  integrity sha512-KKUPAvfCzu7YJ0Dp+1dY0gQE44cCX1MWlo70G16AinAn/rEImUoE1DhjTXWlZOWHKfIADHddV89QuH+VW72mPQ==
 
-"@apps-in-toss/web-analytics@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@apps-in-toss/web-analytics/-/web-analytics-1.2.1.tgz#a3ff55ec2517f1b36cf97626575a86a0fd45baf0"
-  integrity sha512-a5VB7Qttw0FpXvu2NCUey1WeHJ/Hchb3DcBtsYiYsWLrLEcUcWzapgvI64tW4d5axdJqaFSpYfKxQGlS+Kr3gg==
+"@apps-in-toss/web-analytics@1.4.6":
+  version "1.4.6"
+  resolved "https://registry.yarnpkg.com/@apps-in-toss/web-analytics/-/web-analytics-1.4.6.tgz#50690236e27be4a23bd739a3b8577a56bcdedfec"
+  integrity sha512-XEYHJ4KTPe/nJaKxf+OgyvFK1ny65bO8wLS2M9z7FDT4NJWIN6X3lQl/oKo6I5U3se2unSmnyBXAeoApjf8MKA==
 
-"@apps-in-toss/web-bridge@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@apps-in-toss/web-bridge/-/web-bridge-1.2.1.tgz#b50801f2771d48080fad78a9c9f77eced66de42b"
-  integrity sha512-0YKitOxZkWS30vhEg7KWeWnxIXGdhfsHUAxU0cbGTEEGLgcVbCafNtmG4uaFdvWIRa37soJ2anFieGfxuI7Lhw==
+"@apps-in-toss/web-bridge@1.4.6":
+  version "1.4.6"
+  resolved "https://registry.yarnpkg.com/@apps-in-toss/web-bridge/-/web-bridge-1.4.6.tgz#4bdf9af6c56cc6f28fdbf8f2fcc42b400fb40237"
+  integrity sha512-YHtKyWqSuVEqLsblFQ1AOwkqbwIV3YuLHRxj8htvbGkFGJhBousQR9Fpc9mQRr/OFHOonkZ9GR0aDAgZDqEdEA==
   dependencies:
-    "@apps-in-toss/types" "1.2.1"
+    "@apps-in-toss/types" "1.4.6"
 
-"@apps-in-toss/web-framework@^1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@apps-in-toss/web-framework/-/web-framework-1.2.1.tgz#97b74e6b6a340bfaa3fc94e6939f6174c1d5338d"
-  integrity sha512-7RWbbPgUqLyD56rov0VM5YsvGIyjyVfBKyPsjPBUwoqHbGWKjKx1Bn3giJSGyKcyxZC/wvMQ+GpLWx+eM8k4OA==
+"@apps-in-toss/web-framework@^1.4.6":
+  version "1.4.6"
+  resolved "https://registry.yarnpkg.com/@apps-in-toss/web-framework/-/web-framework-1.4.6.tgz#23285fd1640eed63af7ef197424a15c37dd9da6f"
+  integrity sha512-5g8XVP3ZJWqYZy/UvpvoJWFwdW6G96c9DE0EteVKuhyoJS228MB99o5thX5ZC7UGg6GgMyF6fZiN2jTiUOTdoA==
   dependencies:
-    "@apps-in-toss/bridge-core" "1.2.1"
-    "@apps-in-toss/cli" "1.2.1"
-    "@apps-in-toss/framework" "1.2.1"
-    "@apps-in-toss/plugins" "1.2.1"
-    "@apps-in-toss/web-analytics" "1.2.1"
-    "@apps-in-toss/web-bridge" "1.2.1"
+    "@apps-in-toss/bridge-core" "1.4.6"
+    "@apps-in-toss/cli" "1.4.6"
+    "@apps-in-toss/framework" "1.4.6"
+    "@apps-in-toss/plugins" "1.4.6"
+    "@apps-in-toss/web-analytics" "1.4.6"
+    "@apps-in-toss/web-bridge" "1.4.6"
     "@babel/core" "7.23.9"
-    "@granite-js/cli" "0.1.22"
-    "@granite-js/mpack" "0.1.22"
-    "@granite-js/native" "0.1.22"
-    "@granite-js/plugin-core" "0.1.22"
-    "@granite-js/react-native" "0.1.22"
-    "@granite-js/utils" "0.1.22"
+    "@granite-js/cli" "0.1.28"
+    "@granite-js/mpack" "0.1.28"
+    "@granite-js/native" "0.1.28"
+    "@granite-js/plugin-core" "0.1.28"
+    "@granite-js/react-native" "0.1.28"
+    "@granite-js/utils" "0.1.28"
 
 "@babel/code-frame@7.24.7":
   version "7.24.7"
@@ -2086,14 +2086,14 @@
     fastq "^1.17.0"
     glob "^10.3.4"
 
-"@granite-js/cli@0.1.22":
-  version "0.1.22"
-  resolved "https://registry.yarnpkg.com/@granite-js/cli/-/cli-0.1.22.tgz#18b4c0f4543297d0df881c696eb8ee585e463dcd"
-  integrity sha512-cMrPQq/mRjd2+38r3B/RDnU8Bjij/13ngtv31qzCTSTeSrR2bR2OpQ5+jSzkzo5yqsbA7mSBu8VWdF0z2JtM3Q==
+"@granite-js/cli@0.1.28":
+  version "0.1.28"
+  resolved "https://registry.yarnpkg.com/@granite-js/cli/-/cli-0.1.28.tgz#cc8f736e6d619102133b625795a9d57a5077b1b7"
+  integrity sha512-5VeFViHexu2TTt+dOro6VGeNHLhLPWAQkH3ZePVusD8GUXS/+6dQdPDiS/xucp3xvTkG56UxYG6I9WZ6tHpEWg==
   dependencies:
-    "@granite-js/mpack" "0.1.22"
-    "@granite-js/plugin-core" "0.1.22"
-    "@granite-js/utils" "0.1.22"
+    "@granite-js/mpack" "0.1.28"
+    "@granite-js/plugin-core" "0.1.28"
+    "@granite-js/utils" "0.1.28"
     "@inquirer/prompts" "^7.2.3"
     "@shopify/semaphore" "^3.1.0"
     chalk "^4"
@@ -2107,34 +2107,34 @@
     typanion "^3.14.0"
     zod "3.24.4"
 
-"@granite-js/devtools-frontend@0.1.22":
-  version "0.1.22"
-  resolved "https://registry.yarnpkg.com/@granite-js/devtools-frontend/-/devtools-frontend-0.1.22.tgz#b41d45e0b4ea6c50c39e93a79e1fd2f270198e77"
-  integrity sha512-9BG5Lc9gJcIP7cilOV2exJR8yfhGjdWZduhIIAXnn1YX94fBYxOtpaQlQdwJBaA3k3oaHEa8qoW70O9St54p3A==
+"@granite-js/devtools-frontend@0.1.28":
+  version "0.1.28"
+  resolved "https://registry.yarnpkg.com/@granite-js/devtools-frontend/-/devtools-frontend-0.1.28.tgz#107973db8fe14399ed3409499958ee032afc815a"
+  integrity sha512-qYLV1AtfRQLCaIsdC3mIMVaZ67fdP9o3u6IVgeAivrKeiX6NQ2rzw0ZX0oukAT7I07Ib0Kd0yqC/jIYqcW0+qQ==
 
-"@granite-js/image@0.1.22":
-  version "0.1.22"
-  resolved "https://registry.yarnpkg.com/@granite-js/image/-/image-0.1.22.tgz#d7a84c6edd42b46f2c803f4979c35239ce1adca0"
-  integrity sha512-en7dthY64DYZte0F2WuRnPJMThk4jo+alenxOka+RBkOtLnVQwGvbZQKDRk8Cm2xNiPB1IRWwDqZf/qnf875iQ==
+"@granite-js/image@0.1.28":
+  version "0.1.28"
+  resolved "https://registry.yarnpkg.com/@granite-js/image/-/image-0.1.28.tgz#2d6a5cc121241c956403b3efe92ea4cfe5fa5ec6"
+  integrity sha512-1OwCj6vU9hOlrzV51bd/0nxWtxeuV7tHyzcDEGZRxBwavNnLR8spNpmzSet0VVbGs8IfqmpMOvitQ/Xk6WWUqw==
   dependencies:
     react-simplikit "^0.0.40"
 
-"@granite-js/jest@0.1.22":
-  version "0.1.22"
-  resolved "https://registry.yarnpkg.com/@granite-js/jest/-/jest-0.1.22.tgz#ac7746e3385b99bdc807654b99aa67389a946e07"
-  integrity sha512-N6I+CIeOXPoBlxnmVwvDpwY7D8M8MpN4NGCIjTfBcaGPfqcGz7r1ZtwS9K8E/tEqSdW102jOTd24wY8D+r9jbQ==
+"@granite-js/jest@0.1.28":
+  version "0.1.28"
+  resolved "https://registry.yarnpkg.com/@granite-js/jest/-/jest-0.1.28.tgz#70ec3decb6b67672eaa598cc390cd0ba8f79bfd1"
+  integrity sha512-i6Wn8ek6XBnTkUpZUT3RU7E8l/vPMUwTiWuiIVQx8RUR4upIAh64PNvwTVjrYR9ROh2vJ6+r5lmDGn9jaefMVQ==
   dependencies:
     jest "^29.7.0"
 
-"@granite-js/lottie@0.1.22":
-  version "0.1.22"
-  resolved "https://registry.yarnpkg.com/@granite-js/lottie/-/lottie-0.1.22.tgz#3d3cb2e58a2957348c9684f48a4f2319c59cca9f"
-  integrity sha512-QNYGwWSxeR4ShzMbwP1vPNcXuzBn9hu4LgI2wJ0z1lRLBGgYyM2G9j2r3yzQ4hQd2lE4Om9G2TESwpSQ5HuuEQ==
+"@granite-js/lottie@0.1.28":
+  version "0.1.28"
+  resolved "https://registry.yarnpkg.com/@granite-js/lottie/-/lottie-0.1.28.tgz#f86f9a04b4b42dcb9e6c3aec186b7704e70bcd94"
+  integrity sha512-RlDmMPEJeCnqcGKpwLkLD+9oLaN9OBvCOL6FrqYer/7GZRs+e6OAlsjP30HJMZl6yOBOPcYpFfVoMScnyWq5Jg==
 
-"@granite-js/mpack@0.1.22":
-  version "0.1.22"
-  resolved "https://registry.yarnpkg.com/@granite-js/mpack/-/mpack-0.1.22.tgz#2a804dedb61abdd2fd38b1442a58c101bddd51a4"
-  integrity sha512-ItFqOQ+m/e1IyTftoydcdNP8HxFyrKVnrZCPIZ7l9a0GsmtcwRneK9RCNjjEvNlUR2uceaMLlY23mMoLQpmZsg==
+"@granite-js/mpack@0.1.28":
+  version "0.1.28"
+  resolved "https://registry.yarnpkg.com/@granite-js/mpack/-/mpack-0.1.28.tgz#c1cb2feb570dfddf5a7edcc66650dfe90add8678"
+  integrity sha512-OK4a46sU/HzDGoDKH2swAJHM+R3r1b9OBoRzI1eWtD/ijZsGY47vRtgNfTLp/iZ7l1H4b+Hi5oTg8VS17LsHiA==
   dependencies:
     "@babel/code-frame" "7.24.7"
     "@babel/core" "7.23.9"
@@ -2151,9 +2151,9 @@
     "@babel/traverse" "^7.14.0"
     "@babel/types" "^7.0.0"
     "@fastify/static" "7.0.1"
-    "@granite-js/devtools-frontend" "0.1.22"
-    "@granite-js/plugin-core" "0.1.22"
-    "@granite-js/utils" "0.1.22"
+    "@granite-js/devtools-frontend" "0.1.28"
+    "@granite-js/plugin-core" "0.1.28"
+    "@granite-js/utils" "0.1.28"
     "@inquirer/prompts" "^7.2.3"
     "@react-native-community/cli-plugin-metro" "11.3.7"
     "@react-native-community/cli-server-api" "11.3.7"
@@ -2229,10 +2229,10 @@
     yargs "^15.3.1"
     zod "3.24.4"
 
-"@granite-js/native@0.1.22":
-  version "0.1.22"
-  resolved "https://registry.yarnpkg.com/@granite-js/native/-/native-0.1.22.tgz#8df8e4022e18b128a27d71b2283af3acd4c0f3e3"
-  integrity sha512-k4ec2XVSKYK0D8oDKUIZDBi42Gxmy8UCaIc1WJ5VRBCNVFNTPLb/LiN6q66pE/fiGQKgawyDj05EJ5rJHK6VVA==
+"@granite-js/native@0.1.28":
+  version "0.1.28"
+  resolved "https://registry.yarnpkg.com/@granite-js/native/-/native-0.1.28.tgz#8d28263a9e3a1c2d3d1a02cae81350c2e27b7da6"
+  integrity sha512-rY+qLjsAktlS0ACPCekQP4M8Zt3FyWJf6FEjzDX7MPnOoB3Jh94Z3VyS1slyidFOQ13TuhaFfi7o70iJunlFlQ==
   dependencies:
     "@react-native-async-storage/async-storage" "1.18.2"
     "@react-native-community/blur" "4.3.2"
@@ -2251,15 +2251,16 @@
     react-native-video "6.0.0-alpha.6"
     react-native-webview "13.6.2"
 
-"@granite-js/plugin-core@0.1.22":
-  version "0.1.22"
-  resolved "https://registry.yarnpkg.com/@granite-js/plugin-core/-/plugin-core-0.1.22.tgz#6c02fe7473f3c22d032e12fca35a5c26331727ba"
-  integrity sha512-ONsca8/5LTCe1w9OA59du1Q4uADgEKljJMZd3f+69GQ1/ZaAwF5FVMi1UG57xbmSWy7+L0krSd5jOtV0AzYNQA==
+"@granite-js/plugin-core@0.1.28":
+  version "0.1.28"
+  resolved "https://registry.yarnpkg.com/@granite-js/plugin-core/-/plugin-core-0.1.28.tgz#d29887fab4015fca0c016599ec03e410bb54ad71"
+  integrity sha512-+yKcSr3Y1BNAo1QtKDSmG5OCYFaigDgUQ00Ad67NUXNo0eGpoNNFdqOCUv71qapGB8mCU/500KwB9Dff4cQPgw==
   dependencies:
-    "@granite-js/utils" "0.1.22"
+    "@granite-js/utils" "0.1.28"
     "@swc/core" "1.5.24"
     "@types/babel__core" "^7"
     "@types/connect" "^3"
+    "@types/ws" "^8.18.0"
     cosmiconfig "^9.0.0"
     cosmiconfig-typescript-loader "^5.1.0"
     es-toolkit "^1.39.8"
@@ -2267,51 +2268,51 @@
     fastify "4.14.0"
     zod "^4.0.10"
 
-"@granite-js/plugin-micro-frontend@0.1.22":
-  version "0.1.22"
-  resolved "https://registry.yarnpkg.com/@granite-js/plugin-micro-frontend/-/plugin-micro-frontend-0.1.22.tgz#c9f1bef41a1752bcbccfa756ebb5e0a45ca397bf"
-  integrity sha512-8CN1FSPKWScfVbegezoNWznvSI8oVbr/HeieyLU/WW1+ugC5Pl2a3PULPQmY9b0yGUSpKKGBBuo6XSPOOAuyVA==
+"@granite-js/plugin-micro-frontend@0.1.28":
+  version "0.1.28"
+  resolved "https://registry.yarnpkg.com/@granite-js/plugin-micro-frontend/-/plugin-micro-frontend-0.1.28.tgz#51d08e3a792c02262bfe8dbedadb606a683c8bae"
+  integrity sha512-XweSzwkugOGTkiCWfCns/SHGFAAvC/FrIdGq6eTWAd+hBW/wY4g3wAaYmjE3CrTIXuU5c63G4Cf8d8YovzPwSw==
   dependencies:
-    "@granite-js/plugin-core" "0.1.22"
-    "@granite-js/utils" "0.1.22"
+    "@granite-js/plugin-core" "0.1.28"
+    "@granite-js/utils" "0.1.28"
     es-toolkit "^1.39.8"
     picocolors "^1.1.1"
 
-"@granite-js/plugin-sentry@0.1.22":
-  version "0.1.22"
-  resolved "https://registry.yarnpkg.com/@granite-js/plugin-sentry/-/plugin-sentry-0.1.22.tgz#889f8b6c095bfa24001a74456881358c3dab98bb"
-  integrity sha512-bCQGUWgqZtwUO+W8M1omJ20lVLgTTFPbV1nm3EVsvg0PnVKlsHg0P/FcUOfSYoaEabd49zSsvinvmAsg6W8L4w==
+"@granite-js/plugin-sentry@0.1.28":
+  version "0.1.28"
+  resolved "https://registry.yarnpkg.com/@granite-js/plugin-sentry/-/plugin-sentry-0.1.28.tgz#8ec07b80ccef94a12f426fcbaae25c11455b3cf8"
+  integrity sha512-aeH3GS59hi/3bBWHi67I8HghXGMoIXIrzUEZgJRohWF5AunPoC/tZPLk4nnjLdzq8p3MrruO8p2mn8bKh5LVng==
   dependencies:
-    "@granite-js/plugin-core" "0.1.22"
-    "@granite-js/utils" "0.1.22"
+    "@granite-js/plugin-core" "0.1.28"
+    "@granite-js/utils" "0.1.28"
     "@sentry/cli" "^2.45.0"
     es-toolkit "^1.39.8"
     execa "^5"
 
-"@granite-js/react-native@0.1.22":
-  version "0.1.22"
-  resolved "https://registry.yarnpkg.com/@granite-js/react-native/-/react-native-0.1.22.tgz#a70e7922cf9a4a32dedf37104d6c0531bc6deff9"
-  integrity sha512-Vd/NOLe9xmGSlO+Uu5HqX0UYKfN0NGTHLxyDECbfQjqnupRbOUH3g80Iq85bGQ5e6LFq+dubtmihM1f8pAfXbg==
+"@granite-js/react-native@0.1.28":
+  version "0.1.28"
+  resolved "https://registry.yarnpkg.com/@granite-js/react-native/-/react-native-0.1.28.tgz#5c742551eb6ea00ea824685f6b66dbb7405bf054"
+  integrity sha512-+lg6r/lZO1JCJ1BKOvEvkSGVmYhCNWgy328aOfX6XJg4wCqX6Nv5DP5ug+r0mDDECF3HETyvdem1lyAkftb/CQ==
   dependencies:
-    "@granite-js/cli" "0.1.22"
-    "@granite-js/image" "0.1.22"
-    "@granite-js/jest" "0.1.22"
-    "@granite-js/lottie" "0.1.22"
-    "@granite-js/mpack" "0.1.22"
-    "@granite-js/plugin-core" "0.1.22"
-    "@granite-js/style-utils" "0.1.22"
+    "@granite-js/cli" "0.1.28"
+    "@granite-js/image" "0.1.28"
+    "@granite-js/jest" "0.1.28"
+    "@granite-js/lottie" "0.1.28"
+    "@granite-js/mpack" "0.1.28"
+    "@granite-js/plugin-core" "0.1.28"
+    "@granite-js/style-utils" "0.1.28"
     es-toolkit "^1.39.8"
-    react-native-url-polyfill "1.3.0"
+    react-native-url-polyfill "3.0.0"
 
-"@granite-js/style-utils@0.1.22":
-  version "0.1.22"
-  resolved "https://registry.yarnpkg.com/@granite-js/style-utils/-/style-utils-0.1.22.tgz#0637ab98cf9d750e0ff674fd16a1ddcf9e978f1a"
-  integrity sha512-1nwMUFTx9fvhfB8iV5bKXYeHsSjGrfatpye6WmSNNjti3otG7NjmdKoOYp3dlMJSmKiJO/CM8hz4mzgecPbRDQ==
+"@granite-js/style-utils@0.1.28":
+  version "0.1.28"
+  resolved "https://registry.yarnpkg.com/@granite-js/style-utils/-/style-utils-0.1.28.tgz#976fab252a61ec69548233ab96143ff6ac82b483"
+  integrity sha512-+tG8qmT5YzQ37of2VDo17ADctRUrAVbevGiVl4tj7VDSIM8yj+yFQRLKy/PE5lkz/dCISYCT6VFrKPKbdvChnw==
 
-"@granite-js/utils@0.1.22":
-  version "0.1.22"
-  resolved "https://registry.yarnpkg.com/@granite-js/utils/-/utils-0.1.22.tgz#215e7971d2a9b61d6147554c298b4721b781ed24"
-  integrity sha512-RMV8Z9gmcC2kF6nR9FnNctnS/bVGFy1YZOV3Wl0/W+1ToLiXAZfL0iGtZKQypve9DgISuA4uoxqNVOCt4WtshA==
+"@granite-js/utils@0.1.28":
+  version "0.1.28"
+  resolved "https://registry.yarnpkg.com/@granite-js/utils/-/utils-0.1.28.tgz#65e837d17cac30ef02ba1191d24ed1cf11c50700"
+  integrity sha512-QG6hcty2X5WAngeDuFKS8ooqSCmcy6cGjjEC1NmoFEOTzs7Fg5GuyRL32e3K0MoYPdx8+kTKHFuqBqZsTuFpiw==
   dependencies:
     yauzl "^3.2.0"
 
@@ -3674,7 +3675,7 @@
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.3.tgz#6209321eb2c1712a7e7466422b8cb1fc0d9dd5d8"
   integrity sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==
 
-"@types/ws@^8.18.1":
+"@types/ws@^8.18.0", "@types/ws@^8.18.1":
   version "8.18.1"
   resolved "https://registry.yarnpkg.com/@types/ws/-/ws-8.18.1.tgz#48464e4bf2ddfd17db13d845467f6070ffea4aa9"
   integrity sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==
@@ -4861,7 +4862,7 @@ css-what@^6.1.0:
   resolved "https://registry.yarnpkg.com/css-what/-/css-what-6.2.2.tgz#cdcc8f9b6977719fdfbd1de7aec24abf756b9dea"
   integrity sha512-u/O3vwbptzhMs3L1fQE82ZSLHQQfto5gyZzwteVIEyeaY5Fc7R4dapF/BvRoSYFeqfBk4m0V1Vafq5Pjv25wvA==
 
-csstype@^3.0.2:
+csstype@^3.0.2, csstype@^3.1.3:
   version "3.1.3"
   resolved "https://registry.npmjs.org/csstype/-/csstype-3.1.3.tgz"
   integrity sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==
@@ -5943,6 +5944,11 @@ globrex@^0.1.2:
   version "0.1.2"
   resolved "https://registry.npmjs.org/globrex/-/globrex-0.1.2.tgz"
   integrity sha512-uHJgbwAMwNFf5mLst7IWLNg14x1CkeqglJb/K3doi4dw6q2IvAAmM/Y81kevy83wP+Sst+nutFTYOGg3d1lsxg==
+
+goober@^2.1.16:
+  version "2.1.18"
+  resolved "https://registry.yarnpkg.com/goober/-/goober-2.1.18.tgz#b72d669bd24d552d441638eee26dfd5716ea6442"
+  integrity sha512-2vFqsaDVIT9Gz7N6kAL++pLpp41l3PfDuusHcjnGLfR6+huZkl6ziX+zgVC3ZxpqWhzH6pyDdGrCeDhMIvwaxw==
 
 gopd@^1.0.1, gopd@^1.2.0:
   version "1.2.0"
@@ -8580,6 +8586,14 @@ react-freeze@^1.0.0:
   resolved "https://registry.yarnpkg.com/react-freeze/-/react-freeze-1.0.4.tgz#cbbea2762b0368b05cbe407ddc9d518c57c6f3ad"
   integrity sha512-r4F0Sec0BLxWicc7HEyo2x3/2icUTrRmDjaaRyzzn+7aDyFZliszMDOgLVwSnQnYENOlL1o569Ze2HZefk8clA==
 
+react-hot-toast@^2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/react-hot-toast/-/react-hot-toast-2.6.0.tgz#4ada6ed3c75c5e42a90d562f55665ff37ee1442b"
+  integrity sha512-bH+2EBMZ4sdyou/DPrfgIouFpcRLCJ+HoCA32UoAYHn6T3Ur5yfcDCeSr5mwldl6pFOsiocmrXMuoCJ1vV8bWg==
+  dependencies:
+    csstype "^3.1.3"
+    goober "^2.1.16"
+
 react-is@^16.13.0, react-is@^16.13.1, react-is@^16.7.0:
   version "16.13.1"
   resolved "https://registry.npmjs.org/react-is/-/react-is-16.13.1.tgz"
@@ -8648,10 +8662,10 @@ react-native-svg@13.14.0:
     css-select "^5.1.0"
     css-tree "^1.1.3"
 
-react-native-url-polyfill@1.3.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/react-native-url-polyfill/-/react-native-url-polyfill-1.3.0.tgz#c1763de0f2a8c22cc3e959b654c8790622b6ef6a"
-  integrity sha512-w9JfSkvpqqlix9UjDvJjm1EjSt652zVQ6iwCIj1cVVkwXf4jQhQgTNXY6EVTwuAmUjg6BC6k9RHCBynoLFo3IQ==
+react-native-url-polyfill@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/react-native-url-polyfill/-/react-native-url-polyfill-3.0.0.tgz#16b809c35d45f7d4cf968967bc35ab73b7542826"
+  integrity sha512-aA5CiuUCUb/lbrliVCJ6lZ17/RpNJzvTO/C7gC/YmDQhTUoRD5q5HlJfwLWcxz4VgAhHwXKzhxH+wUN24tAdqg==
   dependencies:
     whatwg-url-without-unicode "8.0.0-3"
 

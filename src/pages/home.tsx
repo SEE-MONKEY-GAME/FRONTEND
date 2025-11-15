@@ -1,10 +1,13 @@
 /** @jsxImportSource @emotion/react */
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { selectMemberData } from '@api/member-api';
 import Attend from '@components/attend';
 import Guide from '@components/guide';
 import Option from '@components/option';
 import Shop from '@components/shop';
+import { useSound } from '@context/sound-context';
+import { useToken } from '@context/user-context';
 import {
   backgroundCss,
   bestScoreCss,
@@ -19,6 +22,8 @@ import {
   iconButtonGroupCss,
   iconButtonListCss,
 } from '@styles/pages/home.css';
+import { getBGMs } from '@utils/get-sounds';
+import { openRank } from '@utils/open-rank';
 
 export interface ImagesProps {
   home_bg: string;
@@ -87,6 +92,17 @@ export interface ImagesProps {
   'ITEM-001': string;
   'ITEM-002': string;
   'SCARF-001': string;
+}
+
+interface MemberProps {
+  memberId: number;
+  coin: number;
+  checkinStreak: number;
+  todayCheckIn: boolean;
+  topRecord: number;
+  bgmSound: boolean;
+  effectSound: boolean;
+  equipment: [];
 }
 
 const Home = () => {
@@ -159,12 +175,27 @@ const Home = () => {
     'ITEM-002': '',
     'SCARF-001': '',
   });
+  const [member, setMember] = useState<MemberProps>({
+    memberId: 0,
+    coin: 0,
+    checkinStreak: 0,
+    todayCheckIn: false,
+    topRecord: 0,
+    bgmSound: true,
+    effectSound: true,
+    equipment: [],
+  });
 
   const [attend, setAttend] = useState<boolean>(false);
   const [shop, setShop] = useState<boolean>(false);
   const [guide, setGuide] = useState<boolean>(false);
   const [option, setOption] = useState<boolean>(false);
   const [transition, setTransition] = useState<boolean>(false);
+  const { token } = useToken();
+  const { effect, setBgm, setEffect } = useSound();
+
+  const mainButtonSound = new Audio(getBGMs('button_main'));
+  const subButtonSound = new Audio(getBGMs('button_sub'));
 
   useEffect(() => {
     const preloaded = (window as any)['PRELOADED_IMAGES'] as ImagesProps | undefined;
@@ -183,27 +214,91 @@ const Home = () => {
     };
   }, []);
 
+  const getMemberData = async (token: string) => {
+    try {
+      const response = await selectMemberData(token);
+      setMember({
+        memberId: response.data.memberId,
+        coin: response.data.coin,
+        checkinStreak: response.data.checkinStreak,
+        todayCheckIn: response.data.todayCheckIn,
+        topRecord: response.data.topRecord,
+        bgmSound: response.data.bgmSound,
+        effectSound: response.data.effectSound,
+        equipment: response.data.equipment,
+      });
+
+      setBgm(response.data.bgmSound);
+      setEffect(response.data.effectSound);
+
+      const equipment = response.data.equipment;
+
+      if (equipment.length > 0) {
+        equipment.forEach((eq: { type: string; code: string }) => {
+          window.dispatchEvent(new CustomEvent('UPDATE_CHARACTER', { detail: { type: eq.type, code: eq.code } }));
+        });
+      } else {
+        window.dispatchEvent(new CustomEvent('UPDATE_CHARACTER', { detail: { type: '', code: '' } }));
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getMemberData(token);
+  }, []);
+
   const handleAttend = () => {
+    if (effect) {
+      subButtonSound.currentTime = 0;
+      subButtonSound.play();
+    }
     setAttend((attend) => !attend);
   };
 
+  const handleRank = () => {
+    if (effect) {
+      subButtonSound.currentTime = 0;
+      subButtonSound.play();
+    }
+    openRank();
+  };
+
   const handleShop = () => {
+    if (effect) {
+      subButtonSound.currentTime = 0;
+      subButtonSound.play();
+    }
     setShop((shop) => !shop);
   };
 
   const handleGameGuide = () => {
+    if (effect) {
+      subButtonSound.currentTime = 0;
+      subButtonSound.play();
+    }
     setGuide((guide) => !guide);
   };
 
   const handleOption = () => {
+    if (effect) {
+      subButtonSound.currentTime = 0;
+      subButtonSound.play();
+    }
     setOption((option) => !option);
   };
 
   const handleGameStart = () => {
+    if (effect) {
+      mainButtonSound.currentTime = 0;
+      mainButtonSound.play();
+    }
+
     setTransition(true);
-    window.dispatchEvent(new Event('game:start'));
 
     setTimeout(() => {
+      window.dispatchEvent(new Event('game:start'));
       navigate('/game');
     }, 1000);
   };
@@ -211,13 +306,15 @@ const Home = () => {
   return (
     <>
       {transition && <div css={circleCss} />}
-      {attend && <Attend handleAttend={handleAttend} images={images} />}
-      {shop && <Shop handleShop={handleShop} images={images} />}
+      {attend && <Attend handleAttend={handleAttend} images={images} refreshMember={getMemberData} />}
+      {shop && (
+        <Shop handleShop={handleShop} images={images} equipment={member.equipment} refreshMember={getMemberData} />
+      )}
       {guide && <Guide handleGameGuide={handleGameGuide} images={images} />}
       {option && <Option handleOption={handleOption} images={images} />}
       <div css={backgroundCss(images)}>
         <div css={coinCss}>
-          <span css={coinTextCss}>1985</span>
+          <span css={coinTextCss}>{member.coin}</span>
         </div>
         <div css={bestScoreCss}>
           <div css={bestScoreTextCss}>
@@ -225,12 +322,12 @@ const Home = () => {
             <span>최고기록</span>
             <img src={images.leaf_right} alt="오른쪽_장식_이미지" height={14} />
           </div>
-          <span css={bestScoreValueCss}>5853 m</span>
+          <span css={bestScoreValueCss}>{member.topRecord} m</span>
         </div>
         <div css={iconButtonGroupCss}>
           <div css={iconButtonListCss}>
             <img src={images.check} alt="출석" css={iconButtonCss} onClick={handleAttend} />
-            <img src={images.rank} alt="랭킹" css={iconButtonCss} />
+            <img src={images.rank} alt="랭킹" css={iconButtonCss} onClick={handleRank} />
             <img src={images.shop} alt="상점" css={iconButtonCss} onClick={handleShop} />
           </div>
           <div css={iconButtonListCss}>
