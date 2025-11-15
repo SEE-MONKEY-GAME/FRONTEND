@@ -258,6 +258,8 @@ class LoadScene extends Phaser.Scene {
   frameWidth: 502,
   frameHeight: 883,    
 });
+this.load.image('hit_monkey_thief', getImage('game', 'hit_monkey_thief'));
+
 
     this.load.image('bg_jungle_start', getImage('game', 'bg_jungle_start'));
     this.load.image('bg_jungle_loop', getImage('game', 'bg_jungle_loop'));

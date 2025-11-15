@@ -78,10 +78,8 @@ class GameScene extends Phaser.Scene {
   private spinTween?: Phaser.Tweens.Tween;
   private rocketActive = false;
   private rocketEndTime = 0;
-  private readonly ROCKET_DURATION = 5000;   // 기존 긴 로켓 (예: 상점용)
+  private readonly ROCKET_DURATION = 5000;   
   private readonly ROCKET_DISTANCE_M = 801;
-
-  // ⬇️ 새로 추가
   private rocketDurationMs = 0;
   private rocketDistanceM = 0;
 
@@ -90,7 +88,7 @@ class GameScene extends Phaser.Scene {
 
   // 로켓 아이템 스폰용
   private rocketGroup!: Phaser.Physics.Arcade.Group;
-  private readonly ROCKET_SPAWN_PROB_PER_SLOT = 0.05; // 한 슬롯당 5% 정도 (원하면 조절)
+  private readonly ROCKET_SPAWN_PROB_PER_SLOT = 0.05; 
   private readonly ROCKET_SCALE = 0.16;
 
   // 장애물
@@ -431,7 +429,6 @@ class GameScene extends Phaser.Scene {
   private FEVER_ALPHA = 0.9;
   private FEVER_OVERLAP_PX = 2;
 
-    // ✅ 공통 로켓 부스트 시작 로직
 private startRocketBoost(durationMs: number, distanceM: number) {
   this.rocketActive = true;
   this.rocketDurationMs = durationMs;
@@ -441,29 +438,22 @@ private startRocketBoost(durationMs: number, distanceM: number) {
   const { height } = this.cameras.main;
   const cBody = this.character.body as Phaser.Physics.Arcade.Body;
 
-  // 위치는 유지하되, 너무 아래에서 먹었으면 약간만 위로 올려주는 정도 (선택)
   if (this.character.y > height * 0.75) {
     this.character.setY(height * 0.75);
   }
 
-  // ❌ 순간이동 삭제
-  // this.character.setPosition(width / 2, height / 2);
-
   cBody.setVelocity(0, 0);
-  cBody.setAllowGravity(false); // 중력 끔
+  cBody.setAllowGravity(false); 
 
-  // 로켓 스프라이트 시트로 텍스처 교체 + 첫 프레임 설정
   this.character.setTexture('rocketmotion', 0);
   this.character.setOrigin(0.5, 0.5);
-  this.character.setScale(0.18); // 필요하면 조절
+  this.character.setScale(0.18); 
 
-  // 기존 프레임 타이머 제거
   if (this.rocketFrameTimer) {
     this.rocketFrameTimer.remove();
     this.rocketFrameTimer = undefined;
   }
 
-  // 2프레임(0, 1)을 번갈아가며 보여주는 타이머
   this.rocketFrameIndex = 0;
   this.rocketFrameTimer = this.time.addEvent({
     delay: 1000 / 6,
@@ -474,7 +464,6 @@ private startRocketBoost(durationMs: number, distanceM: number) {
     },
   });
 
-  // 점수 기준 Y 초기화
   this.lastYForScore = this.character.y;
   this.prevCharY = this.character.y;
   this.prevVy = 0;
@@ -520,7 +509,7 @@ private startRocketBoost(durationMs: number, distanceM: number) {
     this.anims.create({
   key: 'rocketmotion_loop',
   frames: this.anims.generateFrameNumbers('rocketmotion', { start: 0, end: 1 }),
-  frameRate: 6,  // 적당한 속도
+  frameRate: 6,  
   repeat: -1,
 });
 
@@ -578,13 +567,11 @@ const startRocketBoost = () => {
   w.__queuedGameStart = false;
   w.__rocketStart = false;
 
-  // 상점에서 쓰는 긴 로켓: 5초, 801m
   this.startRocketBoost(this.ROCKET_DURATION, this.ROCKET_DISTANCE_M);
 };
 
 
 
-// ✅ game:start 이벤트 처리: 로켓이면 로켓, 아니면 카운트다운
 const onPlay = () => {
   const w = window as any;
   if (w.__rocketStart) {
@@ -600,7 +587,6 @@ this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
   window.removeEventListener('game:play', onPlay);
 });
 
-// ✅ queued 플래그 처리도 그대로 유지
 if ((window as any).__queuedGameStart) {
   const w = window as any;
   if (w.__rocketStart) {
@@ -615,7 +601,6 @@ if ((window as any).__queuedGameStart) {
     this.prevBarX = this.bar.x;
     this.prevCharY = this.character.y;
 
-    // 점수 초기화
     this.totalAscentPx = 0;
     this.lastYForScore = this.character.y;
     this.lastEmittedMeters = -1;
@@ -1003,7 +988,6 @@ if ((window as any).__queuedGameStart) {
     onComplete: () => ghost.destroy(),
   });
 
-  // ✅ 코인/피버 로직은 그대로 유지
   this.coin += val;
   this.emitCoin(this.coin);
 
@@ -1015,10 +999,8 @@ if ((window as any).__queuedGameStart) {
     if (this.feverProgress >= this.FEVER_GOAL) this.startFever();
   }
 
-  // ✅ 여기서부터 포즈 연출인데,
-  //    로켓 모드일 때는 캐릭터 스프라이트(rocketmotion)를 건드리지 않게 막아줌
   if (this.rocketActive) {
-    return; // 포즈/스핀 X, 그냥 로켓 모션 유지
+    return; 
   }
 
   const cBody = this.character.body as Phaser.Physics.Arcade.Body;
@@ -1082,10 +1064,8 @@ if ((window as any).__queuedGameStart) {
     item.disableBody(true, true);
     item.destroy();
 
-    // 이미 로켓 모드면 무시
     if (this.rocketActive) return;
 
-    // 🔥 요청 사항: 3초 동안 50m 상승 + rocketmotion 유지
     this.startRocketBoost(2000, 240);
   }
 
@@ -1206,7 +1186,6 @@ if ((window as any).__queuedGameStart) {
     if (!this.character.active || this.gameOver) return;
     const cBody = this.character.body as Phaser.Physics.Arcade.Body;
 
-    // ✅ 1) 로켓 모드일 때
 if (this.rocketActive) {
   const dt = delta; // ms
   const totalPx = this.rocketDistanceM * this.PX_PER_M;
@@ -1220,7 +1199,6 @@ if (this.rocketActive) {
   this.scrollY += stepPx;
   this.lastSpawnScrollY = this.scrollY;
 
-  // ✅ 배경
   this.updateSegmentsY();
   this.cullBelow();
   this.handleZoneTransition();
@@ -1233,12 +1211,10 @@ if (this.rocketActive) {
     this.fillFeverBelow();
   }
 
-  // ✅ 이걸 추가: 바나나/고릴라/로켓도 scrollY 기준으로 다시 위치 잡아주기
   this.updateBananas();
   this.updateGorillas(delta);
   this.updateRockets();
 
-  // 캐릭터는 화면 상에서 고정
   cBody.setVelocity(0, 0);
 
   if (this.time.now >= this.rocketEndTime) {
@@ -1393,7 +1369,7 @@ if (this.rocketActive) {
 
     this.updateBananas();
     this.updateGorillas(delta);
-        this.updateRockets(); // 🔻 여기 추가
+        this.updateRockets(); 
 
 
     this.updateSegmentsY();

@@ -27,7 +27,6 @@ class HomeScene extends Phaser.Scene {
     platform.setPosition(width / 2, height - 187);
 
        const handleStartGame = () => {
-      // ✅ 홈 씬 → 게임 씬 전환
       this.scene.start('GameScene');
     };
 
