@@ -103,15 +103,15 @@ export const shopItemButtonCss = (images: ImagesProps) =>
     fontSize: '15px',
     color: 'white',
     '-webkit-text-stroke': '0.6px #36672F',
-    position: 'relative',
-    top: '12px',
+    position: 'absolute',
+    top: 'calc((100vw - 102px) / 2 - 26px)',
     left: '50%',
     transform: 'translateX(-50%)',
   });
 
 export const shopItemUseButtonCss = css({
   position: 'relative',
-  top: '12px',
+  top: 'calc((100vw - 102px) / 2 - 26px)',
   left: '50%',
   transform: 'translateX(-50%)',
 });
@@ -138,7 +138,7 @@ export const shopItemCountCss = css({
 
 export const shopResourceCss = css({
   width: '70%',
-  position: 'relative',
+  position: 'absolute',
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
