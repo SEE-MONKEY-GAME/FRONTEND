@@ -22,6 +22,7 @@ import {
   iconButtonGroupCss,
   iconButtonListCss,
 } from '@styles/pages/home.css';
+import { formatCoin } from '@utils/formation-coin';
 import { getBGMs } from '@utils/get-sounds';
 import { openRank } from '@utils/open-rank';
 
@@ -314,7 +315,7 @@ const Home = () => {
       {option && <Option handleOption={handleOption} images={images} />}
       <div css={backgroundCss(images)}>
         <div css={coinCss}>
-          <span css={coinTextCss}>{member.coin}</span>
+          <span css={coinTextCss}>{formatCoin(member.coin)}</span>
         </div>
         <div css={bestScoreCss}>
           <div css={bestScoreTextCss}>

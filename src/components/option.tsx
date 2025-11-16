@@ -57,6 +57,7 @@ const Option = ({ handleOption, images }: OptionProps) => {
       toast.success('피드백 전송 완료 🍌');
       setFeedback('');
       setContact(false);
+      handleOption();
     } catch (error) {
       console.log(error);
       toast.error(`피드백 전송 실패`);
