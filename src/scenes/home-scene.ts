@@ -44,7 +44,7 @@ class HomeScene extends Phaser.Scene {
     platform.setOrigin(0.5, 1);
     platform.setPosition(width / 2, height - 187);
 
-       const handleStartGame = () => {
+    const handleStartGame = () => {
       this.scene.start('GameScene');
       this.bgm?.stop();
     };

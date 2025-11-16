@@ -87,7 +87,7 @@ class LoadScene extends Phaser.Scene {
         .setInteractive({ useHandCursor: true });
 
       touch.on('pointerup', () => {
-        window.history.pushState({}, '', '/home');
+        window.history.replaceState({}, '', '/home');
         window.dispatchEvent(new PopStateEvent('popstate'));
         this.scene.start('HomeScene');
       });
@@ -291,11 +291,10 @@ class LoadScene extends Phaser.Scene {
       frameHeight: 300,
     });
     this.load.spritesheet('rocketmotion', getImage('game', 'rocketmotion'), {
-  frameWidth: 502,
-  frameHeight: 883,    
-});
-this.load.image('hit_monkey_thief', getImage('game', 'hit_monkey_thief'));
-
+      frameWidth: 502,
+      frameHeight: 883,
+    });
+    this.load.image('hit_monkey_thief', getImage('game', 'hit_monkey_thief'));
 
     this.load.image('bg_jungle_start', getImage('game', 'bg_jungle_start'));
     this.load.image('bg_jungle_loop', getImage('game', 'bg_jungle_loop'));

@@ -41,7 +41,7 @@ export default function GameOverModal({ open, score, coin, onClose, onReplay, im
       submitScore(score);
       onClose();
       window.dispatchEvent(new Event('game:end'));
-      navigate('/home');
+      navigate('/home', { replace: true });
     } catch (error) {
       console.log(error);
     }

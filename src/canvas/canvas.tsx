@@ -5,7 +5,7 @@ import GameScene from '@scenes/game-scene';
 import HomeScene from '@scenes/home-scene';
 import LoadScene from '@scenes/load-scene';
 
-let globalGame: Phaser.Game | null = null;
+export let globalGame: Phaser.Game | null = null;
 
 const Canvas = () => {
   const containerRef = useRef<HTMLDivElement>(null);

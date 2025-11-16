@@ -300,7 +300,7 @@ const Home = () => {
 
     setTimeout(() => {
       window.dispatchEvent(new Event('game:start'));
-      navigate('/game');
+      navigate('/game', { replace: true });
     }, 1000);
   };
 
