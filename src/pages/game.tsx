@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import FeverGauge from '@components/fever-gauge';
 import GameOverModal from '@components/gameover-modal';
 import RocketPrompt from '@components/rocketprompt';
+import HeartPrompt from '@components/heartprompt'; 
 import { FEVER_DURATION_MS } from '@scenes/game-scene';
 import { circleCss, coinCss, coinTextCss, currentScoreCss, feverEmptyCss, feverWrapCss } from '@styles/pages/game.css';
 
@@ -35,6 +36,9 @@ export default function GamePage() {
   const [finalScore, setFinalScore] = useState(0);
   const [finalCoin, setFinalCoin] = useState(0);
   const [showRocketPrompt, setShowRocketPrompt] = useState(true);
+  const [showHeartPrompt, setShowHeartPrompt] = useState(false); 
+  const [hasShownHeartPromptInRun, setHasShownHeartPromptInRun] = useState(false); 
+
 
 
   useEffect(() => {
@@ -93,7 +97,21 @@ const replay = () => {
   setScore(0);
   setCoin(0);
   setShowRocketPrompt(true);
+  setShowHeartPrompt(false);
+  setHasShownHeartPromptInRun(false);
 };
+
+const handleHeartSkip = () => {
+  setShowHeartPrompt(false);
+  setIsGameOver(true); 
+};
+
+const handleHeartUse = () => {
+  setShowHeartPrompt(false);
+  setIsGameOver(false); 
+  window.dispatchEvent(new Event('game:extra-life'));
+};
+
 
 
   useEffect(() => {
@@ -123,15 +141,26 @@ const replay = () => {
     return () => window.removeEventListener('game:item', onItem as EventListener);
   }, [nudgeByItems]);
 
-  useEffect(() => {
-    const onOver = (e: CustomEvent<{ score: number; coin: number }>) => {
-      setFinalScore(e.detail.score);
-      setFinalCoin(e.detail.coin);
+useEffect(() => {
+  const onOver = (e: CustomEvent<{ score: number; coin: number }>) => {
+    setFinalScore(e.detail.score);
+    setFinalCoin(e.detail.coin);
+
+    setShowHeartPrompt((prev) => {
+      if (!hasShownHeartPromptInRun) {
+        setHasShownHeartPromptInRun(true);
+        return true;                     
+      }
+
       setIsGameOver(true);
-    };
-    window.addEventListener('game:over', onOver as EventListener);
-    return () => window.removeEventListener('game:over', onOver as EventListener);
-  }, []);
+      return false;
+    });
+  };
+
+  window.addEventListener('game:over', onOver as EventListener);
+  return () => window.removeEventListener('game:over', onOver as EventListener);
+}, [hasShownHeartPromptInRun]);
+
 
 
   return (
@@ -164,6 +193,11 @@ const replay = () => {
   onSkip={skipGame}
   onUse={startGame}
 />
+ <HeartPrompt
+        open={showHeartPrompt}
+        onSkip={handleHeartSkip}
+        onUse={handleHeartUse}
+      />
       </div>
     </>
   );
