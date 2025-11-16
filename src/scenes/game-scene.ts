@@ -11,6 +11,7 @@ class GameScene extends Phaser.Scene {
   private effect_hit?: Phaser.Sound.BaseSound;
   private effect_jump?: Phaser.Sound.BaseSound;
   private effect_count_down?: Phaser.Sound.BaseSound;
+  private feverTitle?: Phaser.GameObjects.Image;
 
   private bar!: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
   private character!: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
@@ -276,6 +277,58 @@ class GameScene extends Phaser.Scene {
     this.feverSegs.forEach((s) => s.img.destroy());
     this.feverBgm?.destroy();
     this.feverSegs = [];
+  }
+
+   private showFeverTitle() {
+    const { width, height } = this.cameras.main;
+
+    if (this.feverTitle) {
+      this.tweens.killTweensOf(this.feverTitle);
+      this.feverTitle.destroy();
+      this.feverTitle = undefined;
+    }
+
+    const startX = width / 2 +100;   
+    const centerX = width / 2;    
+    const endX = width / 2 - 100;           
+    const y = height * 0.35;      
+
+    this.time.delayedCall(100, () => {
+      const title = this.add
+        .image(startX, y, 'fevertime_title')
+        .setOrigin(0.5, 0.5)
+        .setScrollFactor(0)
+        .setDepth(2000)
+        .setAlpha(0);
+
+      this.feverTitle = title;
+
+
+      this.tweens.add({
+        targets: title,
+        x: centerX,
+        alpha: 1,
+        duration: 300,
+        ease: 'Linear',
+        onComplete: () => {
+          this.time.delayedCall(500, () => {
+            this.tweens.add({
+              targets: title,
+              x: endX,
+              alpha: 0,
+              duration: 300,
+              ease: 'Linear',
+              onComplete: () => {
+                title.destroy();
+                if (this.feverTitle === title) {
+                  this.feverTitle = undefined;
+                }
+              },
+            });
+          });
+        },
+      });
+    });
   }
 
   private getZoneIndexByMeters(m: number) {
@@ -1002,6 +1055,9 @@ if ((window as any).__queuedGameStart) {
     this.bgm?.stop();
 
     this.initFeverOverlay();
+
+    this.showFeverTitle(); 
+
   }
 
   private stopFever() {
