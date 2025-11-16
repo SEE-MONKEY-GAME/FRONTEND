@@ -277,6 +277,8 @@ class LoadScene extends Phaser.Scene {
     this.load.image('nbana', getImage('game', 'banana_normal'));
     this.load.image('bbana', getImage('game', 'banana_bunch'));
     this.load.image('gbana', getImage('game', 'banana_gold'));
+    this.load.image('rocket', getImage('game', 'rocket'));
+
     this.load.image('fullguage', getImage('game', 'full_guage_bar'));
     this.load.image('emptyguage', getImage('game', 'empty_guage_bar'));
 
@@ -288,6 +290,12 @@ class LoadScene extends Phaser.Scene {
       frameWidth: 300,
       frameHeight: 300,
     });
+    this.load.spritesheet('rocketmotion', getImage('game', 'rocketmotion'), {
+  frameWidth: 502,
+  frameHeight: 883,    
+});
+this.load.image('hit_monkey_thief', getImage('game', 'hit_monkey_thief'));
+
 
     this.load.image('bg_jungle_start', getImage('game', 'bg_jungle_start'));
     this.load.image('bg_jungle_loop', getImage('game', 'bg_jungle_loop'));
