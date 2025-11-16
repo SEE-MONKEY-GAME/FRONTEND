@@ -1,5 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { useSound } from '@context/sound-context';
+import { useToken } from '@context/user-context';
 import type { ImagesProps } from '@pages/home';
 import {
   attendRewardButtonCss,
@@ -16,14 +17,16 @@ interface AttendRewardProps {
   index: number;
   onClose: () => void;
   images: ImagesProps;
+  refreshCheckin: (token: string) => Promise<void>;
 }
 
-const AttendReward = ({ index, onClose, images }: AttendRewardProps) => {
+const AttendReward = ({ index, onClose, images, refreshCheckin }: AttendRewardProps) => {
   const { effect } = useSound();
   const close = getImage('home', 'check_close_button');
   const shine = getImage('home', 'effect_shine');
   const subButtonSound = new Audio(getBGMs('button_sub'));
   const rewardSound = new Audio(getBGMs('daily_reward'));
+  const { token } = useToken();
 
   const rewardImages = [
     images.check_day1_gift,
@@ -47,6 +50,7 @@ const AttendReward = ({ index, onClose, images }: AttendRewardProps) => {
       subButtonSound.currentTime = 0;
       subButtonSound.play();
     }
+    refreshCheckin(token);
     onClose();
   };
 

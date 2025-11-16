@@ -53,16 +53,16 @@ const Attend = ({ handleAttend, images, refreshMember }: AttendProps) => {
     });
   }, [checkin]);
 
-  useEffect(() => {
-    const getDailyCheckin = async () => {
-      try {
-        const response = await selectDailyCheckin(token);
-        setCheckin(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
+  const getDailyCheckin = async () => {
+    try {
+      const response = await selectDailyCheckin(token);
+      setCheckin(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
+  useEffect(() => {
     getDailyCheckin();
   }, []);
 
@@ -108,7 +108,9 @@ const Attend = ({ handleAttend, images, refreshMember }: AttendProps) => {
 
   return (
     <>
-      {reward >= 0 && <AttendReward index={reward} onClose={handleRewardClose} images={images} />}
+      {reward >= 0 && (
+        <AttendReward index={reward} onClose={handleRewardClose} images={images} refreshCheckin={getDailyCheckin} />
+      )}
       <div css={attendWrapperCss}>
         <ul css={attendGridCss}>
           {statuses.map((_, i) => (
