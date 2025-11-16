@@ -27,9 +27,10 @@ export const coinTextCss = css({
   color: 'white',
   position: 'absolute',
   top: '53%',
-  right: '16px',
+  right: '12px',
   transform: 'translateY(-50%)',
   fontFamily: `${theme.fonts.title}`,
+  fontSize: '15px',
 });
 
 export const bestScoreCss = css({
