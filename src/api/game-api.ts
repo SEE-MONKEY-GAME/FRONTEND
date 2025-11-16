@@ -5,7 +5,9 @@ export const createGameResult = async (token: string, score: number, coin: numbe
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Hash ${token}`,
+      Authorization: `Hash 1`,
+            // Authorization: `Hash ${token}`,
+
     },
     body: JSON.stringify({ score, coin }),
   });

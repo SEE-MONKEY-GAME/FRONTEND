@@ -124,6 +124,8 @@ class GameScene extends Phaser.Scene {
   private currentLoopKey = 'bg_jungle_loop';
   private pendingStartKey: string | null = null;
   private currentZone = 0;
+    private thiefHitEffect?: Phaser.GameObjects.Sprite; 
+
 
   private readonly ZONES = [
     { startM: 0, startKey: 'bg_jungle_start', loopKey: 'bg_jungle_loop' },
@@ -556,6 +558,8 @@ private startRocketBoost(durationMs: number, distanceM: number) {
       .image(width / 2, height / 3, 'character')
       .setOrigin(0.5)
       .setScale(this.CHARACTER_SCALE);
+      this.character.setDepth(100); 
+
     this.character.body.setBounce(1, 0);
     (this.character.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
     this.character.setCollideWorldBounds(false);
@@ -1242,25 +1246,51 @@ if ((window as any).__queuedGameStart) {
       }
     }
 
-    if ((g.getData('type') as string) === 'thief') {
-      this.coin = Math.max(0, this.coin - 5);
-      this.emitCoin(this.coin);
+  if ((g.getData('type') as string) === 'thief') {
+  this.coin = Math.max(0, this.coin - 5);
+  this.emitCoin(this.coin);
 
-      this.stopSpin();
+  this.stopSpin();
 
-      if (init.effect) {
-        this.effect_hit.play();
-      }
+  if (init.effect) {
+    this.effect_hit.play();
+  }
 
-      if (!this.thiefHitPlaying) {
-        this.thiefHitPlaying = true;
-        this.thiefHitFrame = 0;
-        this.thiefHitAccMs = 0;
+  if (!this.thiefHitPlaying) {
+    this.thiefHitPlaying = true;
+    this.thiefHitFrame = 0;
+    this.thiefHitAccMs = 0;
 
-        this.character.setTexture('hit_thief');
-        this.character.setFrame(0);
-      }
+    this.character.setTexture('hit_block');
+
+    if (this.thiefHitEffect) {
+      this.thiefHitEffect.destroy();
+      this.thiefHitEffect = undefined;
     }
+
+    const effect = this.add
+      .sprite(this.character.x, this.character.y, 'hit_thief')
+      .setOrigin(0.5, 0.5);
+
+    const baseW = effect.width; 
+    const targetW = this.character.displayWidth * 3.0; 
+    effect.setScale(targetW / baseW);
+
+    effect.setDepth(this.character.depth - 1);
+
+    effect.play('hit_thief_anim');
+
+    effect.on('animationcomplete', () => {
+      effect.destroy();
+      if (this.thiefHitEffect === effect) {
+        this.thiefHitEffect = undefined;
+      }
+    });
+
+    this.thiefHitEffect = effect;
+  }
+}
+
   }
 
   // 프레임 루프
@@ -1364,24 +1394,28 @@ if (this.rocketActive) {
     }
 
     if (this.thiefHitPlaying) {
-      this.thiefHitAccMs += delta;
-      const frameDur = 1000 / this.THIEF_HIT_FPS;
+  this.thiefHitAccMs += delta;
+  const frameDur = 1000 / this.THIEF_HIT_FPS;
 
-      while (this.thiefHitAccMs >= frameDur && this.thiefHitPlaying) {
-        this.thiefHitAccMs -= frameDur;
-        this.thiefHitFrame++;
+  while (this.thiefHitAccMs >= frameDur && this.thiefHitPlaying) {
+    this.thiefHitAccMs -= frameDur;
+    this.thiefHitFrame++;
 
-        if (this.thiefHitFrame >= this.THIEF_HIT_TOTAL_FRAMES) {
-          this.thiefHitPlaying = false;
-          const vy = cBody.velocity.y;
-          if (vy === 0) this.setPose('sit');
-          else if (vy > 0) this.setPose('character');
-          else this.applyNormalJumpPose();
-        } else {
-          this.character.setFrame(this.thiefHitFrame);
-        }
-      }
-    } else if (this.isHitFlash) {
+    if (this.thiefHitFrame >= this.THIEF_HIT_TOTAL_FRAMES) {
+      // 🔽 애니메이션 한 사이클 끝
+      this.thiefHitPlaying = false;
+
+      // 원래 캐릭터 텍스처로 복귀
+      this.character.setTexture('character');
+
+      const vy = cBody.velocity.y;
+      if (vy === 0) this.setPose('sit');
+      else if (vy > 0) this.setPose('character');
+      else this.applyNormalJumpPose();
+    }
+  }
+}
+else if (this.isHitFlash) {
       if (this.time.now >= this.hitFlashUntil) {
         this.isHitFlash = false;
         const vy = cBody.velocity.y;
