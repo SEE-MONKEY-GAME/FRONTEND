@@ -5,7 +5,7 @@ import { theme } from '@styles/tokens';
 export const coinCss = (images: ImagesProps) =>
   css({
     position: 'absolute',
-    top: 28,
+    top: 48,
     left: 0,
     width: '110px',
     height: '40px',
@@ -29,7 +29,7 @@ export const coinTextCss = css({
 
 export const currentScoreCss = css({
   position: 'absolute',
-  top: 32,
+  top: 54,
   left: '50%',
   transform: 'translateX(-50%)',
   pointerEvents: 'none',
@@ -43,7 +43,7 @@ export const currentScoreCss = css({
 
 export const feverWrapCss = css({
   position: 'absolute',
-  top: 64,
+  top: 80,
   left: '50%',
   transform: 'translateX(-50%)',
   width: 320,
