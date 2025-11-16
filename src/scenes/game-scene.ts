@@ -443,6 +443,13 @@ class GameScene extends Phaser.Scene {
     this.scene.restart();
   };
 
+ private onUseExtraLife = () => {
+  if (!this.scene.isActive()) return;
+  if (!this.gameOver) return;
+
+  this.reviveWithExtraLife();
+}; 
+
   constructor() {
     super('GameScene');
   }
@@ -526,6 +533,12 @@ private startRocketBoost(durationMs: number, distanceM: number) {
     this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
       window.removeEventListener('game:replay', this.onReplay);
     });
+
+      window.addEventListener('game:extra-life', this.onUseExtraLife);
+  this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+    window.removeEventListener('game:extra-life', this.onUseExtraLife);
+  });
+
 
     this.anims.create({
       key: 'gori_block_walk',
@@ -901,6 +914,59 @@ if ((window as any).__queuedGameStart) {
 
     this.setPose('jump');
   }
+
+  private reviveWithExtraLife() {
+  
+  if (!this.character) return;
+
+  this.tweens.killTweensOf(this.character);
+
+  this.lives = 1;
+  this.refreshLivesUI();
+
+  this.gameOver = false;
+  this.physics.resume();
+  this.input.enabled = true;
+
+  const { width, height } = this.cameras.main;
+  const spawnY = height / 3;
+
+  this.isRespawning = true;
+  this.respawnTargetY = spawnY;
+
+
+  this.character.enableBody(true, width / 2, height + this.RESPAWN_OFFSET, true, true);
+  this.character
+    .setTexture('character')
+    .setScale(this.CHARACTER_SCALE)
+    .setOrigin(0.5)
+    .setCollideWorldBounds(false)
+    .setAlpha(0.5);
+
+  const body = this.character.body as Phaser.Physics.Arcade.Body;
+  body.setVelocity(0, 0);
+  body.setAllowGravity(true);
+
+  const g = this.physics.world.gravity.y;
+  const deltaH = Math.max(0, this.character.y - this.respawnTargetY);
+  const v0 = Math.sqrt(2 * g * deltaH);
+  body.setVelocityX(0);
+  body.setVelocityY(-v0);
+
+  this.tweens.add({
+    targets: this.character,
+    alpha: { from: 0.6, to: 1 },
+    duration: 100,
+    yoyo: true,
+    repeat: -1,
+    ease: 'Sine.InOut',
+  });
+
+  this.setPose('jump', true);
+
+  this.lastYForScore = this.character.y;
+}
+
 
   private checkOffscreenAndProcess() {
     if (!this.character.active) return;
@@ -1299,7 +1365,7 @@ if ((window as any).__queuedGameStart) {
     const cBody = this.character.body as Phaser.Physics.Arcade.Body;
 
 if (this.rocketActive) {
-  const dt = delta; // ms
+  const dt = delta; 
   const totalPx = this.rocketDistanceM * this.PX_PER_M;
   const speedPxPerMs = totalPx / this.rocketDurationMs;
   const stepPx = speedPxPerMs * dt;
@@ -1402,10 +1468,8 @@ if (this.rocketActive) {
     this.thiefHitFrame++;
 
     if (this.thiefHitFrame >= this.THIEF_HIT_TOTAL_FRAMES) {
-      // 🔽 애니메이션 한 사이클 끝
       this.thiefHitPlaying = false;
 
-      // 원래 캐릭터 텍스처로 복귀
       this.character.setTexture('character');
 
       const vy = cBody.velocity.y;
