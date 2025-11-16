@@ -7,10 +7,12 @@ const Toast = () => {
       <Toaster
         position="top-center"
         reverseOrder={false}
+        containerStyle={{
+          top: '72px',
+        }}
         toastOptions={{
-          duration: 2000,
+          duration: 1000,
           style: {
-            marginTop: '8px',
             background: '#2D2D2D',
             color: 'white',
             fontFamily: `${fonts.title}`,
