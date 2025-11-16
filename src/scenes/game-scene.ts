@@ -84,6 +84,20 @@ class GameScene extends Phaser.Scene {
   private readonly CHARACTER_SCALE = 0.13;
 
   private spinTween?: Phaser.Tweens.Tween;
+  private rocketActive = false;
+  private rocketEndTime = 0;
+  private readonly ROCKET_DURATION = 5000;   
+  private readonly ROCKET_DISTANCE_M = 801;
+  private rocketDurationMs = 0;
+  private rocketDistanceM = 0;
+
+  private rocketFrameTimer?: Phaser.Time.TimerEvent;
+  private rocketFrameIndex = 0;
+
+  // 로켓 아이템 스폰용
+  private rocketGroup!: Phaser.Physics.Arcade.Group;
+  private readonly ROCKET_SPAWN_PROB_PER_SLOT = 0.05; 
+  private readonly ROCKET_SCALE = 0.16;
 
   // 장애물
   private gorillaGroup!: Phaser.Physics.Arcade.Group;
@@ -381,8 +395,6 @@ class GameScene extends Phaser.Scene {
     this.feverActive = false;
     this.feverProgress = 0;
     this.destroyFeverOverlay();
-
-    // 모든 타이머/트윈/리스너 정리
     this.tweens.killAll();
     this.time.removeAllEvents();
 
@@ -410,6 +422,9 @@ class GameScene extends Phaser.Scene {
     this.feverActive = false;
     this.feverProgress = 0;
     this.destroyFeverOverlay();
+
+  this.tweens.killAll();
+  this.time.removeAllEvents();
 
     // 재시작
     this.physics.resume();
@@ -439,6 +454,47 @@ class GameScene extends Phaser.Scene {
   private FEVER_OVERLAY_DEPTH = -900;
   private FEVER_ALPHA = 0.9;
   private FEVER_OVERLAP_PX = 2;
+
+private startRocketBoost(durationMs: number, distanceM: number) {
+  this.rocketActive = true;
+  this.rocketDurationMs = durationMs;
+  this.rocketDistanceM = distanceM;
+  this.rocketEndTime = this.time.now + durationMs;
+
+  const { height } = this.cameras.main;
+  const cBody = this.character.body as Phaser.Physics.Arcade.Body;
+
+  if (this.character.y > height * 0.75) {
+    this.character.setY(height * 0.75);
+  }
+
+  cBody.setVelocity(0, 0);
+  cBody.setAllowGravity(false); 
+
+  this.character.setTexture('rocketmotion', 0);
+  this.character.setOrigin(0.5, 0.5);
+  this.character.setScale(0.18); 
+
+  if (this.rocketFrameTimer) {
+    this.rocketFrameTimer.remove();
+    this.rocketFrameTimer = undefined;
+  }
+
+  this.rocketFrameIndex = 0;
+  this.rocketFrameTimer = this.time.addEvent({
+    delay: 1000 / 6,
+    loop: true,
+    callback: () => {
+      this.rocketFrameIndex = (this.rocketFrameIndex + 1) % 2;
+      this.character.setFrame(this.rocketFrameIndex);
+    },
+  });
+
+  this.lastYForScore = this.character.y;
+  this.prevCharY = this.character.y;
+  this.prevVy = 0;
+}
+
 
   create() {
     const { width, height } = this.cameras.main;
@@ -487,6 +543,13 @@ class GameScene extends Phaser.Scene {
       frameRate: 12,
       repeat: 0,
     });
+    this.anims.create({
+  key: 'rocketmotion_loop',
+  frames: this.anims.generateFrameNumbers('rocketmotion', { start: 0, end: 1 }),
+  frameRate: 6,  
+  repeat: -1,
+});
+
 
     // 캐릭터
     this.character = this.physics.add
@@ -511,40 +574,76 @@ class GameScene extends Phaser.Scene {
 
     // 카운트다운
     const countdown = this.add
-      .image(width / 2, height / 2, 'num3')
-      .setOrigin(0.5)
-      .setScale(0.6)
-      .setDepth(9999)
-      .setScrollFactor(0);
+  .image(width / 2, height / 2, 'num3')
+  .setOrigin(0.5)
+  .setScale(0.6)
+  .setDepth(9999)
+  .setScrollFactor(0)
+  .setVisible(false); 
 
-    const playFlash = () => {
-      countdown.setScale(0.3);
-      this.tweens.add({ targets: countdown, scale: 0.6, duration: 300, ease: 'Back.Out' });
-    };
-    playFlash();
-    if (init.effect) {
-      this.time.delayedCall(1000, () => {
+const playFlash = () => {
+  countdown.setScale(0.3);
+  this.tweens.add({ targets: countdown, scale: 0.6, duration: 300, ease: 'Back.Out' });
+};
+
+const startCountdown = () => {
+  countdown.setVisible(true);
+  countdown.setTexture('num3'); 
+  playFlash();
+  
+      const init = (this.game as any).INIT_SOUND_STATE;
+      if (init.effect) {
         this.effect_count_down = this.sound.add('count_down_sound', { volume: 0.5 });
         this.effect_count_down.play();
-      });
-    }
-    this.time.delayedCall(2000, () => {
-      countdown.setTexture('num2');
-      playFlash();
-    });
-    this.time.delayedCall(3000, () => {
-      countdown.setTexture('num1');
-      playFlash();
-    });
-    this.time.delayedCall(4000, () => {
-      (this.character.body as Phaser.Physics.Arcade.Body).setAllowGravity(true);
-      countdown.destroy();
-    });
+      }
+
+  this.time.delayedCall(1000, () => { countdown.setTexture('num2'); playFlash(); });
+  this.time.delayedCall(2000, () => { countdown.setTexture('num1'); playFlash(); });
+  this.time.delayedCall(3000, () => {
+    (this.character.body as Phaser.Physics.Arcade.Body).setAllowGravity(true);
+    countdown.destroy();
+  });
+};
+
+const startRocketBoost = () => {
+    const w = window as any;
+  w.__queuedGameStart = false;
+  w.__rocketStart = false;
+
+  this.startRocketBoost(this.ROCKET_DURATION, this.ROCKET_DISTANCE_M);
+};
+
+
+
+const onPlay = () => {
+  const w = window as any;
+  if (w.__rocketStart) {
+    startRocketBoost();
+  } else {
+    w.__queuedGameStart = false;
+    startCountdown();
+  }
+};
+
+window.addEventListener('game:play', onPlay);
+this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+  window.removeEventListener('game:play', onPlay);
+});
+
+if ((window as any).__queuedGameStart) {
+  const w = window as any;
+  if (w.__rocketStart) {
+    startRocketBoost();
+  } else {
+    w.__queuedGameStart = false;
+    startCountdown();
+  }
+}
+
 
     this.prevBarX = this.bar.x;
     this.prevCharY = this.character.y;
 
-    // 점수 초기화
     this.totalAscentPx = 0;
     this.lastYForScore = this.character.y;
     this.lastEmittedMeters = -1;
@@ -597,6 +696,15 @@ class GameScene extends Phaser.Scene {
         if (!go || typeof go.getData !== 'function' || !go.active) return false;
         return !go.getData('collected');
       },
+      this,
+    );
+
+  this.rocketGroup = this.physics.add.group({ allowGravity: false, immovable: true });
+    this.physics.add.overlap(
+      this.character,
+      this.rocketGroup,
+      (_ch, item) => this.collectRocket(item as Phaser.Types.Physics.Arcade.ImageWithDynamicBody),
+      undefined,
       this,
     );
 
@@ -909,6 +1017,7 @@ class GameScene extends Phaser.Scene {
     }
   }
 
+
   private collectBanana(item: Phaser.Types.Physics.Arcade.ImageWithDynamicBody) {
     if (!item.active || item.getData('collected')) return;
     item.setData('collected', true);
@@ -930,11 +1039,7 @@ class GameScene extends Phaser.Scene {
       onComplete: () => ghost.destroy(),
     });
 
-    this.coin += val;
-    this.emitCoin(this.coin);
-
     const init = (this.game as any).INIT_SOUND_STATE;
-
     if (init.effect) {
       this.effect_nbanana = this.sound.add('banana_1_sound', { volume: 0.5 });
       this.effect_bbanana = this.sound.add('banana_2_sound', { volume: 0.5 });
@@ -953,6 +1058,9 @@ class GameScene extends Phaser.Scene {
       }
     }
 
+    this.coin += val;
+    this.emitCoin(this.coin);
+
     if (this.feverActive) {
       this.emitFever(0, true, Math.max(0, this.feverUntil - this.time.now));
     } else {
@@ -961,11 +1069,75 @@ class GameScene extends Phaser.Scene {
       if (this.feverProgress >= this.FEVER_GOAL) this.startFever();
     }
 
+    if (this.rocketActive) {
+      return;
+    }
+
     const cBody = this.character.body as Phaser.Physics.Arcade.Body;
     let dir: 'up' | 'left' | 'right' = 'up';
-    if (Math.abs(cBody.velocity.x) > 10) dir = cBody.velocity.x < 0 ? 'left' : 'right';
+    if (Math.abs(cBody.velocity.x) > 10) {
+      dir = cBody.velocity.x < 0 ? 'left' : 'right';
+    }
     const isGold = tex === 'gbana' || val >= 10;
     this.triggerItemPose(dir, { spin: isGold });
+  }
+
+
+
+    private spawnRocket() {
+    const { width } = this.cameras.main;
+
+    const x = Phaser.Math.Between(48, Math.max(52, width - 48));
+    const startScreenY = -Phaser.Math.Between(80, 160);
+    const spawnScroll = this.scrollY;
+
+    const rocket = this.rocketGroup.create(x, 0, 'rocket') as Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
+    rocket.setScale(this.ROCKET_SCALE).setOrigin(0.5);
+    rocket.body.setAllowGravity(false).setImmovable(true);
+
+    rocket.setData('startScreenY', startScreenY);
+    rocket.setData('spawnScroll', spawnScroll);
+
+    rocket.setY(startScreenY);
+
+    const radius = Math.max(14, rocket.displayWidth * 0.35);
+    rocket.body.setCircle(radius, rocket.displayWidth * 0.5 - radius, rocket.displayHeight * 0.5 - radius);
+  }
+
+   private updateRockets() {
+    const { height } = this.cameras.main;
+    const toKill: Phaser.GameObjects.GameObject[] = [];
+
+    this.rocketGroup.children.iterate((child: Phaser.GameObjects.GameObject) => {
+      const item = child as Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
+      if (!item.active) return true;
+
+      const startScreenY = Number(item.getData('startScreenY') ?? 0);
+      const spawnScroll = Number(item.getData('spawnScroll') ?? 0);
+
+      const y = startScreenY + (this.scrollY - spawnScroll);
+      item.setY(y);
+
+      if (y > height + 80) toKill.push(item);
+
+      return true;
+    });
+
+    for (const it of toKill) {
+      (it as Phaser.Types.Physics.Arcade.ImageWithDynamicBody).disableBody(true, true);
+      it.destroy();
+    }
+  }
+
+    private collectRocket(item: Phaser.Types.Physics.Arcade.ImageWithDynamicBody) {
+    if (!item.active) return;
+
+    item.disableBody(true, true);
+    item.destroy();
+
+    if (this.rocketActive) return;
+
+    this.startRocketBoost(2000, 240);
   }
 
   // 고릴라
@@ -1044,6 +1216,8 @@ class GameScene extends Phaser.Scene {
 
   private hitGorilla(g: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {
     if (this.isRespawning) return;
+    if (this.rocketActive) return;
+
 
     const hitUntil = Number(g.getData('hitUntil') ?? 0);
     if (this.time.now < hitUntil) return;
@@ -1093,6 +1267,63 @@ class GameScene extends Phaser.Scene {
   update(_time: number, delta: number) {
     if (!this.character.active || this.gameOver) return;
     const cBody = this.character.body as Phaser.Physics.Arcade.Body;
+
+if (this.rocketActive) {
+  const dt = delta; // ms
+  const totalPx = this.rocketDistanceM * this.PX_PER_M;
+  const speedPxPerMs = totalPx / this.rocketDurationMs;
+  const stepPx = speedPxPerMs * dt;
+
+  this.totalAscentPx += stepPx;
+  const meters = Math.floor(this.totalAscentPx / this.PX_PER_M);
+  this.emitScore(meters);
+
+  this.scrollY += stepPx;
+  this.lastSpawnScrollY = this.scrollY;
+
+  this.updateSegmentsY();
+  this.cullBelow();
+  this.handleZoneTransition();
+  this.fillAbove();
+
+  if (this.feverActive) {
+    this.updateFeverSegmentsY();
+    this.cullFeverBelow();
+    this.fillFeverAbove();
+    this.fillFeverBelow();
+  }
+
+  this.updateBananas();
+  this.updateGorillas(delta);
+  this.updateRockets();
+
+  cBody.setVelocity(0, 0);
+
+  if (this.time.now >= this.rocketEndTime) {
+    this.rocketActive = false;
+
+    if (this.rocketFrameTimer) {
+      this.rocketFrameTimer.remove();
+      this.rocketFrameTimer = undefined;
+    }
+
+    this.character.setTexture('character');
+    this.character.setOrigin(0.5, 0.5);
+    this.character.setScale(this.CHARACTER_SCALE);
+
+    cBody.setAllowGravity(true);
+    cBody.setVelocityY(100);
+
+    this.lastYForScore = this.character.y;
+    this.prevCharY = this.character.y;
+    this.prevVy = cBody.velocity.y;
+  }
+
+  return;
+}
+
+
+
 
     this.jumpedThisFrame = false;
 
@@ -1208,6 +1439,10 @@ class GameScene extends Phaser.Scene {
           ) {
             this.spawnGorilla();
           }
+
+           if (Math.random() < this.ROCKET_SPAWN_PROB_PER_SLOT) {
+    this.spawnRocket();
+  }
         }
       }
     }
@@ -1216,6 +1451,8 @@ class GameScene extends Phaser.Scene {
 
     this.updateBananas();
     this.updateGorillas(delta);
+        this.updateRockets(); 
+
 
     this.updateSegmentsY();
     this.cullBelow();
