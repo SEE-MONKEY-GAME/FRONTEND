@@ -811,29 +811,32 @@ class GameScene extends Phaser.Scene {
     this.emitCoin(this.coin);
     this.emitFever(0, false, 0);
 
-    const w = window as any;
-    const token = w.__GAME_TOKEN;
+  const w = window as any;
+    const token = w.__GAME_TOKEN; 
 
-    if (token) {
-      selectMemberData(token)
-        .then((res: any) => {
-          const data = res.data;
+      if (token) {
+    selectMemberData(token)
+      .then((res: any) => {
+        const data = res.data;
 
-          const equipment = data?.equipment ?? [];
-          if (Array.isArray(equipment) && equipment.length > 0) {
-            const first = equipment[0];
-            this.costumeCode = first.code;
-            this.character.setTexture(this.getTex('character'));
-          } else {
-            this.costumeCode = null;
-          }
-        })
-        .catch((err) => {
-          console.error('selectMemberData ERROR:', err);
-        });
-    } else {
-      console.warn('GAME_TOKEN이 없습니다. window.__GAME_TOKEN에 토큰을 넣어주세요.');
-    }
+        const equipment = data?.equipment ?? [];
+        if (Array.isArray(equipment) && equipment.length > 0) {
+          const first = equipment[0];       
+          this.costumeCode = first.code;    
+          this.character.setTexture(this.getTex('character'));
+        } else {
+          this.costumeCode = null; 
+        }
+      })
+      .catch((err) => {
+        console.error('selectMemberData ERROR:', err);
+      });
+  } else {
+    console.warn('GAME_TOKEN이 없습니다. window.__GAME_TOKEN에 토큰을 넣어주세요.');
+
+    startCountdown();
+  }
+
   }
 
   // 라이프 UI
