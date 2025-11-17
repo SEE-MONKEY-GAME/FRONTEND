@@ -6,7 +6,6 @@ import FeverGauge from '@components/fever-gauge';
 import GameOverModal from '@components/gameover-modal';
 import HeartPrompt from '@components/heartprompt';
 import RocketPrompt from '@components/rocketprompt';
-import { useToken } from '@context/user-context';
 import { FEVER_DURATION_MS } from '@scenes/game-scene';
 import { circleCss, coinCss, coinTextCss, currentScoreCss, feverEmptyCss, feverWrapCss } from '@styles/pages/game.css';
 import { useToken } from '@context/user-context';
@@ -47,7 +46,8 @@ export default function GamePage() {
  const [hasRocketItem, setHasRocketItem] = useState(false);
   const [hasHeartItem, setHasHeartItem] = useState(false);
 
-  const { token } = useToken();
+  // const { token } = useToken();
+  const { token: realToken } = useToken(); const token = '1';
   
 useEffect(() => {
   (window as any).__GAME_TOKEN = token;
