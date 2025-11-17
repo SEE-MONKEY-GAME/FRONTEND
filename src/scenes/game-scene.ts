@@ -837,7 +837,6 @@ class GameScene extends Phaser.Scene {
   } else {
     console.warn('GAME_TOKEN이 없습니다. window.__GAME_TOKEN에 토큰을 넣어주세요.');
 
-    // ✅ 토큰 없으면: 장비조회 안 하고, 바로 일반 카운트다운으로 시작
     console.log('[GameScene] no GAME_TOKEN -> startCountdown immediately');
     startCountdown();
   }
