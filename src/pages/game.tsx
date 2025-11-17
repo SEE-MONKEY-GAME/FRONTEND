@@ -7,6 +7,7 @@ import RocketPrompt from '@components/rocketprompt';
 import HeartPrompt from '@components/heartprompt'; 
 import { FEVER_DURATION_MS } from '@scenes/game-scene';
 import { circleCss, coinCss, coinTextCss, currentScoreCss, feverEmptyCss, feverWrapCss } from '@styles/pages/game.css';
+import { useToken } from '@context/user-context';
 
 export interface ImagesProps {
   empty_guage_bar: string;
@@ -39,6 +40,10 @@ export default function GamePage() {
   const [showHeartPrompt, setShowHeartPrompt] = useState(false); 
   const [hasShownHeartPromptInRun, setHasShownHeartPromptInRun] = useState(false); 
 
+  const { token } = useToken();
+useEffect(() => {
+  (window as any).__GAME_TOKEN = token;
+}, [token]);
 
 
   useEffect(() => {

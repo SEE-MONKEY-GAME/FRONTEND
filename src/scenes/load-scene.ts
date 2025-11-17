@@ -261,10 +261,10 @@ class LoadScene extends Phaser.Scene {
     this.load.image('gameover-tab', this.reactImages['gameover-tab']);
 
     this.load.image('bar', getImage('game', 'bar'));
-    this.load.image('character', getImage('game', 'character'));
     this.load.image('num3', getImage('game', '3'));
     this.load.image('num2', getImage('game', '2'));
     this.load.image('num1', getImage('game', '1'));
+    this.load.image('character', getImage('game', 'character'));
     this.load.image('sit', getImage('game', 'sit-monkey'));
     this.load.image('jump', getImage('game', 'jump-monkey'));
     this.load.image('ljump', getImage('game', 'ljump-monkey'));
@@ -272,6 +272,18 @@ class LoadScene extends Phaser.Scene {
     this.load.image('jump_item', getImage('game', 'jump-monkey-item'));
     this.load.image('ljump_item', getImage('game', 'ljump-monkey-item'));
     this.load.image('rjump_item', getImage('game', 'rjump-monkey-item'));
+    this.load.image('hit_block', getImage('game', 'hit-blockgoril'));
+
+   this.load.image('SCARF-001-character', getImage('game', 'SCARF-001-character'));
+    this.load.image('SCARF-001-sit', getImage('game', 'SCARF-001-sit-monkey'));
+    this.load.image('SCARF-001-jump', getImage('game', 'SCARF-001-jump-monkey'));
+    this.load.image('SCARF-001-ljump', getImage('game', 'SCARF-001-ljump-monkey'));
+    this.load.image('SCARF-001-rjump', getImage('game', 'SCARF-001-rjump-monkey'));
+    this.load.image('SCARF-001-jump_item', getImage('game', 'SCARF-001-jump-monkey-item'));
+    this.load.image('SCARF-001-ljump_item', getImage('game', 'SCARF-001-ljump-monkey-item'));
+    this.load.image('SCARF-001-jump_item', getImage('game', 'SCARF-001-rjump-monkey-item'));
+    this.load.image('SCARF-001-hit_block', getImage('game', 'SCARF-001-hit-blockgoril'));
+
     this.load.image('flife', getImage('game', 'life_full'));
     this.load.image('elife', getImage('game', 'life_empty'));
     this.load.image('nbana', getImage('game', 'banana_normal'));
@@ -296,7 +308,6 @@ class LoadScene extends Phaser.Scene {
       frameWidth: 502,
       frameHeight: 883,
     });
-    this.load.image('hit_monkey_thief', getImage('game', 'hit_monkey_thief'));
 
     this.load.image('bg_jungle_start', getImage('game', 'bg_jungle_start'));
     this.load.image('bg_jungle_loop', getImage('game', 'bg_jungle_loop'));
@@ -305,7 +316,6 @@ class LoadScene extends Phaser.Scene {
     this.load.image('bg_space_start', getImage('game', 'bg_space_start'));
     this.load.image('bg_space_loop', getImage('game', 'bg_space_loop'));
     this.load.image('bg_fever', getImage('game', 'bg_fever'));
-    this.load.image('hit_block', getImage('game', 'hit-blockgoril'));
     this.load.spritesheet('hit_thief', getImage('game', 'hit-thiefgoril'), {
       frameWidth: 630,
       frameHeight: 630,
