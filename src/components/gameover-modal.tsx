@@ -16,6 +16,7 @@ import {
   statWrapCss,
   titleCss,
 } from '@styles/pages/game.css';
+import { shareMessage } from '@utils/share-message';
 import { submitScore } from '@utils/submit-score';
 
 type Props = {
@@ -58,6 +59,10 @@ export default function GameOverModal({ open, score, coin, onClose, onReplay, im
     }
   };
 
+  const shareGame = () => {
+    shareMessage(score);
+  };
+
   return (
     <div css={overlayCss} role="dialog" aria-modal="true" aria-label="Game Over">
       <div css={panelCss(images)}>
@@ -86,7 +91,7 @@ export default function GameOverModal({ open, score, coin, onClose, onReplay, im
             <img src={images.retry} alt="replay" />
           </button>
 
-          <button css={iconBtnCss} type="button" onClick={() => console.log('share clicked')}>
+          <button css={iconBtnCss} type="button" onClick={shareGame}>
             <img src={images.share} alt="share" />
           </button>
         </div>
