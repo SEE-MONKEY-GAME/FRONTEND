@@ -87,7 +87,7 @@ class GameScene extends Phaser.Scene {
   private spinTween?: Phaser.Tweens.Tween;
   private rocketActive = false;
   private rocketEndTime = 0;
-  private readonly ROCKET_DURATION = 5000;   
+  private readonly ROCKET_DURATION = 5000;
   private readonly ROCKET_DISTANCE_M = 801;
   private rocketDurationMs = 0;
   private rocketDistanceM = 0;
@@ -97,7 +97,7 @@ class GameScene extends Phaser.Scene {
 
   // 로켓 아이템 스폰용
   private rocketGroup!: Phaser.Physics.Arcade.Group;
-  private readonly ROCKET_SPAWN_PROB_PER_SLOT = 0.05; 
+  private readonly ROCKET_SPAWN_PROB_PER_SLOT = 0.05;
   private readonly ROCKET_SCALE = 0.16;
 
   // 장애물
@@ -125,8 +125,7 @@ class GameScene extends Phaser.Scene {
   private currentLoopKey = 'bg_jungle_loop';
   private pendingStartKey: string | null = null;
   private currentZone = 0;
-    private thiefHitEffect?: Phaser.GameObjects.Sprite; 
-
+  private thiefHitEffect?: Phaser.GameObjects.Sprite;
 
   private readonly ZONES = [
     { startM: 0, startKey: 'bg_jungle_start', loopKey: 'bg_jungle_loop' },
@@ -266,8 +265,14 @@ class GameScene extends Phaser.Scene {
     const baseTopY = Math.round(baseTopMost.startTop + (this.scrollY - baseTopMost.spawnScroll));
 
     this.createFeverSegment(baseTopY, true);
+
     this.feverBgm = this.sound.add('fever_time_bgm', { loop: true, volume: 0.4 });
-    this.feverBgm.play();
+    const init = (this.game as any).INIT_SOUND_STATE;
+
+    if (init.bgm) {
+      this.feverBgm.play();
+      this.bgm?.stop();
+    }
 
     this.fillFeverAbove();
     this.fillFeverBelow();
@@ -275,11 +280,18 @@ class GameScene extends Phaser.Scene {
 
   private destroyFeverOverlay() {
     this.feverSegs.forEach((s) => s.img.destroy());
-    this.feverBgm?.destroy();
+
+    const init = (this.game as any).INIT_SOUND_STATE;
+
+    if (init.bgm) {
+      this.bgm?.play();
+      this.feverBgm?.destroy();
+    }
+
     this.feverSegs = [];
   }
 
-   private showFeverTitle() {
+  private showFeverTitle() {
     const { width, height } = this.cameras.main;
 
     if (this.feverTitle) {
@@ -288,10 +300,10 @@ class GameScene extends Phaser.Scene {
       this.feverTitle = undefined;
     }
 
-    const startX = width / 2 +100;   
-    const centerX = width / 2;    
-    const endX = width / 2 - 100;           
-    const y = height * 0.35;      
+    const startX = width / 2 + 100;
+    const centerX = width / 2;
+    const endX = width / 2 - 100;
+    const y = height * 0.35;
 
     this.time.delayedCall(100, () => {
       const title = this.add
@@ -302,7 +314,6 @@ class GameScene extends Phaser.Scene {
         .setAlpha(0);
 
       this.feverTitle = title;
-
 
       this.tweens.add({
         targets: title,
@@ -478,8 +489,8 @@ class GameScene extends Phaser.Scene {
     this.feverProgress = 0;
     this.destroyFeverOverlay();
 
-  this.tweens.killAll();
-  this.time.removeAllEvents();
+    this.tweens.killAll();
+    this.time.removeAllEvents();
 
     // 재시작
     this.physics.resume();
@@ -496,12 +507,12 @@ class GameScene extends Phaser.Scene {
     this.scene.restart();
   };
 
- private onUseExtraLife = () => {
-  if (!this.scene.isActive()) return;
-  if (!this.gameOver) return;
+  private onUseExtraLife = () => {
+    if (!this.scene.isActive()) return;
+    if (!this.gameOver) return;
 
-  this.reviveWithExtraLife();
-}; 
+    this.reviveWithExtraLife();
+  };
 
   constructor() {
     super('GameScene');
@@ -517,46 +528,45 @@ class GameScene extends Phaser.Scene {
   private FEVER_ALPHA = 0.9;
   private FEVER_OVERLAP_PX = 2;
 
-private startRocketBoost(durationMs: number, distanceM: number) {
-  this.rocketActive = true;
-  this.rocketDurationMs = durationMs;
-  this.rocketDistanceM = distanceM;
-  this.rocketEndTime = this.time.now + durationMs;
+  private startRocketBoost(durationMs: number, distanceM: number) {
+    this.rocketActive = true;
+    this.rocketDurationMs = durationMs;
+    this.rocketDistanceM = distanceM;
+    this.rocketEndTime = this.time.now + durationMs;
 
-  const { height } = this.cameras.main;
-  const cBody = this.character.body as Phaser.Physics.Arcade.Body;
+    const { height } = this.cameras.main;
+    const cBody = this.character.body as Phaser.Physics.Arcade.Body;
 
-  if (this.character.y > height * 0.75) {
-    this.character.setY(height * 0.75);
+    if (this.character.y > height * 0.75) {
+      this.character.setY(height * 0.75);
+    }
+
+    cBody.setVelocity(0, 0);
+    cBody.setAllowGravity(false);
+
+    this.character.setTexture('rocketmotion', 0);
+    this.character.setOrigin(0.5, 0.5);
+    this.character.setScale(0.18);
+
+    if (this.rocketFrameTimer) {
+      this.rocketFrameTimer.remove();
+      this.rocketFrameTimer = undefined;
+    }
+
+    this.rocketFrameIndex = 0;
+    this.rocketFrameTimer = this.time.addEvent({
+      delay: 1000 / 6,
+      loop: true,
+      callback: () => {
+        this.rocketFrameIndex = (this.rocketFrameIndex + 1) % 2;
+        this.character.setFrame(this.rocketFrameIndex);
+      },
+    });
+
+    this.lastYForScore = this.character.y;
+    this.prevCharY = this.character.y;
+    this.prevVy = 0;
   }
-
-  cBody.setVelocity(0, 0);
-  cBody.setAllowGravity(false); 
-
-  this.character.setTexture('rocketmotion', 0);
-  this.character.setOrigin(0.5, 0.5);
-  this.character.setScale(0.18); 
-
-  if (this.rocketFrameTimer) {
-    this.rocketFrameTimer.remove();
-    this.rocketFrameTimer = undefined;
-  }
-
-  this.rocketFrameIndex = 0;
-  this.rocketFrameTimer = this.time.addEvent({
-    delay: 1000 / 6,
-    loop: true,
-    callback: () => {
-      this.rocketFrameIndex = (this.rocketFrameIndex + 1) % 2;
-      this.character.setFrame(this.rocketFrameIndex);
-    },
-  });
-
-  this.lastYForScore = this.character.y;
-  this.prevCharY = this.character.y;
-  this.prevVy = 0;
-}
-
 
   create() {
     const { width, height } = this.cameras.main;
@@ -587,11 +597,10 @@ private startRocketBoost(durationMs: number, distanceM: number) {
       window.removeEventListener('game:replay', this.onReplay);
     });
 
-      window.addEventListener('game:extra-life', this.onUseExtraLife);
-  this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
-    window.removeEventListener('game:extra-life', this.onUseExtraLife);
-  });
-
+    window.addEventListener('game:extra-life', this.onUseExtraLife);
+    this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+      window.removeEventListener('game:extra-life', this.onUseExtraLife);
+    });
 
     this.anims.create({
       key: 'gori_block_walk',
@@ -612,19 +621,18 @@ private startRocketBoost(durationMs: number, distanceM: number) {
       repeat: 0,
     });
     this.anims.create({
-  key: 'rocketmotion_loop',
-  frames: this.anims.generateFrameNumbers('rocketmotion', { start: 0, end: 1 }),
-  frameRate: 6,  
-  repeat: -1,
-});
-
+      key: 'rocketmotion_loop',
+      frames: this.anims.generateFrameNumbers('rocketmotion', { start: 0, end: 1 }),
+      frameRate: 6,
+      repeat: -1,
+    });
 
     // 캐릭터
     this.character = this.physics.add
       .image(width / 2, height / 3, 'character')
       .setOrigin(0.5)
       .setScale(this.CHARACTER_SCALE);
-      this.character.setDepth(100); 
+    this.character.setDepth(100);
 
     this.character.body.setBounce(1, 0);
     (this.character.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
@@ -644,72 +652,75 @@ private startRocketBoost(durationMs: number, distanceM: number) {
 
     // 카운트다운
     const countdown = this.add
-  .image(width / 2, height / 2, 'num3')
-  .setOrigin(0.5)
-  .setScale(0.6)
-  .setDepth(9999)
-  .setScrollFactor(0)
-  .setVisible(false); 
+      .image(width / 2, height / 2, 'num3')
+      .setOrigin(0.5)
+      .setScale(0.6)
+      .setDepth(9999)
+      .setScrollFactor(0)
+      .setVisible(false);
 
-const playFlash = () => {
-  countdown.setScale(0.3);
-  this.tweens.add({ targets: countdown, scale: 0.6, duration: 300, ease: 'Back.Out' });
-};
+    const playFlash = () => {
+      countdown.setScale(0.3);
+      this.tweens.add({ targets: countdown, scale: 0.6, duration: 300, ease: 'Back.Out' });
+    };
 
-const startCountdown = () => {
-  countdown.setVisible(true);
-  countdown.setTexture('num3'); 
-  playFlash();
-  
+    const startCountdown = () => {
+      countdown.setVisible(true);
+      countdown.setTexture('num3');
+      playFlash();
+
       const init = (this.game as any).INIT_SOUND_STATE;
       if (init.effect) {
         this.effect_count_down = this.sound.add('count_down_sound', { volume: 0.5 });
         this.effect_count_down.play();
       }
 
-  this.time.delayedCall(1000, () => { countdown.setTexture('num2'); playFlash(); });
-  this.time.delayedCall(2000, () => { countdown.setTexture('num1'); playFlash(); });
-  this.time.delayedCall(3000, () => {
-    (this.character.body as Phaser.Physics.Arcade.Body).setAllowGravity(true);
-    countdown.destroy();
-  });
-};
+      this.time.delayedCall(1000, () => {
+        countdown.setTexture('num2');
+        playFlash();
+      });
+      this.time.delayedCall(2000, () => {
+        countdown.setTexture('num1');
+        playFlash();
+      });
+      this.time.delayedCall(3000, () => {
+        (this.character.body as Phaser.Physics.Arcade.Body).setAllowGravity(true);
+        countdown.destroy();
+      });
+    };
 
-const startRocketBoost = () => {
-    const w = window as any;
-  w.__queuedGameStart = false;
-  w.__rocketStart = false;
+    const startRocketBoost = () => {
+      const w = window as any;
+      w.__queuedGameStart = false;
+      w.__rocketStart = false;
 
-  this.startRocketBoost(this.ROCKET_DURATION, this.ROCKET_DISTANCE_M);
-};
+      this.startRocketBoost(this.ROCKET_DURATION, this.ROCKET_DISTANCE_M);
+    };
 
+    const onPlay = () => {
+      const w = window as any;
+      if (w.__rocketStart) {
+        startRocketBoost();
+      } else {
+        w.__queuedGameStart = false;
+        startCountdown();
+      }
+    };
 
+    window.addEventListener('game:play', onPlay);
+    this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+      window.removeEventListener('game:play', onPlay);
+    });
 
-const onPlay = () => {
-  const w = window as any;
-  if (w.__rocketStart) {
-    startRocketBoost();
-  } else {
-    w.__queuedGameStart = false;
-    startCountdown();
-  }
-};
-
-window.addEventListener('game:play', onPlay);
-this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
-  window.removeEventListener('game:play', onPlay);
-});
-
-if ((window as any).__queuedGameStart) {
-  const w = window as any;
-  if (w.__rocketStart) {
-    startRocketBoost();
-  } else {
-    w.__queuedGameStart = false;
-    startCountdown();
-  }
-}
-
+    if ((window as any).__queuedGameStart) {
+      const w = window as any;
+      if (w.__rocketStart) {
+        startRocketBoost();
+      } else {
+        w.__queuedGameStart = false;
+        startCountdown();
+      }
+    }
 
     this.prevBarX = this.bar.x;
     this.prevCharY = this.character.y;
@@ -769,7 +780,7 @@ if ((window as any).__queuedGameStart) {
       this,
     );
 
-  this.rocketGroup = this.physics.add.group({ allowGravity: false, immovable: true });
+    this.rocketGroup = this.physics.add.group({ allowGravity: false, immovable: true });
     this.physics.add.overlap(
       this.character,
       this.rocketGroup,
@@ -969,57 +980,54 @@ if ((window as any).__queuedGameStart) {
   }
 
   private reviveWithExtraLife() {
-  
-  if (!this.character) return;
+    if (!this.character) return;
 
-  this.tweens.killTweensOf(this.character);
+    this.tweens.killTweensOf(this.character);
 
-  this.lives = 1;
-  this.refreshLivesUI();
+    this.lives = 1;
+    this.refreshLivesUI();
 
-  this.gameOver = false;
-  this.physics.resume();
-  this.input.enabled = true;
+    this.gameOver = false;
+    this.physics.resume();
+    this.input.enabled = true;
 
-  const { width, height } = this.cameras.main;
-  const spawnY = height / 3;
+    const { width, height } = this.cameras.main;
+    const spawnY = height / 3;
 
-  this.isRespawning = true;
-  this.respawnTargetY = spawnY;
+    this.isRespawning = true;
+    this.respawnTargetY = spawnY;
 
+    this.character.enableBody(true, width / 2, height + this.RESPAWN_OFFSET, true, true);
+    this.character
+      .setTexture('character')
+      .setScale(this.CHARACTER_SCALE)
+      .setOrigin(0.5)
+      .setCollideWorldBounds(false)
+      .setAlpha(0.5);
 
-  this.character.enableBody(true, width / 2, height + this.RESPAWN_OFFSET, true, true);
-  this.character
-    .setTexture('character')
-    .setScale(this.CHARACTER_SCALE)
-    .setOrigin(0.5)
-    .setCollideWorldBounds(false)
-    .setAlpha(0.5);
+    const body = this.character.body as Phaser.Physics.Arcade.Body;
+    body.setVelocity(0, 0);
+    body.setAllowGravity(true);
 
-  const body = this.character.body as Phaser.Physics.Arcade.Body;
-  body.setVelocity(0, 0);
-  body.setAllowGravity(true);
+    const g = this.physics.world.gravity.y;
+    const deltaH = Math.max(0, this.character.y - this.respawnTargetY);
+    const v0 = Math.sqrt(2 * g * deltaH);
+    body.setVelocityX(0);
+    body.setVelocityY(-v0);
 
-  const g = this.physics.world.gravity.y;
-  const deltaH = Math.max(0, this.character.y - this.respawnTargetY);
-  const v0 = Math.sqrt(2 * g * deltaH);
-  body.setVelocityX(0);
-  body.setVelocityY(-v0);
+    this.tweens.add({
+      targets: this.character,
+      alpha: { from: 0.6, to: 1 },
+      duration: 100,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.InOut',
+    });
 
-  this.tweens.add({
-    targets: this.character,
-    alpha: { from: 0.6, to: 1 },
-    duration: 100,
-    yoyo: true,
-    repeat: -1,
-    ease: 'Sine.InOut',
-  });
+    this.setPose('jump', true);
 
-  this.setPose('jump', true);
-
-  this.lastYForScore = this.character.y;
-}
-
+    this.lastYForScore = this.character.y;
+  }
 
   private checkOffscreenAndProcess() {
     if (!this.character.active) return;
@@ -1052,18 +1060,14 @@ if ((window as any).__queuedGameStart) {
     this.feverUntil = this.time.now + this.FEVER_DURATION;
     this.feverProgress = 0;
     this.emitFever(0, true, this.FEVER_DURATION);
-    this.bgm?.stop();
 
     this.initFeverOverlay();
-
-    this.showFeverTitle(); 
-
+    this.showFeverTitle();
   }
 
   private stopFever() {
     this.feverActive = false;
     this.emitFever(this.feverProgress / this.FEVER_GOAL, false, 0);
-    this.bgm?.resume();
 
     this.destroyFeverOverlay();
   }
@@ -1143,7 +1147,6 @@ if ((window as any).__queuedGameStart) {
     }
   }
 
-
   private collectBanana(item: Phaser.Types.Physics.Arcade.ImageWithDynamicBody) {
     if (!item.active || item.getData('collected')) return;
     item.setData('collected', true);
@@ -1208,9 +1211,7 @@ if ((window as any).__queuedGameStart) {
     this.triggerItemPose(dir, { spin: isGold });
   }
 
-
-
-    private spawnRocket() {
+  private spawnRocket() {
     const { width } = this.cameras.main;
 
     const x = Phaser.Math.Between(48, Math.max(52, width - 48));
@@ -1230,7 +1231,7 @@ if ((window as any).__queuedGameStart) {
     rocket.body.setCircle(radius, rocket.displayWidth * 0.5 - radius, rocket.displayHeight * 0.5 - radius);
   }
 
-   private updateRockets() {
+  private updateRockets() {
     const { height } = this.cameras.main;
     const toKill: Phaser.GameObjects.GameObject[] = [];
 
@@ -1255,7 +1256,7 @@ if ((window as any).__queuedGameStart) {
     }
   }
 
-    private collectRocket(item: Phaser.Types.Physics.Arcade.ImageWithDynamicBody) {
+  private collectRocket(item: Phaser.Types.Physics.Arcade.ImageWithDynamicBody) {
     if (!item.active) return;
 
     item.disableBody(true, true);
@@ -1344,7 +1345,6 @@ if ((window as any).__queuedGameStart) {
     if (this.isRespawning) return;
     if (this.rocketActive) return;
 
-
     const hitUntil = Number(g.getData('hitUntil') ?? 0);
     if (this.time.now < hitUntil) return;
     g.setData('hitUntil', this.time.now + this.GORILLA_HIT_COOLDOWN);
@@ -1368,51 +1368,48 @@ if ((window as any).__queuedGameStart) {
       }
     }
 
-  if ((g.getData('type') as string) === 'thief') {
-  this.coin = Math.max(0, this.coin - 5);
-  this.emitCoin(this.coin);
+    if ((g.getData('type') as string) === 'thief') {
+      this.coin = Math.max(0, this.coin - 5);
+      this.emitCoin(this.coin);
 
-  this.stopSpin();
+      this.stopSpin();
 
-  if (init.effect) {
-    this.effect_hit.play();
-  }
-
-  if (!this.thiefHitPlaying) {
-    this.thiefHitPlaying = true;
-    this.thiefHitFrame = 0;
-    this.thiefHitAccMs = 0;
-
-    this.character.setTexture('hit_block');
-
-    if (this.thiefHitEffect) {
-      this.thiefHitEffect.destroy();
-      this.thiefHitEffect = undefined;
-    }
-
-    const effect = this.add
-      .sprite(this.character.x, this.character.y, 'hit_thief')
-      .setOrigin(0.5, 0.5);
-
-    const baseW = effect.width; 
-    const targetW = this.character.displayWidth * 3.0; 
-    effect.setScale(targetW / baseW);
-
-    effect.setDepth(this.character.depth - 1);
-
-    effect.play('hit_thief_anim');
-
-    effect.on('animationcomplete', () => {
-      effect.destroy();
-      if (this.thiefHitEffect === effect) {
-        this.thiefHitEffect = undefined;
+      if (init.effect) {
+        this.effect_hit.play();
       }
-    });
 
-    this.thiefHitEffect = effect;
-  }
-}
+      if (!this.thiefHitPlaying) {
+        this.thiefHitPlaying = true;
+        this.thiefHitFrame = 0;
+        this.thiefHitAccMs = 0;
 
+        this.character.setTexture('hit_block');
+
+        if (this.thiefHitEffect) {
+          this.thiefHitEffect.destroy();
+          this.thiefHitEffect = undefined;
+        }
+
+        const effect = this.add.sprite(this.character.x, this.character.y, 'hit_thief').setOrigin(0.5, 0.5);
+
+        const baseW = effect.width;
+        const targetW = this.character.displayWidth * 3.0;
+        effect.setScale(targetW / baseW);
+
+        effect.setDepth(this.character.depth - 1);
+
+        effect.play('hit_thief_anim');
+
+        effect.on('animationcomplete', () => {
+          effect.destroy();
+          if (this.thiefHitEffect === effect) {
+            this.thiefHitEffect = undefined;
+          }
+        });
+
+        this.thiefHitEffect = effect;
+      }
+    }
   }
 
   // 프레임 루프
@@ -1420,62 +1417,59 @@ if ((window as any).__queuedGameStart) {
     if (!this.character.active || this.gameOver) return;
     const cBody = this.character.body as Phaser.Physics.Arcade.Body;
 
-if (this.rocketActive) {
-  const dt = delta; 
-  const totalPx = this.rocketDistanceM * this.PX_PER_M;
-  const speedPxPerMs = totalPx / this.rocketDurationMs;
-  const stepPx = speedPxPerMs * dt;
+    if (this.rocketActive) {
+      const dt = delta;
+      const totalPx = this.rocketDistanceM * this.PX_PER_M;
+      const speedPxPerMs = totalPx / this.rocketDurationMs;
+      const stepPx = speedPxPerMs * dt;
 
-  this.totalAscentPx += stepPx;
-  const meters = Math.floor(this.totalAscentPx / this.PX_PER_M);
-  this.emitScore(meters);
+      this.totalAscentPx += stepPx;
+      const meters = Math.floor(this.totalAscentPx / this.PX_PER_M);
+      this.emitScore(meters);
 
-  this.scrollY += stepPx;
-  this.lastSpawnScrollY = this.scrollY;
+      this.scrollY += stepPx;
+      this.lastSpawnScrollY = this.scrollY;
 
-  this.updateSegmentsY();
-  this.cullBelow();
-  this.handleZoneTransition();
-  this.fillAbove();
+      this.updateSegmentsY();
+      this.cullBelow();
+      this.handleZoneTransition();
+      this.fillAbove();
 
-  if (this.feverActive) {
-    this.updateFeverSegmentsY();
-    this.cullFeverBelow();
-    this.fillFeverAbove();
-    this.fillFeverBelow();
-  }
+      if (this.feverActive) {
+        this.updateFeverSegmentsY();
+        this.cullFeverBelow();
+        this.fillFeverAbove();
+        this.fillFeverBelow();
+      }
 
-  this.updateBananas();
-  this.updateGorillas(delta);
-  this.updateRockets();
+      this.updateBananas();
+      this.updateGorillas(delta);
+      this.updateRockets();
 
-  cBody.setVelocity(0, 0);
+      cBody.setVelocity(0, 0);
 
-  if (this.time.now >= this.rocketEndTime) {
-    this.rocketActive = false;
+      if (this.time.now >= this.rocketEndTime) {
+        this.rocketActive = false;
 
-    if (this.rocketFrameTimer) {
-      this.rocketFrameTimer.remove();
-      this.rocketFrameTimer = undefined;
+        if (this.rocketFrameTimer) {
+          this.rocketFrameTimer.remove();
+          this.rocketFrameTimer = undefined;
+        }
+
+        this.character.setTexture('character');
+        this.character.setOrigin(0.5, 0.5);
+        this.character.setScale(this.CHARACTER_SCALE);
+
+        cBody.setAllowGravity(true);
+        cBody.setVelocityY(100);
+
+        this.lastYForScore = this.character.y;
+        this.prevCharY = this.character.y;
+        this.prevVy = cBody.velocity.y;
+      }
+
+      return;
     }
-
-    this.character.setTexture('character');
-    this.character.setOrigin(0.5, 0.5);
-    this.character.setScale(this.CHARACTER_SCALE);
-
-    cBody.setAllowGravity(true);
-    cBody.setVelocityY(100);
-
-    this.lastYForScore = this.character.y;
-    this.prevCharY = this.character.y;
-    this.prevVy = cBody.velocity.y;
-  }
-
-  return;
-}
-
-
-
 
     this.jumpedThisFrame = false;
 
@@ -1516,26 +1510,25 @@ if (this.rocketActive) {
     }
 
     if (this.thiefHitPlaying) {
-  this.thiefHitAccMs += delta;
-  const frameDur = 1000 / this.THIEF_HIT_FPS;
+      this.thiefHitAccMs += delta;
+      const frameDur = 1000 / this.THIEF_HIT_FPS;
 
-  while (this.thiefHitAccMs >= frameDur && this.thiefHitPlaying) {
-    this.thiefHitAccMs -= frameDur;
-    this.thiefHitFrame++;
+      while (this.thiefHitAccMs >= frameDur && this.thiefHitPlaying) {
+        this.thiefHitAccMs -= frameDur;
+        this.thiefHitFrame++;
 
-    if (this.thiefHitFrame >= this.THIEF_HIT_TOTAL_FRAMES) {
-      this.thiefHitPlaying = false;
+        if (this.thiefHitFrame >= this.THIEF_HIT_TOTAL_FRAMES) {
+          this.thiefHitPlaying = false;
 
-      this.character.setTexture('character');
+          this.character.setTexture('character');
 
-      const vy = cBody.velocity.y;
-      if (vy === 0) this.setPose('sit');
-      else if (vy > 0) this.setPose('character');
-      else this.applyNormalJumpPose();
-    }
-  }
-}
-else if (this.isHitFlash) {
+          const vy = cBody.velocity.y;
+          if (vy === 0) this.setPose('sit');
+          else if (vy > 0) this.setPose('character');
+          else this.applyNormalJumpPose();
+        }
+      }
+    } else if (this.isHitFlash) {
       if (this.time.now >= this.hitFlashUntil) {
         this.isHitFlash = false;
         const vy = cBody.velocity.y;
@@ -1594,9 +1587,9 @@ else if (this.isHitFlash) {
             this.spawnGorilla();
           }
 
-           if (Math.random() < this.ROCKET_SPAWN_PROB_PER_SLOT) {
-    this.spawnRocket();
-  }
+          if (Math.random() < this.ROCKET_SPAWN_PROB_PER_SLOT) {
+            this.spawnRocket();
+          }
         }
       }
     }
@@ -1605,8 +1598,7 @@ else if (this.isHitFlash) {
 
     this.updateBananas();
     this.updateGorillas(delta);
-        this.updateRockets(); 
-
+    this.updateRockets();
 
     this.updateSegmentsY();
     this.cullBelow();
@@ -1620,7 +1612,9 @@ else if (this.isHitFlash) {
       this.fillFeverBelow();
     }
 
-    if (this.feverActive && this.time.now >= this.feverUntil) this.stopFever();
+    if (this.feverActive && this.time.now >= this.feverUntil) {
+      this.stopFever();
+    }
 
     this.checkOffscreenAndProcess();
 
@@ -1629,20 +1623,16 @@ else if (this.isHitFlash) {
   }
 
   // BGM 및 효과음 상태 조정
-  private handleSoundState({ bgm, effect }: { bgm: boolean; effect: boolean }) {
+  private handleSoundState({ bgm }: { bgm: boolean }) {
     if (this.bgm) {
-      if (bgm && !this.bgm.isPlaying) {
-        this.bgm.play();
-      } else if (!bgm && this.bgm.isPlaying) {
+      if (bgm) {
+        if (this.feverActive) {
+          this.bgm.stop();
+        } else {
+          this.bgm.play();
+        }
+      } else {
         this.bgm.stop();
-      }
-    }
-
-    if (this.feverBgm) {
-      if (bgm && !this.feverBgm.isPlaying) {
-        this.feverBgm.play();
-      } else if (!bgm && this.feverBgm.isPlaying) {
-        this.feverBgm.stop();
       }
     }
   }

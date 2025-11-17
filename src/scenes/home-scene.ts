@@ -11,10 +11,15 @@ class HomeScene extends Phaser.Scene {
   create() {
     const { width, height } = this.cameras.main;
 
+    if (this.bgm) {
+      this.bgm.stop();
+      this.bgm.destroy();
+    }
+
     this.bgm = this.sound.add('home_bgm', { loop: true, volume: 0.4 });
 
     const init = (this.game as any).INIT_SOUND_STATE;
-    if (init.bgm) {
+    if (init.bgm && !this.bgm?.isPlaying) {
       this.bgm?.play();
     }
 
