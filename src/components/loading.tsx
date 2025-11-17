@@ -3,7 +3,11 @@ import { getUserKeyForGame } from '@apps-in-toss/web-framework';
 import Canvas from '@canvas/canvas';
 import { useToken } from '@context/user-context';
 
-const Load = () => {
+interface LoadProps {
+  handleLoading: () => void;
+}
+
+const Loading = ({ handleLoading }: LoadProps) => {
   const { setToken } = useToken();
 
   const login = async () => {
@@ -35,10 +39,10 @@ const Load = () => {
   }, []);
 
   return (
-    <>
+    <div onClick={handleLoading}>
       <Canvas />
-    </>
+    </div>
   );
 };
 
-export default Load;
+export default Loading;

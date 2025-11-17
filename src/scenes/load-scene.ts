@@ -87,8 +87,6 @@ class LoadScene extends Phaser.Scene {
         .setInteractive({ useHandCursor: true });
 
       touch.on('pointerup', () => {
-        window.history.replaceState({}, '', '/home');
-        window.dispatchEvent(new PopStateEvent('popstate'));
         this.scene.start('HomeScene');
       });
     });
@@ -140,6 +138,8 @@ class LoadScene extends Phaser.Scene {
     this.load.image('bana_SCARF-001', getImage('home', 'bana_sit_SCARF-001'));
     this.load.image('platform', getImage('home', 'platform_tree'));
 
+    this.reactImages.platform_tree = getImage('home', 'platform_tree');
+    this.load.image('platform', this.reactImages.platform_tree);
     this.reactImages.home_bg = getImage('home', 'background');
     this.load.image('home_bg', this.reactImages.home_bg);
     this.reactImages.leaf_left = getImage('home', 'leaf_left');
@@ -290,8 +290,7 @@ class LoadScene extends Phaser.Scene {
     this.load.image('bbana', getImage('game', 'banana_bunch'));
     this.load.image('gbana', getImage('game', 'banana_gold'));
     this.load.image('rocket', getImage('game', 'rocket'));
-        this.load.image('fevertime_title', getImage('game', 'fevertime_title'));
-
+    this.load.image('fevertime_title', getImage('game', 'fevertime_title'));
 
     this.load.image('fullguage', getImage('game', 'full_guage_bar'));
     this.load.image('emptyguage', getImage('game', 'empty_guage_bar'));

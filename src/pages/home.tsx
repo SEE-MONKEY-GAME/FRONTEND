@@ -4,12 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { selectMemberData } from '@api/member-api';
 import Attend from '@components/attend';
 import Guide from '@components/guide';
+import Loading from '@components/loading';
 import Option from '@components/option';
 import Shop from '@components/shop';
 import { useSound } from '@context/sound-context';
 import { useToken } from '@context/user-context';
 import {
   backgroundCss,
+  backgroundtreeCss,
   bestScoreCss,
   bestScoreTextCss,
   bestScoreValueCss,
@@ -28,6 +30,7 @@ import { openRank } from '@utils/open-rank';
 
 export interface ImagesProps {
   home_bg: string;
+  platform_tree: string;
   leaf_left: string;
   leaf_right: string;
   help: string;
@@ -110,6 +113,7 @@ const Home = () => {
   const navigate = useNavigate();
   const [images, setImages] = useState<ImagesProps>({
     home_bg: '',
+    platform_tree: '',
     leaf_left: '',
     leaf_right: '',
     help: '',
@@ -187,6 +191,7 @@ const Home = () => {
     equipment: [],
   });
 
+  const [load, setLoad] = useState<boolean>(false);
   const [attend, setAttend] = useState<boolean>(false);
   const [shop, setShop] = useState<boolean>(false);
   const [guide, setGuide] = useState<boolean>(false);
@@ -250,6 +255,10 @@ const Home = () => {
     getMemberData(token);
   }, []);
 
+  const handleLoading = () => {
+    setLoad((prev) => !prev);
+  };
+
   const handleAttend = () => {
     if (effect) {
       subButtonSound.currentTime = 0;
@@ -306,6 +315,7 @@ const Home = () => {
 
   return (
     <>
+      {!load && <Loading handleLoading={handleLoading} />}
       {transition && <div css={circleCss} />}
       {attend && <Attend handleAttend={handleAttend} images={images} refreshMember={getMemberData} />}
       {shop && (
@@ -314,6 +324,7 @@ const Home = () => {
       {guide && <Guide handleGameGuide={handleGameGuide} images={images} />}
       {option && <Option handleOption={handleOption} images={images} />}
       <div css={backgroundCss(images)}>
+        <img src={images.platform_tree} css={backgroundtreeCss} />
         <div css={coinCss}>
           <span css={coinTextCss}>{formatCoin(member.coin)}</span>
         </div>
