@@ -40,7 +40,12 @@ interface MemberProps {
   equipment: [];
 }
 
-const Home = () => {
+interface HomeProps {
+  load: boolean;
+  handleLoad: () => void;
+}
+
+const Home = ({ load, handleLoad }: HomeProps) => {
   const navigate = useNavigate();
   const [images, setImages] = useState<HomeImageProps>({
     home_bg: '',
@@ -66,6 +71,8 @@ const Home = () => {
     prev_guide: '',
     next_guide: '',
     tab_check: '',
+    check_close: '',
+    shine: '',
     check_day1: '',
     check_day2: '',
     check_day3: '',
@@ -122,7 +129,6 @@ const Home = () => {
     equipment: [],
   });
 
-  const [load, setLoad] = useState<boolean>(false);
   const [attend, setAttend] = useState<boolean>(false);
   const [shop, setShop] = useState<boolean>(false);
   const [guide, setGuide] = useState<boolean>(false);
@@ -186,10 +192,6 @@ const Home = () => {
     getMemberData(token);
   }, []);
 
-  const handleLoading = () => {
-    setLoad((prev) => !prev);
-  };
-
   const handleAttend = () => {
     if (effect) {
       subButtonSound.currentTime = 0;
@@ -246,7 +248,7 @@ const Home = () => {
 
   return (
     <>
-      {!load && <Loading handleLoading={handleLoading} />}
+      {!load && <Loading handleLoading={handleLoad} />}
       {transition && <div css={circleCss} />}
       {attend && <Attend handleAttend={handleAttend} images={images} refreshMember={getMemberData} />}
       {shop && (
