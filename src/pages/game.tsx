@@ -2,26 +2,14 @@
 import { useFeverProgressAnimator } from '../hooks/useFeverProgressAnimator';
 import type { GameImageProps } from 'interface/image-props';
 import { useEffect, useState } from 'react';
+import { selectItems, updateItem } from '@api/item-api';
 import FeverGauge from '@components/fever-gauge';
 import GameOverModal from '@components/gameover-modal';
 import HeartPrompt from '@components/heartprompt';
 import RocketPrompt from '@components/rocketprompt';
+import { useToken } from '@context/user-context';
 import { FEVER_DURATION_MS } from '@scenes/game-scene';
 import { circleCss, coinCss, coinTextCss, currentScoreCss, feverEmptyCss, feverWrapCss } from '@styles/pages/game.css';
-import { useToken } from '@context/user-context';
-import { selectItems, updateItem } from '@api/item-api';
-
-
-export interface ImagesProps {
-  empty_guage_bar: string;
-  full_guage_bar: string;
-  'gameover-tab': string;
-  coin_count: string;
-  home: string;
-  retry: string;
-  share: string;
-  onecoin: string;
-}
 
 export default function GamePage() {
   const [images, setImages] = useState<GameImageProps>({
@@ -39,67 +27,66 @@ export default function GamePage() {
   const [isGameOver, setIsGameOver] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
   const [finalCoin, setFinalCoin] = useState(0);
- const [showRocketPrompt, setShowRocketPrompt] = useState(false);
-  const [showHeartPrompt, setShowHeartPrompt] = useState(false); 
-  const [hasShownHeartPromptInRun, setHasShownHeartPromptInRun] = useState(false); 
+  const [showRocketPrompt, setShowRocketPrompt] = useState(false);
+  const [showHeartPrompt, setShowHeartPrompt] = useState(false);
+  const [hasShownHeartPromptInRun, setHasShownHeartPromptInRun] = useState(false);
 
- const [hasRocketItem, setHasRocketItem] = useState(false);
+  const [hasRocketItem, setHasRocketItem] = useState(false);
   const [hasHeartItem, setHasHeartItem] = useState(false);
 
   const { token } = useToken();
-  
-useEffect(() => {
-  (window as any).__GAME_TOKEN = token;
-}, [token]);
 
-useEffect(() => {
-  const w = window as any;
+  useEffect(() => {
+    (window as any).__GAME_TOKEN = token;
+  }, [token]);
 
-  if (!token) {
-    setHasRocketItem(false);
-    setHasHeartItem(false);
-    setShowRocketPrompt(false); 
-    return;
-  }
+  useEffect(() => {
+    const w = window as any;
 
-  const fetchItems = async () => {
-    try {
-      const res = await selectItems(token);
-      const list = res.data ?? res;
-
-      const rocket = list.find((entry: any) => entry.item?.code === 'ITEM-001');
-      const heart  = list.find((entry: any) => entry.item?.code === 'ITEM-002');
-
-      const hasRocket = (rocket?.quantity ?? 0) > 0;
-      const hasHeart  = (heart?.quantity ?? 0) > 0;
-
-      setHasRocketItem(hasRocket);
-      setHasHeartItem(hasHeart);
-
-      if (hasRocket) {
-  w.__rocketStart = false;
-  w.__queuedGameStart = false;
-  setShowRocketPrompt(true);
-} else {
-  w.__rocketStart = false;
-  w.__queuedGameStart = true;
-  window.dispatchEvent(new Event('game:play'));
-}
-    } catch (e) {
-      console.error('[GamePage] selectItems error:', e);
+    if (!token) {
       setHasRocketItem(false);
       setHasHeartItem(false);
       setShowRocketPrompt(false);
-
-      w.__rocketStart = false;
-      w.__queuedGameStart = true;
-      window.dispatchEvent(new Event('game:play'));
+      return;
     }
-  };
 
-  fetchItems();
-}, [token]);
+    const fetchItems = async () => {
+      try {
+        const res = await selectItems(token);
+        const list = res.data ?? res;
 
+        const rocket = list.find((entry: any) => entry.item?.code === 'ITEM-001');
+        const heart = list.find((entry: any) => entry.item?.code === 'ITEM-002');
+
+        const hasRocket = (rocket?.quantity ?? 0) > 0;
+        const hasHeart = (heart?.quantity ?? 0) > 0;
+
+        setHasRocketItem(hasRocket);
+        setHasHeartItem(hasHeart);
+
+        if (hasRocket) {
+          w.__rocketStart = false;
+          w.__queuedGameStart = false;
+          setShowRocketPrompt(true);
+        } else {
+          w.__rocketStart = false;
+          w.__queuedGameStart = true;
+          window.dispatchEvent(new Event('game:play'));
+        }
+      } catch (e) {
+        console.error('[GamePage] selectItems error:', e);
+        setHasRocketItem(false);
+        setHasHeartItem(false);
+        setShowRocketPrompt(false);
+
+        w.__rocketStart = false;
+        w.__queuedGameStart = true;
+        window.dispatchEvent(new Event('game:play'));
+      }
+    };
+
+    fetchItems();
+  }, [token]);
 
   useEffect(() => {
     const preloaded = (window as any)['PRELOADED_IMAGES'] as GameImageProps | undefined;
@@ -126,96 +113,96 @@ useEffect(() => {
   } = useFeverProgressAnimator({
     drainMs: FEVER_DURATION_MS,
   });
-const startGame = async () => {
-  const w = window as any;
+  const startGame = async () => {
+    const w = window as any;
 
-  try {
-    if (token) {
-      const res = await updateItem(token, 1);
+    try {
+      if (token) {
+        const res = await updateItem(token, 1);
 
-      if (res.status === 200) {
-        setHasRocketItem(false);    
+        if (res.status === 200) {
+          setHasRocketItem(false);
 
+          w.__rocketStart = true;
+          w.__queuedGameStart = true;
+          window.dispatchEvent(new Event('game:play'));
+        } else {
+          console.warn('[GamePage] rocket item use failed:', res);
+
+          w.__rocketStart = false;
+          w.__queuedGameStart = true;
+          window.dispatchEvent(new Event('game:play'));
+        }
+      } else {
         w.__rocketStart = true;
         w.__queuedGameStart = true;
         window.dispatchEvent(new Event('game:play'));
-      } else {
-        console.warn('[GamePage] rocket item use failed:', res);
-
-        w.__rocketStart = false;
-        w.__queuedGameStart = true;
-        window.dispatchEvent(new Event('game:play'));
       }
-    } else {
-      w.__rocketStart = true;
+    } catch (e) {
+      console.error('[GamePage] rocket updateItem error:', e);
+
+      w.__rocketStart = false;
       w.__queuedGameStart = true;
       window.dispatchEvent(new Event('game:play'));
+    } finally {
+      setShowRocketPrompt(false);
     }
-  } catch (e) {
-    console.error('[GamePage] rocket updateItem error:', e);
+  };
 
+  const skipGame = () => {
+    const w = window as any;
     w.__rocketStart = false;
     w.__queuedGameStart = true;
+
     window.dispatchEvent(new Event('game:play'));
-  } finally {
     setShowRocketPrompt(false);
-  }
-};
+  };
 
-const skipGame = () => {
-  const w = window as any;
-  w.__rocketStart = false;     
-  w.__queuedGameStart = true;
+  const replay = () => {
+    const w = window as any;
+    w.__queuedGameStart = false;
+    w.__rocketStart = false;
 
-  window.dispatchEvent(new Event('game:play')); 
-  setShowRocketPrompt(false);
-};
+    window.dispatchEvent(new Event('game:replay'));
 
-const replay = () => {
-  const w = window as any;
-  w.__queuedGameStart = false;
-  w.__rocketStart = false;
-
-  window.dispatchEvent(new Event('game:replay'));
-
-  setIsGameOver(false);
-  setScore(0);
-  setCoin(0);
-  setShowRocketPrompt(hasRocketItem);
-  setShowHeartPrompt(false);
-  setHasShownHeartPromptInRun(false);
-};
+    setIsGameOver(false);
+    setScore(0);
+    setCoin(0);
+    setShowRocketPrompt(hasRocketItem);
+    setShowHeartPrompt(false);
+    setHasShownHeartPromptInRun(false);
+  };
 
   const handleHeartSkip = () => {
     setShowHeartPrompt(false);
     setIsGameOver(true);
   };
 
-const handleHeartUse = async () => {
-  setShowHeartPrompt(false);
+  const handleHeartUse = async () => {
+    setShowHeartPrompt(false);
 
-  try {
-    if (token) {
-      const res = await updateItem(token, 2);
+    try {
+      if (token) {
+        const res = await updateItem(token, 2);
 
-      if (res.status === 200) {
-        setHasHeartItem(false);   
+        if (res.status === 200) {
+          setHasHeartItem(false);
 
+          setIsGameOver(false);
+          window.dispatchEvent(new Event('game:extra-life'));
+        } else {
+          console.warn('[GamePage] heart item use failed:', res);
+          setIsGameOver(true);
+        }
+      } else {
         setIsGameOver(false);
         window.dispatchEvent(new Event('game:extra-life'));
-      } else {
-        console.warn('[GamePage] heart item use failed:', res);
-        setIsGameOver(true);
       }
-    } else {
-      setIsGameOver(false);
-      window.dispatchEvent(new Event('game:extra-life'));
+    } catch (e) {
+      console.error('[GamePage] heart updateItem error:', e);
+      setIsGameOver(true);
     }
-  } catch (e) {
-    console.error('[GamePage] heart updateItem error:', e);
-    setIsGameOver(true);
-  }
-};
+  };
 
   useEffect(() => {
     const onScore = (e: CustomEvent<{ score: number }>) => setScore(e.detail.score);
@@ -244,26 +231,26 @@ const handleHeartUse = async () => {
     return () => window.removeEventListener('game:item', onItem as EventListener);
   }, [nudgeByItems]);
 
-useEffect(() => {
-  const onOver = (e: CustomEvent<{ score: number; coin: number }>) => {
-    setFinalScore(e.detail.score);
-    setFinalCoin(e.detail.coin);
+  useEffect(() => {
+    const onOver = (e: CustomEvent<{ score: number; coin: number }>) => {
+      setFinalScore(e.detail.score);
+      setFinalCoin(e.detail.coin);
 
-    if (!hasHeartItem) {
-      setIsGameOver(true);
-      return;
-    }
+      if (!hasHeartItem) {
+        setIsGameOver(true);
+        return;
+      }
 
-    if (!hasShownHeartPromptInRun) {
-      setHasShownHeartPromptInRun(true);
-      setShowHeartPrompt(true);
-    } else {
-      setIsGameOver(true);
-    }
-  };
-  window.addEventListener('game:over', onOver as EventListener);
-  return () => window.removeEventListener('game:over', onOver as EventListener);
-}, [hasHeartItem, hasShownHeartPromptInRun]);
+      if (!hasShownHeartPromptInRun) {
+        setHasShownHeartPromptInRun(true);
+        setShowHeartPrompt(true);
+      } else {
+        setIsGameOver(true);
+      }
+    };
+    window.addEventListener('game:over', onOver as EventListener);
+    return () => window.removeEventListener('game:over', onOver as EventListener);
+  }, [hasHeartItem, hasShownHeartPromptInRun]);
 
   return (
     <>
