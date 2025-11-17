@@ -6,7 +6,10 @@ interface LoadProps {
 
 const Loading = ({ handleLoading }: LoadProps) => {
   return (
-    <div style={{ width: '100vw', height: '100vh', backgroundColor: '#99ECEC' }} onClick={handleLoading}>
+    <div
+      style={{ width: '100vw', height: '100vh', background: 'linear-gradient(to bottom, #93C47E, #16592D)' }}
+      onClick={handleLoading}
+    >
       <Canvas />
     </div>
   );
