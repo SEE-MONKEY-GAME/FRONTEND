@@ -34,7 +34,8 @@ export default function GamePage() {
   const [hasRocketItem, setHasRocketItem] = useState(false);
   const [hasHeartItem, setHasHeartItem] = useState(false);
 
-  const { token } = useToken();
+  // const { token } = useToken();
+  const { token: realToken } = useToken(); const token = '1';
 
   useEffect(() => {
     (window as any).__GAME_TOKEN = token;
@@ -171,20 +172,30 @@ export default function GamePage() {
 
 const replay = () => {
   const w = window as any;
-  w.__queuedGameStart = false;
+
   w.__rocketStart = false;
 
-  w.__ROCKET_PROMPT_OPEN = hasRocketItem;
+  if (hasRocketItem) {
+    w.__queuedGameStart = false;
+    w.__ROCKET_PROMPT_OPEN = true;
+
+    setShowRocketPrompt(true);
+  } else {
+    w.__queuedGameStart = true;
+    w.__ROCKET_PROMPT_OPEN = false;
+
+    setShowRocketPrompt(false);
+  }
 
   window.dispatchEvent(new Event('game:replay'));
 
   setIsGameOver(false);
   setScore(0);
   setCoin(0);
-  setShowRocketPrompt(hasRocketItem);
   setShowHeartPrompt(false);
   setHasShownHeartPromptInRun(false);
 };
+
 
 
   const handleHeartSkip = () => {
