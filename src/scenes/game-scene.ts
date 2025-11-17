@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { selectMemberData } from '@api/member-api'; 
 
 export const FEVER_DURATION_MS = 8000;
 
@@ -16,6 +17,9 @@ class GameScene extends Phaser.Scene {
   private bar!: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
   private character!: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
   private barCollider!: Phaser.Physics.Arcade.Collider;
+  private costumeCode: string | null = null;
+  
+
 
   private lastJumpAt = 0;
   private prevBarX = 0;
@@ -620,12 +624,13 @@ private startRocketBoost(durationMs: number, distanceM: number) {
 
 
     // 캐릭터
-    this.character = this.physics.add
-      .image(width / 2, height / 3, 'character')
+       this.character = this.physics.add
+      .image(width / 2, height / 3, this.getTex('character')) 
       .setOrigin(0.5)
       .setScale(this.CHARACTER_SCALE);
-      this.character.setDepth(100); 
+    this.character.setDepth(100);
 
+    
     this.character.body.setBounce(1, 0);
     (this.character.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
     this.character.setCollideWorldBounds(false);
@@ -797,6 +802,31 @@ if ((window as any).__queuedGameStart) {
     // 초기 이벤트
     this.emitCoin(this.coin);
     this.emitFever(0, false, 0);
+
+  const w = window as any;
+    const token = w.__GAME_TOKEN; 
+
+    if (token) {
+      selectMemberData(token)
+        .then((res: any) => {
+          const data = res.data;
+
+          const equipment = data?.equipment ?? [];
+          if (Array.isArray(equipment) && equipment.length > 0) {
+            const first = equipment[0];       
+            this.costumeCode = first.code;    
+            this.character.setTexture(this.getTex('character'));
+          } else {
+            this.costumeCode = null; 
+          }
+        })
+        .catch((err) => {
+          console.error('selectMemberData ERROR:', err);
+        });
+    } else {
+      console.warn('GAME_TOKEN이 없습니다. window.__GAME_TOKEN에 토큰을 넣어주세요.');
+    }
+
   }
 
   // 라이프 UI
@@ -860,16 +890,36 @@ if ((window as any).__queuedGameStart) {
     this.lastJumpAt = this.time.now;
   }
 
-  private setPose(
-    key: 'character' | 'sit' | 'jump' | 'ljump' | 'rjump' | 'jump_item' | 'ljump_item' | 'rjump_item',
-    force = false,
-  ) {
-    if (!force && (this.thiefHitPlaying || this.isHitFlash)) return;
+// 클래스 필드로 추가
+private readonly POSE_SCALE: Record<string, number> = {
+  'SCARF-001-sit': 0.3, 
+};
 
-    if (this.character.texture.key !== key) {
-      this.character.setTexture(key);
-    }
+
+private setPose(
+  key: 'character' | 'sit' | 'jump' | 'ljump' | 'rjump' | 'jump_item' | 'ljump_item' | 'rjump_item',
+  force = false,
+) {
+  if (!force && (this.thiefHitPlaying || this.isHitFlash)) return;
+  if (this.rocketActive) return; 
+
+  const texKey = this.getTex(key);
+
+  if (this.character.texture.key !== texKey) {
+    this.character.setTexture(texKey);
   }
+
+
+  let scale = this.CHARACTER_SCALE;
+
+
+  if (this.POSE_SCALE[texKey] !== undefined) {
+    scale *= this.POSE_SCALE[texKey];
+  }
+
+  this.character.setScale(scale);
+}
+
 
   private applyNormalJumpPose() {
     const key = this.lastDir === 'left' ? 'ljump' : this.lastDir === 'right' ? 'rjump' : 'jump';
@@ -952,7 +1002,10 @@ if ((window as any).__queuedGameStart) {
     this.respawnTargetY = height / 3;
 
     this.character.enableBody(true, width / 2, height + this.RESPAWN_OFFSET, true, true);
-    this.character.setTexture('character').setScale(this.CHARACTER_SCALE).setOrigin(0.5);
+    this.character
+      .setTexture(this.getTex('character')) 
+      .setScale(this.CHARACTER_SCALE)
+      .setOrigin(0.5);
     this.character.setCollideWorldBounds(false);
 
     const body = this.character.body as Phaser.Physics.Arcade.Body;
@@ -990,11 +1043,12 @@ if ((window as any).__queuedGameStart) {
 
   this.character.enableBody(true, width / 2, height + this.RESPAWN_OFFSET, true, true);
   this.character
-    .setTexture('character')
+    .setTexture(this.getTex('character'))  
     .setScale(this.CHARACTER_SCALE)
     .setOrigin(0.5)
     .setCollideWorldBounds(false)
     .setAlpha(0.5);
+
 
   const body = this.character.body as Phaser.Physics.Arcade.Body;
   body.setVelocity(0, 0);
@@ -1361,7 +1415,7 @@ if ((window as any).__queuedGameStart) {
       this.stopSpin();
       this.isHitFlash = true;
       this.hitFlashUntil = this.time.now + 250;
-      this.character.setTexture('hit_block');
+      this.character.setTexture(this.getTex('hit_block')); // ✅ 여기
 
       if (init.effect) {
         this.effect_hit.play();
@@ -1383,7 +1437,7 @@ if ((window as any).__queuedGameStart) {
     this.thiefHitFrame = 0;
     this.thiefHitAccMs = 0;
 
-    this.character.setTexture('hit_block');
+      this.character.setTexture(this.getTex('hit_block')); // ✅ 여기
 
     if (this.thiefHitEffect) {
       this.thiefHitEffect.destroy();
@@ -1459,7 +1513,7 @@ if (this.rocketActive) {
       this.rocketFrameTimer = undefined;
     }
 
-    this.character.setTexture('character');
+      this.character.setTexture(this.getTex('character')); 
     this.character.setOrigin(0.5, 0.5);
     this.character.setScale(this.CHARACTER_SCALE);
 
@@ -1526,7 +1580,7 @@ if (this.rocketActive) {
     if (this.thiefHitFrame >= this.THIEF_HIT_TOTAL_FRAMES) {
       this.thiefHitPlaying = false;
 
-      this.character.setTexture('character');
+      this.character.setTexture(this.getTex('character')); 
 
       const vy = cBody.velocity.y;
       if (vy === 0) this.setPose('sit');
@@ -1626,6 +1680,16 @@ else if (this.isHitFlash) {
 
     this.prevVy = cBody.velocity.y;
     this.prevCharY = this.character.y;
+  }
+
+    private getTex(base: string): string {
+    if (!this.costumeCode) return base;
+
+    const candidate = `${this.costumeCode}-${base}`; 
+    if (this.textures.exists(candidate)) {
+      return candidate;
+    }
+    return base;
   }
 
   // BGM 및 효과음 상태 조정
