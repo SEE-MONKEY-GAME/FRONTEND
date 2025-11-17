@@ -95,9 +95,7 @@ const Attend = ({ handleAttend, images, refreshMember }: AttendProps) => {
       }
       refreshMember(token);
       setReward(index);
-    } else if (statuses[index] === 'claimed') {
-      toast.error('오늘은 이미 출석했어요');
-    } else {
+    } else if (statuses[index] === 'locked') {
       toast.error('아직 출석할 수 없어요');
     }
   };
