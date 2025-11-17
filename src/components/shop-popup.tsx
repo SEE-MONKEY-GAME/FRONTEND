@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { createCostume } from '@api/costume-api';
 import { createItem } from '@api/item-api';
 import { useToken } from '@context/user-context';
-import type { ImagesProps } from '@pages/home';
+import type { HomeImageProps } from '@interface/image-props';
 import {
   shopItemBoxCss,
   shopItemBoxResourceCss,
@@ -21,7 +21,7 @@ import {
 
 interface ShopPopupProps {
   handlePopup: (index: number) => void;
-  images: ImagesProps;
+  images: HomeImageProps;
   data: ItemDetailProps | CostumeDetailProps;
   refreshData: (token: string) => Promise<void>;
   refreshMember: (token: string) => Promise<void>;
@@ -88,7 +88,7 @@ const ShopPopup = ({ handlePopup, images, data, refreshData, refreshMember }: Sh
           <div css={shopItemTitleCss}>{data.name}</div>
           <div css={shopItemLayoutCss}>
             <div css={shopItemBoxCss(images)}>
-              <img src={images[data.code as keyof ImagesProps]} alt={data.code} css={shopItemBoxResourceCss} />
+              <img src={images[data.code as keyof HomeImageProps]} alt={data.code} css={shopItemBoxResourceCss} />
             </div>
             <div>
               <div css={shopItemPriceCss}>

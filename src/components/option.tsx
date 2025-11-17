@@ -6,7 +6,7 @@ import { createFeedback } from '@api/feedback-api';
 import { updateSound } from '@api/member-api';
 import { useSound } from '@context/sound-context';
 import { useToken } from '@context/user-context';
-import type { ImagesProps } from '@pages/home';
+import type { HomeImageProps } from '@interface/image-props';
 import {
   optionCloseButtonCss,
   optionContactAreaCss,
@@ -27,7 +27,7 @@ import {
 
 interface OptionProps {
   handleOption: () => void;
-  images: ImagesProps;
+  images: HomeImageProps;
 }
 
 const Option = ({ handleOption, images }: OptionProps) => {

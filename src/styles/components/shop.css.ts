@@ -1,5 +1,5 @@
 import { css } from '@emotion/react';
-import type { ImagesProps } from '@pages/home';
+import type { HomeImageProps } from '@interface/image-props';
 import { colors } from '@styles/tokens/colors';
 import { fonts } from '@styles/tokens/fonts';
 
@@ -31,7 +31,7 @@ export const shopSelectCss = css({
   zIndex: 0,
 });
 
-export const shopOptionCss = (index: number, images: ImagesProps) =>
+export const shopOptionCss = (index: number, images: HomeImageProps) =>
   css({
     fontFamily: `${fonts.title}`,
     fontSize: '18px',
@@ -39,7 +39,7 @@ export const shopOptionCss = (index: number, images: ImagesProps) =>
     textShadow: '0 1.151px 2.303px rgba(0, 0, 0, 0.16)',
     '-webkit-text-stroke': index === 1 ? `0.8px #814711` : `0.8px #AC884B`,
     letterSpacing: '-0.368px',
-    background: `url(${images[`shop_tab_${index}` as keyof ImagesProps]})`,
+    background: `url(${images[`shop_tab_${index}` as keyof HomeImageProps]})`,
     backgroundSize: '100% auto',
     backgroundRepeat: 'no-repeat',
     width: 'calc((100vw - 102px) / 2)',
@@ -76,7 +76,7 @@ export const shopGridCss = css({
   transform: 'translate(-50%, -35%)',
 });
 
-export const shopBoxCss = (images: ImagesProps) =>
+export const shopBoxCss = (images: HomeImageProps) =>
   css({
     background: `url(${images.shop_box})`,
     backgroundSize: 'contain',
@@ -88,7 +88,7 @@ export const shopBoxCss = (images: ImagesProps) =>
     position: 'relative',
   });
 
-export const shopItemButtonCss = (images: ImagesProps) =>
+export const shopItemButtonCss = (images: HomeImageProps) =>
   css({
     background: `url(${images.shop_price})`,
     backgroundSize: 'contain',

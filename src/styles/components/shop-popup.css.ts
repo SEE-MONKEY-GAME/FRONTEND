@@ -1,5 +1,5 @@
 import { css } from '@emotion/react';
-import type { ImagesProps } from '@pages/home';
+import type { HomeImageProps } from '@interface/image-props';
 import { fonts } from '@styles/tokens/fonts';
 
 export const shopPopuopWrapperCss = css({
@@ -37,7 +37,7 @@ export const shopItemTitleCss = css({
   marginBottom: '12px',
 });
 
-export const shopItemBoxCss = (images: ImagesProps) =>
+export const shopItemBoxCss = (images: HomeImageProps) =>
   css({
     background: `url(${images.shop_box})`,
     backgroundSize: 'contain',

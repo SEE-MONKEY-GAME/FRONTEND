@@ -1,8 +1,8 @@
 /** @jsxImportSource @emotion/react */
+import type { GameImageProps } from 'interface/image-props';
 import { useNavigate } from 'react-router-dom';
 import { createGameResult } from '@api/game-api';
 import { useToken } from '@context/user-context';
-import type { ImagesProps } from '@pages/game';
 import {
   btnRowCss,
   coinCss2,
@@ -25,7 +25,7 @@ type Props = {
   coin: number;
   onClose: () => void;
   onReplay: () => void;
-  images: ImagesProps;
+  images: GameImageProps;
 };
 
 export default function GameOverModal({ open, score, coin, onClose, onReplay, images }: Props) {

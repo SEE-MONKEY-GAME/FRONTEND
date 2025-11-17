@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { getImage } from '@utils/get-images';
+import { getGif, getImage } from '@utils/get-images';
 import { getBGMs, getEffects } from '@utils/get-sounds';
 
 class LoadScene extends Phaser.Scene {
@@ -185,6 +185,10 @@ class LoadScene extends Phaser.Scene {
     this.reactImages.next_guide = getImage('home', 'guide_right');
     this.load.image('next_guide', this.reactImages.next_guide);
 
+    this.reactImages.check_close = getImage('home', 'check_close_button');
+    this.load.image('check_close', this.reactImages.check_close);
+    this.reactImages.shine = getGif('home', 'shine');
+    this.load.image('shine', this.reactImages.shine);
     this.reactImages.tab_check = getImage('home', 'check_tab');
     this.load.image('tab_check', this.reactImages.tab_check);
     ['day1', 'day2', 'day3', 'day4', 'day5', 'day6', 'day7'].forEach((day) => {
@@ -274,7 +278,7 @@ class LoadScene extends Phaser.Scene {
     this.load.image('rjump_item', getImage('game', 'rjump-monkey-item'));
     this.load.image('hit_block', getImage('game', 'hit-blockgoril'));
 
-   this.load.image('SCARF-001-character', getImage('game', 'SCARF-001-character'));
+    this.load.image('SCARF-001-character', getImage('game', 'SCARF-001-character'));
     this.load.image('SCARF-001-sit', getImage('game', 'SCARF-001-sit-monkey'));
     this.load.image('SCARF-001-jump', getImage('game', 'SCARF-001-jump-monkey'));
     this.load.image('SCARF-001-ljump', getImage('game', 'SCARF-001-ljump-monkey'));
