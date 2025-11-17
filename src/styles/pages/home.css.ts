@@ -1,9 +1,9 @@
 import { css, keyframes } from '@emotion/react';
-import type { ImagesProps } from '@pages/home';
+import type { HomeImageProps } from '@interface/image-props';
 import { theme } from '@styles/tokens';
 import { getImage } from '@utils/get-images';
 
-export const backgroundCss = (images: ImagesProps) =>
+export const backgroundCss = (images: HomeImageProps) =>
   css({
     height: '100vh',
     backgroundImage: `url(${images.home_bg})`,

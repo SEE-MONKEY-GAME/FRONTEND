@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { useSound } from '@context/sound-context';
 import { useToken } from '@context/user-context';
-import type { ImagesProps } from '@pages/home';
+import type { HomeImageProps } from '@interface/image-props';
 import {
   attendRewardButtonCss,
   attendRewardEffectCss,
@@ -16,7 +16,7 @@ import { getBGMs } from '@utils/get-sounds';
 interface AttendRewardProps {
   index: number;
   onClose: () => void;
-  images: ImagesProps;
+  images: HomeImageProps;
   refreshCheckin: (token: string) => Promise<void>;
 }
 

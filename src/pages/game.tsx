@@ -1,27 +1,17 @@
 /** @jsxImportSource @emotion/react */
 import { useFeverProgressAnimator } from '../hooks/useFeverProgressAnimator';
+import type { GameImageProps } from 'interface/image-props';
 import { useEffect, useState } from 'react';
 import FeverGauge from '@components/fever-gauge';
 import GameOverModal from '@components/gameover-modal';
+import HeartPrompt from '@components/heartprompt';
 import RocketPrompt from '@components/rocketprompt';
-import HeartPrompt from '@components/heartprompt'; 
+import { useToken } from '@context/user-context';
 import { FEVER_DURATION_MS } from '@scenes/game-scene';
 import { circleCss, coinCss, coinTextCss, currentScoreCss, feverEmptyCss, feverWrapCss } from '@styles/pages/game.css';
-import { useToken } from '@context/user-context';
-
-export interface ImagesProps {
-  empty_guage_bar: string;
-  full_guage_bar: string;
-  'gameover-tab': string;
-  coin_count: string;
-  home: string;
-  retry: string;
-  share: string;
-  onecoin: string;
-}
 
 export default function GamePage() {
-  const [images, setImages] = useState<ImagesProps>({
+  const [images, setImages] = useState<GameImageProps>({
     empty_guage_bar: '',
     full_guage_bar: '',
     'gameover-tab': '',
@@ -37,22 +27,21 @@ export default function GamePage() {
   const [finalScore, setFinalScore] = useState(0);
   const [finalCoin, setFinalCoin] = useState(0);
   const [showRocketPrompt, setShowRocketPrompt] = useState(true);
-  const [showHeartPrompt, setShowHeartPrompt] = useState(false); 
-  const [hasShownHeartPromptInRun, setHasShownHeartPromptInRun] = useState(false); 
+  const [showHeartPrompt, setShowHeartPrompt] = useState(false);
+  const [hasShownHeartPromptInRun, setHasShownHeartPromptInRun] = useState(false);
 
   const { token } = useToken();
-useEffect(() => {
-  (window as any).__GAME_TOKEN = token;
-}, [token]);
-
+  useEffect(() => {
+    (window as any).__GAME_TOKEN = token;
+  }, [token]);
 
   useEffect(() => {
-    const preloaded = (window as any)['PRELOADED_IMAGES'] as ImagesProps | undefined;
+    const preloaded = (window as any)['PRELOADED_IMAGES'] as GameImageProps | undefined;
     if (preloaded) {
       setImages(preloaded);
     }
 
-    const handleImages = (event: CustomEvent<ImagesProps>) => {
+    const handleImages = (event: CustomEvent<GameImageProps>) => {
       setImages(event.detail);
     };
 
@@ -72,52 +61,49 @@ useEffect(() => {
     drainMs: FEVER_DURATION_MS,
   });
 
-  
-const startGame = () => {
-  const w = window as any;
-  w.__rocketStart = true;      
-  w.__queuedGameStart = true;   
+  const startGame = () => {
+    const w = window as any;
+    w.__rocketStart = true;
+    w.__queuedGameStart = true;
 
-  window.dispatchEvent(new Event('game:play')); 
-  setShowRocketPrompt(false);
-};
+    window.dispatchEvent(new Event('game:play'));
+    setShowRocketPrompt(false);
+  };
 
-const skipGame = () => {
-  const w = window as any;
-  w.__rocketStart = false;     
-  w.__queuedGameStart = true;
+  const skipGame = () => {
+    const w = window as any;
+    w.__rocketStart = false;
+    w.__queuedGameStart = true;
 
-  window.dispatchEvent(new Event('game:play')); 
-  setShowRocketPrompt(false);
-};
+    window.dispatchEvent(new Event('game:play'));
+    setShowRocketPrompt(false);
+  };
 
-const replay = () => {
-  const w = window as any;
-  w.__queuedGameStart = false;
-  w.__rocketStart = false;
+  const replay = () => {
+    const w = window as any;
+    w.__queuedGameStart = false;
+    w.__rocketStart = false;
 
-  window.dispatchEvent(new Event('game:replay'));
+    window.dispatchEvent(new Event('game:replay'));
 
-  setIsGameOver(false);
-  setScore(0);
-  setCoin(0);
-  setShowRocketPrompt(true);
-  setShowHeartPrompt(false);
-  setHasShownHeartPromptInRun(false);
-};
+    setIsGameOver(false);
+    setScore(0);
+    setCoin(0);
+    setShowRocketPrompt(true);
+    setShowHeartPrompt(false);
+    setHasShownHeartPromptInRun(false);
+  };
 
-const handleHeartSkip = () => {
-  setShowHeartPrompt(false);
-  setIsGameOver(true); 
-};
+  const handleHeartSkip = () => {
+    setShowHeartPrompt(false);
+    setIsGameOver(true);
+  };
 
-const handleHeartUse = () => {
-  setShowHeartPrompt(false);
-  setIsGameOver(false); 
-  window.dispatchEvent(new Event('game:extra-life'));
-};
-
-
+  const handleHeartUse = () => {
+    setShowHeartPrompt(false);
+    setIsGameOver(false);
+    window.dispatchEvent(new Event('game:extra-life'));
+  };
 
   useEffect(() => {
     const onScore = (e: CustomEvent<{ score: number }>) => setScore(e.detail.score);
@@ -146,27 +132,25 @@ const handleHeartUse = () => {
     return () => window.removeEventListener('game:item', onItem as EventListener);
   }, [nudgeByItems]);
 
-useEffect(() => {
-  const onOver = (e: CustomEvent<{ score: number; coin: number }>) => {
-    setFinalScore(e.detail.score);
-    setFinalCoin(e.detail.coin);
+  useEffect(() => {
+    const onOver = (e: CustomEvent<{ score: number; coin: number }>) => {
+      setFinalScore(e.detail.score);
+      setFinalCoin(e.detail.coin);
 
-    setShowHeartPrompt((prev) => {
-      if (!hasShownHeartPromptInRun) {
-        setHasShownHeartPromptInRun(true);
-        return true;                     
-      }
+      setShowHeartPrompt((prev) => {
+        if (!hasShownHeartPromptInRun) {
+          setHasShownHeartPromptInRun(true);
+          return true;
+        }
 
-      setIsGameOver(true);
-      return false;
-    });
-  };
+        setIsGameOver(true);
+        return false;
+      });
+    };
 
-  window.addEventListener('game:over', onOver as EventListener);
-  return () => window.removeEventListener('game:over', onOver as EventListener);
-}, [hasShownHeartPromptInRun]);
-
-
+    window.addEventListener('game:over', onOver as EventListener);
+    return () => window.removeEventListener('game:over', onOver as EventListener);
+  }, [hasShownHeartPromptInRun]);
 
   return (
     <>
@@ -193,16 +177,8 @@ useEffect(() => {
           onReplay={replay}
           images={images}
         />
-      <RocketPrompt
-  open={showRocketPrompt}
-  onSkip={skipGame}
-  onUse={startGame}
-/>
- <HeartPrompt
-        open={showHeartPrompt}
-        onSkip={handleHeartSkip}
-        onUse={handleHeartUse}
-      />
+        <RocketPrompt open={showRocketPrompt} onSkip={skipGame} onUse={startGame} />
+        <HeartPrompt open={showHeartPrompt} onSkip={handleHeartSkip} onUse={handleHeartUse} />
       </div>
     </>
   );

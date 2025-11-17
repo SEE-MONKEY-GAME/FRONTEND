@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { useState } from 'react';
 import { useSound } from '@context/sound-context';
-import type { ImagesProps } from '@pages/home';
+import type { HomeImageProps } from '@interface/image-props';
 import {
   guideCloseButtonCss,
   guideDirectionButtonCss,
@@ -18,7 +18,7 @@ import { getBGMs } from '@utils/get-sounds';
 
 interface GuideProps {
   handleGameGuide: () => void;
-  images: ImagesProps;
+  images: HomeImageProps;
 }
 
 const Guide = ({ handleGameGuide, images }: GuideProps) => {

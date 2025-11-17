@@ -1,8 +1,8 @@
 import { css, keyframes } from '@emotion/react';
-import type { ImagesProps } from '@pages/game';
+import type { GameImageProps } from '@interface/image-props';
 import { theme } from '@styles/tokens';
 
-export const coinCss = (images: ImagesProps) =>
+export const coinCss = (images: GameImageProps) =>
   css({
     position: 'absolute',
     top: 48,
@@ -53,7 +53,7 @@ export const feverWrapCss = css({
   marginTop: 20,
 });
 
-export const feverEmptyCss = (images: ImagesProps) =>
+export const feverEmptyCss = (images: GameImageProps) =>
   css({
     position: 'absolute',
     inset: 0,
@@ -64,7 +64,7 @@ export const feverEmptyCss = (images: ImagesProps) =>
     backgroundPosition: 'left center',
   });
 
-export const feverFullCss = (images: ImagesProps) =>
+export const feverFullCss = (images: GameImageProps) =>
   css({
     position: 'absolute',
     inset: 0,
@@ -112,7 +112,7 @@ export const overlayCss = css({
   zIndex: 50,
 });
 
-export const panelCss = (images: ImagesProps) =>
+export const panelCss = (images: GameImageProps) =>
   css({
     position: 'relative',
     width: 311,
