@@ -76,6 +76,7 @@ export const gameStartButtonCss = css({
   left: '50%',
   bottom: '10%',
   transform: 'translateX(-50%)',
+  zIndex: 0,
 });
 
 export const gameStartButtonImageCss = css({
@@ -97,4 +98,13 @@ export const circleCss = css({
   animation: `${expandCircle} 1s ease-in-out forwards`,
   zIndex: 100,
   pointerEvents: 'none',
+});
+
+export const backgroundtreeCss = css({
+  position: 'fixed',
+  top: '-12%',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  zIndex: '0',
+  width: '200vw',
 });
