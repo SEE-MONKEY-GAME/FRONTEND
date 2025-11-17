@@ -22,6 +22,8 @@ export interface HomeImageProps {
   prev_guide: string;
   next_guide: string;
   tab_check: string;
+  check_close: string;
+  shine: string;
   check_day1: string;
   check_day2: string;
   check_day3: string;
