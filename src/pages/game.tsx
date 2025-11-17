@@ -34,8 +34,7 @@ export default function GamePage() {
   const [hasRocketItem, setHasRocketItem] = useState(false);
   const [hasHeartItem, setHasHeartItem] = useState(false);
 
-  // const { token } = useToken();
-  const { token: realToken } = useToken(); const token = '1';
+  const { token } = useToken();
 
   useEffect(() => {
     (window as any).__GAME_TOKEN = token;
@@ -185,6 +184,8 @@ const replay = () => {
     w.__ROCKET_PROMPT_OPEN = false;
 
     setShowRocketPrompt(false);
+
+    window.dispatchEvent(new Event('game:play'));
   }
 
   window.dispatchEvent(new Event('game:replay'));

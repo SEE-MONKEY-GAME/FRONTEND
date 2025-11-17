@@ -43,10 +43,17 @@ class HomeScene extends Phaser.Scene {
     platform.setOrigin(0.5, 1);
     platform.setPosition(width / 2, height - 187);
 
-    const handleStartGame = () => {
-      this.scene.start('GameScene');
-      this.bgm?.stop();
-    };
+const handleStartGame = () => {
+  const w = window as any;
+
+  w.__rocketStart = false;
+  w.__queuedGameStart = false;
+  w.__ROCKET_PROMPT_OPEN = true; 
+
+  this.scene.start('GameScene');
+  this.bgm?.stop();
+};
+
 
     window.addEventListener('game:start', handleStartGame as EventListener);
     this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
