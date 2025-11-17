@@ -68,6 +68,8 @@ export default function GamePage() {
           w.__rocketStart = false;
           w.__queuedGameStart = false;
           setShowRocketPrompt(true);
+            w.__ROCKET_PROMPT_OPEN = true;
+
         } else {
           w.__rocketStart = false;
           w.__queuedGameStart = true;
@@ -113,65 +115,77 @@ export default function GamePage() {
   } = useFeverProgressAnimator({
     drainMs: FEVER_DURATION_MS,
   });
-  const startGame = async () => {
-    const w = window as any;
+ const startGame = async () => {
+  const w = window as any;
 
-    try {
-      if (token) {
-        const res = await updateItem(token, 1);
+  try {
+    if (token) {
+      const res = await updateItem(token, 1);
 
-        if (res.status === 200) {
-          setHasRocketItem(false);
+      if (res.status === 200) {
+        setHasRocketItem(false);
 
-          w.__rocketStart = true;
-          w.__queuedGameStart = true;
-          window.dispatchEvent(new Event('game:play'));
-        } else {
-          console.warn('[GamePage] rocket item use failed:', res);
+        w.__ROCKET_PROMPT_OPEN = false;
 
-          w.__rocketStart = false;
-          w.__queuedGameStart = true;
-          window.dispatchEvent(new Event('game:play'));
-        }
-      } else {
         w.__rocketStart = true;
         w.__queuedGameStart = true;
         window.dispatchEvent(new Event('game:play'));
-      }
-    } catch (e) {
-      console.error('[GamePage] rocket updateItem error:', e);
+      } else {
+        console.warn('[GamePage] rocket item use failed:', res);
 
-      w.__rocketStart = false;
+        w.__ROCKET_PROMPT_OPEN = false;
+        w.__rocketStart = false;
+        w.__queuedGameStart = true;
+        window.dispatchEvent(new Event('game:play'));
+      }
+    } else {
+      w.__ROCKET_PROMPT_OPEN = false;
+      w.__rocketStart = true;
       w.__queuedGameStart = true;
       window.dispatchEvent(new Event('game:play'));
-    } finally {
-      setShowRocketPrompt(false);
     }
-  };
+  } catch (e) {
+    console.error('[GamePage] rocket updateItem error:', e);
 
-  const skipGame = () => {
-    const w = window as any;
+    w.__ROCKET_PROMPT_OPEN = false;
     w.__rocketStart = false;
     w.__queuedGameStart = true;
-
     window.dispatchEvent(new Event('game:play'));
+  } finally {
     setShowRocketPrompt(false);
-  };
+  }
+};
 
-  const replay = () => {
-    const w = window as any;
-    w.__queuedGameStart = false;
-    w.__rocketStart = false;
 
-    window.dispatchEvent(new Event('game:replay'));
+ const skipGame = () => {
+  const w = window as any;
+  w.__rocketStart = false;
+  w.__queuedGameStart = true;
 
-    setIsGameOver(false);
-    setScore(0);
-    setCoin(0);
-    setShowRocketPrompt(hasRocketItem);
-    setShowHeartPrompt(false);
-    setHasShownHeartPromptInRun(false);
-  };
+  w.__ROCKET_PROMPT_OPEN = false;
+
+  window.dispatchEvent(new Event('game:play'));
+  setShowRocketPrompt(false);
+};
+
+
+const replay = () => {
+  const w = window as any;
+  w.__queuedGameStart = false;
+  w.__rocketStart = false;
+
+  w.__ROCKET_PROMPT_OPEN = hasRocketItem;
+
+  window.dispatchEvent(new Event('game:replay'));
+
+  setIsGameOver(false);
+  setScore(0);
+  setCoin(0);
+  setShowRocketPrompt(hasRocketItem);
+  setShowHeartPrompt(false);
+  setHasShownHeartPromptInRun(false);
+};
+
 
   const handleHeartSkip = () => {
     setShowHeartPrompt(false);
