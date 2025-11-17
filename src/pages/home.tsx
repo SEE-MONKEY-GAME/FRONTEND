@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { selectMemberData } from '@api/member-api';
+import { getUserKeyForGame } from '@apps-in-toss/web-framework';
 import Attend from '@components/attend';
 import Guide from '@components/guide';
 import Loading from '@components/loading';
@@ -134,11 +135,39 @@ const Home = ({ load, handleLoad }: HomeProps) => {
   const [guide, setGuide] = useState<boolean>(false);
   const [option, setOption] = useState<boolean>(false);
   const [transition, setTransition] = useState<boolean>(false);
-  const { token } = useToken();
+  const { token, setToken } = useToken();
   const { effect, setBgm, setEffect } = useSound();
 
   const mainButtonSound = new Audio(getBGMs('button_main'));
   const subButtonSound = new Audio(getBGMs('button_sub'));
+
+  const login = async () => {
+    const result = await getUserKeyForGame();
+
+    if (!result) {
+      console.warn('지원하지 않는 앱 버전이에요.');
+      return;
+    }
+
+    if (result === 'INVALID_CATEGORY') {
+      console.error('게임 카테고리가 아닌 미니앱이에요.');
+      return;
+    }
+
+    if (result === 'ERROR') {
+      console.error('사용자 키 조회 중 오류가 발생했어요.');
+      return;
+    }
+
+    if (result.type === 'HASH') {
+      console.log('사용자 키:', result.hash);
+      setToken(result.hash);
+    }
+  };
+
+  useEffect(() => {
+    login();
+  }, []);
 
   useEffect(() => {
     const preloaded = (window as any)['PRELOADED_IMAGES'] as HomeImageProps | undefined;
@@ -189,8 +218,12 @@ const Home = ({ load, handleLoad }: HomeProps) => {
   };
 
   useEffect(() => {
+    if (!token) {
+      return;
+    }
+
     getMemberData(token);
-  }, []);
+  }, [token]);
 
   const handleAttend = () => {
     if (effect) {
