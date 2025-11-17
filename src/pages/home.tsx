@@ -218,8 +218,12 @@ const Home = ({ load, handleLoad }: HomeProps) => {
   };
 
   useEffect(() => {
+    if (!token) {
+      return;
+    }
+
     getMemberData(token);
-  }, []);
+  }, [token]);
 
   const handleAttend = () => {
     if (effect) {
