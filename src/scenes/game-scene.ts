@@ -817,26 +817,30 @@ class GameScene extends Phaser.Scene {
   const w = window as any;
     const token = w.__GAME_TOKEN; 
 
-    if (token) {
-      selectMemberData(token)
-        .then((res: any) => {
-          const data = res.data;
+      if (token) {
+    selectMemberData(token)
+      .then((res: any) => {
+        const data = res.data;
 
-          const equipment = data?.equipment ?? [];
-          if (Array.isArray(equipment) && equipment.length > 0) {
-            const first = equipment[0];       
-            this.costumeCode = first.code;    
-            this.character.setTexture(this.getTex('character'));
-          } else {
-            this.costumeCode = null; 
-          }
-        })
-        .catch((err) => {
-          console.error('selectMemberData ERROR:', err);
-        });
-    } else {
-      console.warn('GAME_TOKEN이 없습니다. window.__GAME_TOKEN에 토큰을 넣어주세요.');
-    }
+        const equipment = data?.equipment ?? [];
+        if (Array.isArray(equipment) && equipment.length > 0) {
+          const first = equipment[0];       
+          this.costumeCode = first.code;    
+          this.character.setTexture(this.getTex('character'));
+        } else {
+          this.costumeCode = null; 
+        }
+      })
+      .catch((err) => {
+        console.error('selectMemberData ERROR:', err);
+      });
+  } else {
+    console.warn('GAME_TOKEN이 없습니다. window.__GAME_TOKEN에 토큰을 넣어주세요.');
+
+    // ✅ 토큰 없으면: 장비조회 안 하고, 바로 일반 카운트다운으로 시작
+    console.log('[GameScene] no GAME_TOKEN -> startCountdown immediately');
+    startCountdown();
+  }
 
   }
 
