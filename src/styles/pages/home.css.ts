@@ -76,7 +76,6 @@ export const gameStartButtonCss = css({
   left: '50%',
   bottom: '10%',
   transform: 'translateX(-50%)',
-  zIndex: 0,
 });
 
 export const gameStartButtonImageCss = css({
