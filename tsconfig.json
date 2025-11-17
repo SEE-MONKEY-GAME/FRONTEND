@@ -8,6 +8,7 @@
       "@canvas/*": ["canvas/*"],
       "@components/*": ["components/*"],
       "@context/*": ["context/*"],
+      "@interface/*": ["interface/*"],
       "@pages/*": ["pages/*"],
       "@scenes/*": ["scenes/*"],
       "@styles/*": ["styles/*"],

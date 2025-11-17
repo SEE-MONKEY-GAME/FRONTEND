@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { createDailyCheckin, selectDailyCheckin } from '@api/checkin-api';
 import { useToken } from '@context/user-context';
-import type { ImagesProps } from '@pages/home';
+import type { HomeImageProps } from '@interface/image-props';
 import {
   attendCloseButtonCss,
   attendGridCss,
@@ -27,7 +27,7 @@ interface CheckinProps {
 
 interface AttendProps {
   handleAttend: () => void;
-  images: ImagesProps;
+  images: HomeImageProps;
   refreshMember: (token: string) => Promise<void>;
 }
 
@@ -67,9 +67,9 @@ const Attend = ({ handleAttend, images, refreshMember }: AttendProps) => {
   }, []);
 
   const getImages = Array.from({ length: 7 }, (_, i) => ({
-    today: images[`check_day${i + 1}` as keyof ImagesProps],
-    locked: images[`check_day${i + 1}_lock` as keyof ImagesProps],
-    claimed: images[`check_day${i + 1}_done` as keyof ImagesProps],
+    today: images[`check_day${i + 1}` as keyof HomeImageProps],
+    locked: images[`check_day${i + 1}_lock` as keyof HomeImageProps],
+    claimed: images[`check_day${i + 1}_done` as keyof HomeImageProps],
   }));
 
   const getImageForDay = (index: number) => {

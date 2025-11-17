@@ -6,7 +6,7 @@ import { deleteCostume, putCostume, selectCostumes } from '@api/costume-api';
 import { selectItems } from '@api/item-api';
 import { useSound } from '@context/sound-context';
 import { useToken } from '@context/user-context';
-import type { ImagesProps } from '@pages/home';
+import type { HomeImageProps } from '@interface/image-props';
 import {
   shopBoxCss,
   shopCloseButtonCss,
@@ -26,7 +26,7 @@ import { getBGMs } from '@utils/get-sounds';
 
 interface ShopProps {
   handleShop: () => void;
-  images: ImagesProps;
+  images: HomeImageProps;
   equipment: [];
   refreshMember: (token: string) => Promise<void>;
 }
@@ -171,7 +171,7 @@ const Shop = ({ handleShop, images, equipment, refreshMember }: ShopProps) => {
                     <li key={index} css={shopBoxCss(images)}>
                       <span css={shopItemCountCss}>{data.quantity}</span>
                       <img
-                        src={images[data.item.code as keyof ImagesProps]}
+                        src={images[data.item.code as keyof HomeImageProps]}
                         alt={data.item.code}
                         css={shopResourceCss}
                       />
@@ -197,7 +197,7 @@ const Shop = ({ handleShop, images, equipment, refreshMember }: ShopProps) => {
                   return (
                     <li key={index} css={shopBoxCss(images)}>
                       <img
-                        src={images[data.costume.code as keyof ImagesProps]}
+                        src={images[data.costume.code as keyof HomeImageProps]}
                         alt={data.costume.code}
                         css={shopResourceCss}
                       />

@@ -1,10 +1,12 @@
 /** @jsxImportSource @emotion/react */
 import { useFeverProgressAnimator } from '../hooks/useFeverProgressAnimator';
+import type { GameImageProps } from 'interface/image-props';
 import { useEffect, useState } from 'react';
 import FeverGauge from '@components/fever-gauge';
 import GameOverModal from '@components/gameover-modal';
+import HeartPrompt from '@components/heartprompt';
 import RocketPrompt from '@components/rocketprompt';
-import HeartPrompt from '@components/heartprompt'; 
+import { useToken } from '@context/user-context';
 import { FEVER_DURATION_MS } from '@scenes/game-scene';
 import { circleCss, coinCss, coinTextCss, currentScoreCss, feverEmptyCss, feverWrapCss } from '@styles/pages/game.css';
 import { useToken } from '@context/user-context';
@@ -23,7 +25,7 @@ export interface ImagesProps {
 }
 
 export default function GamePage() {
-  const [images, setImages] = useState<ImagesProps>({
+  const [images, setImages] = useState<GameImageProps>({
     empty_guage_bar: '',
     full_guage_bar: '',
     'gameover-tab': '',
@@ -101,12 +103,12 @@ useEffect(() => {
 
 
   useEffect(() => {
-    const preloaded = (window as any)['PRELOADED_IMAGES'] as ImagesProps | undefined;
+    const preloaded = (window as any)['PRELOADED_IMAGES'] as GameImageProps | undefined;
     if (preloaded) {
       setImages(preloaded);
     }
 
-    const handleImages = (event: CustomEvent<ImagesProps>) => {
+    const handleImages = (event: CustomEvent<GameImageProps>) => {
       setImages(event.detail);
     };
 
@@ -125,8 +127,6 @@ useEffect(() => {
   } = useFeverProgressAnimator({
     drainMs: FEVER_DURATION_MS,
   });
-
-  
 const startGame = async () => {
   const w = window as any;
 
@@ -187,10 +187,10 @@ const replay = () => {
   setHasShownHeartPromptInRun(false);
 };
 
-const handleHeartSkip = () => {
-  setShowHeartPrompt(false);
-  setIsGameOver(true); 
-};
+  const handleHeartSkip = () => {
+    setShowHeartPrompt(false);
+    setIsGameOver(true);
+  };
 
 const handleHeartUse = async () => {
   setShowHeartPrompt(false);
@@ -217,8 +217,6 @@ const handleHeartUse = async () => {
     setIsGameOver(true);
   }
 };
-
-
 
   useEffect(() => {
     const onScore = (e: CustomEvent<{ score: number }>) => setScore(e.detail.score);
@@ -264,13 +262,9 @@ useEffect(() => {
       setIsGameOver(true);
     }
   };
-
   window.addEventListener('game:over', onOver as EventListener);
   return () => window.removeEventListener('game:over', onOver as EventListener);
 }, [hasHeartItem, hasShownHeartPromptInRun]);
-
-
-
 
   return (
     <>
@@ -297,16 +291,8 @@ useEffect(() => {
           onReplay={replay}
           images={images}
         />
-      <RocketPrompt
-  open={showRocketPrompt}
-  onSkip={skipGame}
-  onUse={startGame}
-/>
- <HeartPrompt
-        open={showHeartPrompt}
-        onSkip={handleHeartSkip}
-        onUse={handleHeartUse}
-      />
+        <RocketPrompt open={showRocketPrompt} onSkip={skipGame} onUse={startGame} />
+        <HeartPrompt open={showHeartPrompt} onSkip={handleHeartSkip} onUse={handleHeartUse} />
       </div>
     </>
   );

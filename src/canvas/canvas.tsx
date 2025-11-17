@@ -42,8 +42,9 @@ const Canvas = () => {
       style={{
         width: '100%',
         height: '100vh',
-        position: 'absolute',
+        position: 'fixed',
         inset: 0,
+        zIndex: 1,
       }}
     />
   );

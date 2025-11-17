@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { selectMemberData } from '@api/member-api'; 
+import { selectMemberData } from '@api/member-api';
 
 export const FEVER_DURATION_MS = 8000;
 
@@ -18,8 +18,6 @@ class GameScene extends Phaser.Scene {
   private character!: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
   private barCollider!: Phaser.Physics.Arcade.Collider;
   private costumeCode: string | null = null;
-  
-
 
   private lastJumpAt = 0;
   private prevBarX = 0;
@@ -86,7 +84,7 @@ class GameScene extends Phaser.Scene {
   private readonly POSE_RETRIGGER_ADD = 100;
   private readonly POSE_MAX_MS = 300;
 
-  private readonly CHARACTER_SCALE = 0.13;
+  private readonly CHARACTER_SCALE = 0.17;
 
   private spinTween?: Phaser.Tweens.Tween;
   private rocketActive = false;
@@ -632,13 +630,12 @@ class GameScene extends Phaser.Scene {
     });
 
     // 캐릭터
-       this.character = this.physics.add
-      .image(width / 2, height / 3, this.getTex('character')) 
+    this.character = this.physics.add
+      .image(width / 2, height / 3, this.getTex('character'))
       .setOrigin(0.5)
       .setScale(this.CHARACTER_SCALE);
     this.character.setDepth(100);
 
-    
     this.character.body.setBounce(1, 0);
     (this.character.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
     this.character.setCollideWorldBounds(false);
@@ -647,7 +644,7 @@ class GameScene extends Phaser.Scene {
     this.bar = this.physics.add
       .image(width / 2, height * 0.8, 'bar')
       .setOrigin(0.5)
-      .setScale(0.3);
+      .setScale(0.23);
     (this.bar.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
     (this.bar.body as Phaser.Physics.Arcade.Body).setImmovable(true);
     (this.bar.body as Phaser.Physics.Arcade.Body).setSize(this.bar.displayWidth, this.bar.displayHeight * 1.5, true);
@@ -837,7 +834,6 @@ class GameScene extends Phaser.Scene {
   } else {
     console.warn('GAME_TOKEN이 없습니다. window.__GAME_TOKEN에 토큰을 넣어주세요.');
 
-    console.log('[GameScene] no GAME_TOKEN -> startCountdown immediately');
     startCountdown();
   }
 
@@ -904,36 +900,32 @@ class GameScene extends Phaser.Scene {
     this.lastJumpAt = this.time.now;
   }
 
-// 클래스 필드로 추가
-private readonly POSE_SCALE: Record<string, number> = {
-  'SCARF-001-sit': 0.3, 
-};
+  // 클래스 필드로 추가
+  private readonly POSE_SCALE: Record<string, number> = {
+    'SCARF-001-sit': 0.3,
+  };
 
+  private setPose(
+    key: 'character' | 'sit' | 'jump' | 'ljump' | 'rjump' | 'jump_item' | 'ljump_item' | 'rjump_item',
+    force = false,
+  ) {
+    if (!force && (this.thiefHitPlaying || this.isHitFlash)) return;
+    if (this.rocketActive) return;
 
-private setPose(
-  key: 'character' | 'sit' | 'jump' | 'ljump' | 'rjump' | 'jump_item' | 'ljump_item' | 'rjump_item',
-  force = false,
-) {
-  if (!force && (this.thiefHitPlaying || this.isHitFlash)) return;
-  if (this.rocketActive) return; 
+    const texKey = this.getTex(key);
 
-  const texKey = this.getTex(key);
+    if (this.character.texture.key !== texKey) {
+      this.character.setTexture(texKey);
+    }
 
-  if (this.character.texture.key !== texKey) {
-    this.character.setTexture(texKey);
+    let scale = this.CHARACTER_SCALE;
+
+    if (this.POSE_SCALE[texKey] !== undefined) {
+      scale *= this.POSE_SCALE[texKey];
+    }
+
+    this.character.setScale(scale);
   }
-
-
-  let scale = this.CHARACTER_SCALE;
-
-
-  if (this.POSE_SCALE[texKey] !== undefined) {
-    scale *= this.POSE_SCALE[texKey];
-  }
-
-  this.character.setScale(scale);
-}
-
 
   private applyNormalJumpPose() {
     const key = this.lastDir === 'left' ? 'ljump' : this.lastDir === 'right' ? 'rjump' : 'jump';
@@ -1016,10 +1008,7 @@ private setPose(
     this.respawnTargetY = height / 3;
 
     this.character.enableBody(true, width / 2, height + this.RESPAWN_OFFSET, true, true);
-    this.character
-      .setTexture(this.getTex('character')) 
-      .setScale(this.CHARACTER_SCALE)
-      .setOrigin(0.5);
+    this.character.setTexture(this.getTex('character')).setScale(this.CHARACTER_SCALE).setOrigin(0.5);
     this.character.setCollideWorldBounds(false);
 
     const body = this.character.body as Phaser.Physics.Arcade.Body;
@@ -1050,17 +1039,16 @@ private setPose(
     const { width, height } = this.cameras.main;
     const spawnY = height / 3;
 
-this.isRespawning = true;
-  this.respawnTargetY = spawnY;
+    this.isRespawning = true;
+    this.respawnTargetY = spawnY;
 
-
-  this.character.enableBody(true, width / 2, height + this.RESPAWN_OFFSET, true, true);
-  this.character
-    .setTexture(this.getTex('character'))  
-    .setScale(this.CHARACTER_SCALE)
-    .setOrigin(0.5)
-    .setCollideWorldBounds(false)
-    .setAlpha(0.5);
+    this.character.enableBody(true, width / 2, height + this.RESPAWN_OFFSET, true, true);
+    this.character
+      .setTexture(this.getTex('character'))
+      .setScale(this.CHARACTER_SCALE)
+      .setOrigin(0.5)
+      .setCollideWorldBounds(false)
+      .setAlpha(0.5);
 
     const body = this.character.body as Phaser.Physics.Arcade.Body;
     body.setVelocity(0, 0);
@@ -1418,7 +1406,7 @@ this.isRespawning = true;
       this.stopSpin();
       this.isHitFlash = true;
       this.hitFlashUntil = this.time.now + 250;
-      this.character.setTexture(this.getTex('hit_block')); 
+      this.character.setTexture(this.getTex('hit_block'));
 
       if (init.effect) {
         this.effect_hit.play();
@@ -1440,7 +1428,7 @@ this.isRespawning = true;
         this.thiefHitFrame = 0;
         this.thiefHitAccMs = 0;
 
-      this.character.setTexture(this.getTex('hit_block')); 
+        this.character.setTexture(this.getTex('hit_block'));
 
         if (this.thiefHitEffect) {
           this.thiefHitEffect.destroy();
@@ -1503,31 +1491,30 @@ this.isRespawning = true;
       this.updateGorillas(delta);
       this.updateRockets();
 
+      cBody.setVelocity(0, 0);
 
-  cBody.setVelocity(0, 0);
+      if (this.time.now >= this.rocketEndTime) {
+        this.rocketActive = false;
 
-  if (this.time.now >= this.rocketEndTime) {
-    this.rocketActive = false;
+        if (this.rocketFrameTimer) {
+          this.rocketFrameTimer.remove();
+          this.rocketFrameTimer = undefined;
+        }
 
-    if (this.rocketFrameTimer) {
-      this.rocketFrameTimer.remove();
-      this.rocketFrameTimer = undefined;
+        this.character.setTexture(this.getTex('character'));
+        this.character.setOrigin(0.5, 0.5);
+        this.character.setScale(this.CHARACTER_SCALE);
+
+        cBody.setAllowGravity(true);
+        cBody.setVelocityY(100);
+
+        this.lastYForScore = this.character.y;
+        this.prevCharY = this.character.y;
+        this.prevVy = cBody.velocity.y;
+      }
+
+      return;
     }
-
-      this.character.setTexture(this.getTex('character')); 
-    this.character.setOrigin(0.5, 0.5);
-    this.character.setScale(this.CHARACTER_SCALE);
-
-    cBody.setAllowGravity(true);
-    cBody.setVelocityY(100);
-
-    this.lastYForScore = this.character.y;
-    this.prevCharY = this.character.y;
-    this.prevVy = cBody.velocity.y;
-  }
-
-  return;
-}
 
     this.jumpedThisFrame = false;
 
@@ -1578,7 +1565,7 @@ this.isRespawning = true;
         if (this.thiefHitFrame >= this.THIEF_HIT_TOTAL_FRAMES) {
           this.thiefHitPlaying = false;
 
-      this.character.setTexture(this.getTex('character')); 
+          this.character.setTexture(this.getTex('character'));
 
           const vy = cBody.velocity.y;
           if (vy === 0) this.setPose('sit');
@@ -1680,10 +1667,10 @@ this.isRespawning = true;
     this.prevCharY = this.character.y;
   }
 
-    private getTex(base: string): string {
+  private getTex(base: string): string {
     if (!this.costumeCode) return base;
 
-    const candidate = `${this.costumeCode}-${base}`; 
+    const candidate = `${this.costumeCode}-${base}`;
     if (this.textures.exists(candidate)) {
       return candidate;
     }

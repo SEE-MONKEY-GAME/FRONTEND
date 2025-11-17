@@ -1,4 +1,4 @@
-import { css, keyframes } from '@emotion/react';
+import { css } from '@emotion/react';
 import { colors } from '@styles/tokens/colors';
 import { fonts } from '@styles/tokens/fonts';
 
@@ -19,7 +19,7 @@ export const attendRewardEffectCss = css({
   left: '50%',
   transform: 'translate(-50%, -50%)',
   zIndex: 35,
-  width: 'calc(100vw - 12px)',
+  opacity: '0.3',
 });
 
 export const attendRewardWrapperCss = css({

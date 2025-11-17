@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { useSound } from '@context/sound-context';
 import { useToken } from '@context/user-context';
-import type { ImagesProps } from '@pages/home';
+import type { HomeImageProps } from '@interface/image-props';
 import {
   attendRewardButtonCss,
   attendRewardEffectCss,
@@ -10,20 +10,17 @@ import {
   attendRewardTextCss,
   attendRewardWrapperCss,
 } from '@styles/components/attend-reward.css';
-import { getImage } from '@utils/get-images';
 import { getBGMs } from '@utils/get-sounds';
 
 interface AttendRewardProps {
   index: number;
   onClose: () => void;
-  images: ImagesProps;
+  images: HomeImageProps;
   refreshCheckin: (token: string) => Promise<void>;
 }
 
 const AttendReward = ({ index, onClose, images, refreshCheckin }: AttendRewardProps) => {
   const { effect } = useSound();
-  const close = getImage('home', 'check_close_button');
-  const shine = getImage('home', 'effect_shine');
   const subButtonSound = new Audio(getBGMs('button_sub'));
   const rewardSound = new Audio(getBGMs('daily_reward'));
   const { token } = useToken();
@@ -63,9 +60,9 @@ const AttendReward = ({ index, onClose, images, refreshCheckin }: AttendRewardPr
           <br />
           <span>{rewards[index]}</span> 받았어요!
         </p>
-        <img src={close} alt="닫기_버튼" css={attendRewardButtonCss} onClick={onClick} />
+        <img src={images.check_close} alt="닫기_버튼" css={attendRewardButtonCss} onClick={onClick} />
       </div>
-      <img src={shine} alt="반짝이_효과" css={attendRewardEffectCss} />
+      <img src={images.shine} alt="반짝이_효과" css={attendRewardEffectCss} />
       <div css={attendRewardOverlayCss} />
     </>
   );

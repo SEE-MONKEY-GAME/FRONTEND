@@ -25,12 +25,6 @@ class HomeScene extends Phaser.Scene {
 
     this.game.events.on('UPDATE_SOUND_STATE', this.handleSoundState, this);
 
-    // 상단 요소
-    const upper = this.add.image(500, 0, 'platform');
-    upper.setScale(3, 1.25);
-    upper.setOrigin(0.5, 1);
-    upper.setPosition(width / 2, 150);
-
     // 캐릭터
     this.character = this.add
       .image(width / 2, height - 220, 'bana')
