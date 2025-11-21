@@ -479,6 +479,7 @@ class GameScene extends Phaser.Scene {
     this.scene.stop('GameScene');
     this.scene.start('HomeScene');
   };
+
   private onReplay = () => {
     if (!this.scene.isActive()) return;
 
@@ -583,6 +584,9 @@ class GameScene extends Phaser.Scene {
     }
 
     this.game.events.on('UPDATE_SOUND_STATE', this.handleSoundState, this);
+
+    this.game.events.on('hidden', this.handleHidden, this);
+    this.game.events.on('visible', this.handleVisible, this);
 
     this.physics.world.setBounds(0, 0, width, height);
     this.physics.world.gravity.y = 1200;
@@ -811,32 +815,31 @@ class GameScene extends Phaser.Scene {
     this.emitCoin(this.coin);
     this.emitFever(0, false, 0);
 
-  const w = window as any;
-    const token = w.__GAME_TOKEN; 
+    const w = window as any;
+    const token = w.__GAME_TOKEN;
 
-      if (token) {
-    selectMemberData(token)
-      .then((res: any) => {
-        const data = res.data;
+    if (token) {
+      selectMemberData(token)
+        .then((res: any) => {
+          const data = res.data;
 
-        const equipment = data?.equipment ?? [];
-        if (Array.isArray(equipment) && equipment.length > 0) {
-          const first = equipment[0];       
-          this.costumeCode = first.code;    
-          this.character.setTexture(this.getTex('character'));
-        } else {
-          this.costumeCode = null; 
-        }
-      })
-      .catch((err) => {
-        console.error('selectMemberData ERROR:', err);
-      });
-  } else {
-    console.warn('GAME_TOKEN이 없습니다. window.__GAME_TOKEN에 토큰을 넣어주세요.');
+          const equipment = data?.equipment ?? [];
+          if (Array.isArray(equipment) && equipment.length > 0) {
+            const first = equipment[0];
+            this.costumeCode = first.code;
+            this.character.setTexture(this.getTex('character'));
+          } else {
+            this.costumeCode = null;
+          }
+        })
+        .catch((err) => {
+          console.error('selectMemberData ERROR:', err);
+        });
+    } else {
+      console.warn('GAME_TOKEN이 없습니다. window.__GAME_TOKEN에 토큰을 넣어주세요.');
 
-    startCountdown();
-  }
-
+      startCountdown();
+    }
   }
 
   // 라이프 UI
@@ -1689,6 +1692,27 @@ class GameScene extends Phaser.Scene {
       } else {
         this.bgm.stop();
       }
+    }
+  }
+
+  private handleHidden() {
+    this.bgm?.pause();
+    this.feverBgm?.pause();
+  }
+
+  private handleVisible() {
+    const init = (this.game as any).INIT_SOUND_STATE;
+    if (!init.bgm) {
+      return;
+    }
+
+    // 피버 중이면 feverBGM만 재생
+    if (this.feverActive) {
+      this.bgm?.stop(); // 혹시 모르니 bgm은 완전 정지
+      this.feverBgm?.resume();
+    } else {
+      this.feverBgm?.stop();
+      this.bgm?.resume();
     }
   }
 }
