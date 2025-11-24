@@ -18,7 +18,7 @@ class LoadScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('load_bg_update', getImage('loading', 'load_bg_update'));
+    this.load.image('load_bg_update', getImage('loading', 'loading_bg_update'));
     this.load.image('load_inner', getImage('loading', 'loading_inner'));
     this.load.image('load_outer', getImage('loading', 'loading_outer'));
     this.load.image('load_text', getImage('loading', 'loading_text'));
