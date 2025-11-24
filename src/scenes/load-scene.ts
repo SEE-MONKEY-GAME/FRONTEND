@@ -18,9 +18,7 @@ class LoadScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('load_background', getImage('loading', 'loading_background'));
-    this.load.image('load_title', getImage('loading', 'title'));
-    this.load.image('load_bana', getImage('loading', 'loading_bana'));
+    this.load.image('load_bg_update', getImage('loading', 'load_bg_update'));
     this.load.image('load_inner', getImage('loading', 'loading_inner'));
     this.load.image('load_outer', getImage('loading', 'loading_outer'));
     this.load.image('load_text', getImage('loading', 'loading_text'));
@@ -30,17 +28,8 @@ class LoadScene extends Phaser.Scene {
   create() {
     const { width, height } = this.cameras.main;
 
-    this.background = this.add.image(width / 2, height / 2, 'load_background').setDisplaySize(width, height);
-    this.title = this.add
-      .image(0, 0, 'load_title')
-      .setScale((width - 60) / this.textures.get('load_title').getSourceImage().width)
-      .setOrigin(0.5, 0)
-      .setPosition(width / 2, 50);
-    this.bana = this.add
-      .image(width / 2, height / 2, 'load_bana')
-      .setScale((width - 72) / this.textures.get('load_bana').getSourceImage().width)
-      .setOrigin(0.5, 0.5)
-      .setPosition(width / 2, height / 2 + 40);
+    this.background = this.add.image(width / 2, height / 2, 'load_bg_update').setDisplaySize(width, height);
+
     this.inner = this.add
       .image(width / 2, height / 2, 'load_inner')
       .setScale((width - 280) / this.textures.get('load_inner').getSourceImage().width)

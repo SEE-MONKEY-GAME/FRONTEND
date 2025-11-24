@@ -25,6 +25,16 @@ class HomeScene extends Phaser.Scene {
 
     this.game.events.on('UPDATE_SOUND_STATE', this.handleSoundState, this);
 
+    const visibilityHandler = () => {
+      if (document.hidden) {
+        this.bgm!.pause(); // 백그라운드 → 모든 사운드 멈춤
+      } else {
+        this.bgm!.resume(); // 다시 돌아옴 → 다시 재생
+      }
+    };
+
+    document.addEventListener('visibilitychange', visibilityHandler);
+
     // 캐릭터
     this.character = this.add
       .image(width / 2, height - 220, 'bana')
@@ -43,21 +53,21 @@ class HomeScene extends Phaser.Scene {
     platform.setOrigin(0.5, 1);
     platform.setPosition(width / 2, height - 187);
 
-const handleStartGame = () => {
-  const w = window as any;
+    const handleStartGame = () => {
+      const w = window as any;
 
-  w.__rocketStart = false;
-  w.__queuedGameStart = false;
-  w.__ROCKET_PROMPT_OPEN = true; 
+      w.__rocketStart = false;
+      w.__queuedGameStart = false;
+      w.__ROCKET_PROMPT_OPEN = true;
 
-  this.scene.start('GameScene');
-  this.bgm?.stop();
-};
-
+      this.scene.start('GameScene');
+      this.bgm?.stop();
+    };
 
     window.addEventListener('game:start', handleStartGame as EventListener);
     this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
       window.removeEventListener('game:start', handleStartGame as EventListener);
+      document.removeEventListener('visibilitychange', visibilityHandler);
     });
   }
 
