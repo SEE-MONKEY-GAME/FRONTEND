@@ -1,5 +1,5 @@
 export interface BananaSpec {
-  key: 'normal' | 'bunch' | 'gold';
+  key: 'nbana' | 'bbana' | 'gbana';
   value: number;
   scale: number;
 }
@@ -9,8 +9,17 @@ export interface BananaConfig {
   spawnLimit: number;
   probTable: Array<{
     untilM: number;
-    probs: { normal: number; bunch: number; gold: number };
+    probs: { nbana: number; bbana: number; gbana: number };
   }>;
+}
+
+export interface BananaCollectInfo {
+  val: number;
+  key: string;
+  scale: number;
+  x: number;
+  y: number;
+  isGold: boolean;
 }
 
 class Banana {
@@ -54,28 +63,28 @@ class Banana {
   // 현재 미터에 따른 바나나 스폰 확률 조정
   private pickBananaSpec(m: number, feverActive: boolean): BananaSpec {
     if (feverActive) {
-      return { key: 'gold', value: 10, scale: 0.22 };
+      return { key: 'gbana', value: 10, scale: 0.22 };
     }
 
     const tier = this.config.probTable.find((t) => m <= t.untilM)!;
-    const { bunch, gold } = tier.probs;
+    const { bbana, gbana } = tier.probs;
     const r = Math.random();
 
-    let key: BananaSpec['key'] = 'normal';
-    if (r < gold) {
-      key = 'gold';
-    } else if (r < gold + bunch) {
-      key = 'bunch';
+    let key: BananaSpec['key'] = 'nbana';
+    if (r < gbana) {
+      key = 'gbana';
+    } else if (r < gbana + bbana) {
+      key = 'bbana';
     }
 
-    if (key === 'gold') {
+    if (key === 'gbana') {
       return { key, value: 10, scale: 0.22 };
     }
-    if (key === 'bunch') {
+    if (key === 'bbana') {
       return { key, value: 5, scale: 0.2 };
     }
 
-    return { key: 'normal', value: 1, scale: 0.18 };
+    return { key: 'nbana', value: 1, scale: 0.18 };
   }
 
   // 바나나 스폰
@@ -99,10 +108,7 @@ class Banana {
   }
 
   // 바나나 수집
-  public collect(
-    item: Phaser.Types.Physics.Arcade.ImageWithDynamicBody,
-    onCollect: (info: { val: number; key: string; scale: number; x: number; y: number; isGold: boolean }) => void,
-  ) {
+  public collect(item: Phaser.Types.Physics.Arcade.ImageWithDynamicBody, onCollect: (info: BananaCollectInfo) => void) {
     if (!item.active || item.getData('collected')) {
       return;
     }
